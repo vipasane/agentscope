@@ -1,0 +1,49 @@
+{
+	"name": "Claude Flow Dev",
+	"image": "mcr.microsoft.com/devcontainers/base:bookworm",
+
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"enableNonRootDocker": "true",
+			"moby": "true",
+			"dockerDashComposeVersion": "v2"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"nodeGypDependencies": true,
+			"installYarnUsingApt": true,
+			"version": "lts",
+			"pnpmVersion": "latest",
+			"nvmVersion": "latest"
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"yzhang.markdown-all-in-one",
+				"dbaeumer.vscode-eslint",
+				"ms-vscode.vscode-typescript-next",
+				"ms-azuretools.vscode-docker"
+			],
+			"settings": {
+				"editor.formatOnSave": true,
+				"typescript.preferences.importModuleSpecifier": "relative"
+			}
+		}
+	},
+
+	"forwardPorts": [3000, 8080],
+
+	"containerEnv": {
+		"DOCKER_BUILDKIT": "1",
+		"COMPOSE_DOCKER_CLI_BUILD": "1"
+	},
+
+	"postCreateCommand": "npm install -g @anthropic-ai/claude-code",
+	"postStartCommand": "npx @claude-flow/cli@latest init --force && npx @claude-flow/cli@latest daemon start --quiet || true"
+}
