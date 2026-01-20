@@ -197,3 +197,4 @@ htmlcov/
 docs/_build/
 site/
 .docusaurus/
+/.swarm
