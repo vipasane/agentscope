@@ -1,12 +1,17 @@
-# PR: feat/skills-commit-push-pr
+# PR: feat/architecture-v2-entities
 
-> **Base Branch**: feat/architecture-v2-entities
+> **Base Branch**: main
 > **Created**: 2026-01-20
 > **Status**: Ready for Review
 
 ## Executive Summary
 
-This PR introduces two self-learning skills for automated commit/push/PR workflows with deterministic-first processing and overflow handling. The skills learn from past issues (like the secret detection false positives) and apply deterministic fixes before falling back to LLM assistance.
+This PR introduces comprehensive architecture documentation (DDD, ADRs, Security) and two self-learning skills for automated commit/push/PR workflows. Key features include:
+
+1. **Deterministic-first processing** - Run deterministic checks before using LLM
+2. **Overflow handling** - Defer unresolved issues to later phases
+3. **Self-learning patterns** - Store and reuse successful fixes
+4. **`.secretsignore` exclusion list** - Proper handling of false positives without --no-verify
 
 ## Human Review Required
 
@@ -23,6 +28,8 @@ This PR introduces two self-learning skills for automated commit/push/PR workflo
 | `.claude/skills/pr-validator/SKILL.md` | Added | PR validation with deterministic checks + self-learning |
 | `CLAUDE.md` | Modified | Added "Deterministic First Principle" section |
 | `.claude/memory.db` | Added | Memory database symlink for pattern storage |
+| `.secretsignore` | Added | Exclusion list for false positive handling |
+| `.claude/hooks/setup-hooks.sh` | Modified | Updated pre-commit hook with exclusion support |
 
 ## Key Features
 
@@ -60,6 +67,18 @@ This PR introduces two self-learning skills for automated commit/push/PR workflo
 
 1. **Memory database path**: Uses `.claude/memory.db` symlink to `.swarm/memory.db`
 2. **Skill activation**: Skills need to be invoked with `/commit-push-pr` or `/pr-validator`
+
+## .secretsignore Exclusion System
+
+The new `.secretsignore` file supports three exclusion types:
+
+| Type | Format | Example |
+|------|--------|---------|
+| File paths | `path/to/file` | `docs/architecture/SECURITY-ARCHITECTURE.md` |
+| Line patterns | `PATTERN:<regex>` | `PATTERN:/sk-ant-` |
+| Context patterns | `CONTEXT:<text>` | `CONTEXT:EXAMPLE_` |
+
+This replaces the need for `--no-verify` when dealing with known false positives.
 
 ## Related
 
