@@ -39,6 +39,138 @@ When deterministic approaches fail:
 
 ---
 
+## 🔷 ATOMIC TASKS PRINCIPLE
+
+**Core Rule: Every task must be atomic - one thing, done well, independently verifiable.**
+
+### What Makes a Task Atomic
+
+| Property | Requirement |
+|----------|-------------|
+| **Size** | 5-15 minutes of work |
+| **Scope** | 1-5 files, <200 lines |
+| **Independence** | Can be committed alone |
+| **Verifiable** | Clear "done" definition |
+| **Complete** | Code + tests + docs (if needed) |
+
+### Atomic Task = Code + Tests + Docs
+
+Each atomic task includes everything needed:
+```
+Task: Add validatePassword function
+├── src/auth/password.ts         (implementation ~40 lines)
+├── tests/auth/password.test.ts  (tests ~30 lines)
+└── (docs only if public API)
+Total: ~70 lines - fits in one atomic commit
+```
+
+**If tests/docs don't fit in <200 lines, the task is too big. Split it.**
+
+### Decomposition Rule
+
+**If a task takes >30 minutes, split it.**
+
+❌ **Non-atomic**: "Implement user authentication"
+
+✅ **Atomic breakdown** (each includes tests):
+1. Add User type + tests → (~40 lines total)
+2. Create validatePassword + tests → (~80 lines total)
+3. Add login handler + tests → (~100 lines total)
+4. Register route → (~10 lines)
+
+### Benefits
+- Each commit is reviewable (code + tests together)
+- Each change is reversible
+- Progress is visible
+- Tests written with fresh context
+- Docs stay in sync
+
+---
+
+## 🤖 AUTONOMOUS WORK PROTOCOL
+
+**Work independently with quality gates. No user intervention needed for standard tasks.**
+
+### Work Loop
+
+```
+┌─────────────────────────────────────────┐
+│  1. PICK atomic task from todo          │
+│  2. READ relevant files                 │
+│  3. WRITE code (minimal changes)        │
+│  4. SIMPLIFY (auto-apply)               │
+│  5. VERIFY (tests, types)               │
+│  6. COMMIT (small, focused)             │
+│  7. NEXT task or PUSH                   │
+└─────────────────────────────────────────┘
+```
+
+### Decision Matrix - When to Proceed vs Ask
+
+| Situation | Action |
+|-----------|--------|
+| Implementation obvious | Proceed |
+| Following existing patterns | Proceed |
+| Task well-defined | Proceed |
+| Changes reversible | Proceed |
+| Multiple valid approaches | Ask |
+| Affects public API | Ask |
+| Requirements unclear | Ask |
+| Destructive action | Ask |
+
+### Quality Gates (Automatic)
+
+After every code change:
+1. **Types**: Must compile
+2. **Lint**: Auto-format applied
+3. **Tests**: Must pass
+4. **Size**: <200 lines/commit
+5. **Simplify**: Code clarity check
+
+### Session Flow
+
+**Start**: Check todo list → Run tests → Pick first atomic task
+**During**: Work loop (write → simplify → verify → commit)
+**End**: Push → Create/update PR → Update todo list
+
+### PR Review Feedback Loop
+
+Claude can autonomously handle PR feedback:
+
+```bash
+# 1. Check for review comments
+gh pr view <number> --comments
+
+# 2. Read the feedback, fix issues in code
+
+# 3. Push fix and respond
+git add . && git commit -m "fix: address review feedback"
+git push
+gh pr comment <number> --body "Fixed: [description]"
+```
+
+**When to proceed vs ask on PR feedback:**
+| Feedback Type | Action |
+|---------------|--------|
+| Typo/formatting | Fix immediately |
+| Missing test | Add test, push |
+| Code style | Apply suggestion |
+| Logic question | Fix if clear, ask if ambiguous |
+| Architecture concern | Ask before major changes |
+
+### Code Simplifier (Auto-Applied)
+
+After writing code, automatically:
+- Remove dead code and unused imports
+- Consolidate duplicate logic
+- Simplify complex conditionals
+- Add explicit types where missing
+- Ensure consistent formatting
+
+**Principle**: Clarity over brevity. Never change what code does, only how it does it.
+
+---
+
 ## 🚨 AUTOMATIC SWARM ORCHESTRATION
 
 **When starting work on complex tasks, Claude Code MUST automatically:**
