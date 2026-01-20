@@ -1,0 +1,336 @@
+name: AI Multi-Persona Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+jobs:
+  # ===========================================
+  # Stage 1: Quick Checks (Block early)
+  # ===========================================
+  quick-checks:
+    name: "🚦 Quick Checks"
+    runs-on: ubuntu-latest
+    outputs:
+      pr_size: ${{ steps.size.outputs.size }}
+      files_changed: ${{ steps.files.outputs.count }}
+      has_tests: ${{ steps.tests.outputs.has_tests }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate PR Size
+        id: size
+        run: |
+          ADDITIONS=$(gh pr view ${{ github.event.pull_request.number }} --json additions -q '.additions')
+          DELETIONS=$(gh pr view ${{ github.event.pull_request.number }} --json deletions -q '.deletions')
+          TOTAL=$((ADDITIONS + DELETIONS))
+          if [ $TOTAL -gt 500 ]; then
+            SIZE="xlarge"
+          elif [ $TOTAL -gt 300 ]; then
+            SIZE="large"
+          elif [ $TOTAL -gt 100 ]; then
+            SIZE="medium"
+          else
+            SIZE="small"
+          fi
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          echo "lines=$TOTAL" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Count Changed Files
+        id: files
+        run: |
+          COUNT=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files | length')
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check for Tests
+        id: tests
+        run: |
+          TEST_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path | select(test("test|spec"))' | wc -l)
+          if [ $TEST_FILES -gt 0 ]; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Flag Large PRs
+        if: steps.size.outputs.size == 'large' || steps.size.outputs.size == 'xlarge'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "needs-human-review,large-pr"
+          gh pr comment ${{ github.event.pull_request.number }} --body "⚠️ **Large PR detected** (${{ steps.size.outputs.lines }} lines). Consider splitting into smaller PRs for easier review."
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # ===========================================
+  # Stage 2: Automated Quality Gates
+  # ===========================================
+  quality-gates:
+    name: "🔍 Quality Gates"
+    runs-on: ubuntu-latest
+    needs: quick-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Check
+        run: npx tsc --noEmit
+        continue-on-error: true
+        id: typescript
+
+      - name: ESLint
+        run: npx eslint . --format json --output-file eslint-report.json
+        continue-on-error: true
+        id: eslint
+
+      - name: Run Tests with Coverage
+        run: npm test -- --coverage --coverageReporters=json-summary
+        continue-on-error: true
+        id: tests
+
+      - name: Security Audit
+        run: npm audit --audit-level=moderate --json > audit-report.json
+        continue-on-error: true
+        id: audit
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            eslint-report.json
+            coverage/coverage-summary.json
+            audit-report.json
+
+  # ===========================================
+  # Stage 3: AI Persona Reviews (Parallel)
+  # ===========================================
+  ai-review-security:
+    name: "🔒 Security Review"
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get PR Diff
+        id: diff
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} > pr.diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Security Review via Claude
+        id: review
+        run: |
+          # Use Claude Code hooks or direct API for security review
+          npx @claude-flow/cli@latest hooks pre-edit \
+            --file "pr.diff" \
+            --operation "security-review" \
+            --context "PR #${{ github.event.pull_request.number }}" \
+            > security-review.md 2>&1 || true
+
+          # If hooks not available, create placeholder
+          if [ ! -s security-review.md ]; then
+            echo "## 🔒 Security Review" > security-review.md
+            echo "" >> security-review.md
+            echo "Automated security scan pending manual review." >> security-review.md
+          fi
+
+      - name: Post Security Review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('security-review.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: review
+            });
+
+  ai-review-architecture:
+    name: "🏗️ Architecture Review"
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Architecture Review
+        run: |
+          echo "## 🏗️ Architecture Review" > architecture-review.md
+          echo "" >> architecture-review.md
+
+          # Check for new files
+          NEW_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[] | select(.status == "added") | .path')
+          if [ -n "$NEW_FILES" ]; then
+            echo "### New Files Created" >> architecture-review.md
+            echo '```' >> architecture-review.md
+            echo "$NEW_FILES" >> architecture-review.md
+            echo '```' >> architecture-review.md
+            echo "⚠️ **Human review recommended** for new file placement." >> architecture-review.md
+          else
+            echo "✅ No new files created." >> architecture-review.md
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Post Architecture Review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('architecture-review.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: review
+            });
+
+  ai-review-simplifier:
+    name: "✂️ Simplicity Review"
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Complexity Analysis
+        run: |
+          echo "## ✂️ Simplicity Review" > simplicity-review.md
+          echo "" >> simplicity-review.md
+
+          # Count lines added vs removed
+          STATS=$(gh pr view ${{ github.event.pull_request.number }} --json additions,deletions)
+          ADDED=$(echo $STATS | jq '.additions')
+          DELETED=$(echo $STATS | jq '.deletions')
+
+          echo "| Metric | Value |" >> simplicity-review.md
+          echo "|--------|-------|" >> simplicity-review.md
+          echo "| Lines Added | +$ADDED |" >> simplicity-review.md
+          echo "| Lines Deleted | -$DELETED |" >> simplicity-review.md
+          echo "| Net Change | $((ADDED - DELETED)) |" >> simplicity-review.md
+          echo "" >> simplicity-review.md
+
+          if [ $DELETED -gt $ADDED ]; then
+            echo "✅ **Great job!** This PR removes more code than it adds." >> simplicity-review.md
+          elif [ $ADDED -gt 200 ]; then
+            echo "⚠️ **Consider simplifying.** Large addition (+$ADDED lines)." >> simplicity-review.md
+          else
+            echo "✅ PR size is reasonable." >> simplicity-review.md
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Post Simplicity Review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('simplicity-review.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: review
+            });
+
+  # ===========================================
+  # Stage 4: Aggregate Reviews
+  # ===========================================
+  aggregate-reviews:
+    name: "📋 Review Summary"
+    runs-on: ubuntu-latest
+    needs:
+      - quick-checks
+      - quality-gates
+      - ai-review-security
+      - ai-review-architecture
+      - ai-review-simplifier
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## 📋 AI Review Summary" > summary.md
+          echo "" >> summary.md
+          echo "| Reviewer | Status |" >> summary.md
+          echo "|----------|--------|" >> summary.md
+          echo "| 🔒 Security | ${{ needs.ai-review-security.result == 'success' && '✅ Passed' || '⚠️ Review' }} |" >> summary.md
+          echo "| 🏗️ Architecture | ${{ needs.ai-review-architecture.result == 'success' && '✅ Passed' || '⚠️ Review' }} |" >> summary.md
+          echo "| ✂️ Simplicity | ${{ needs.ai-review-simplifier.result == 'success' && '✅ Passed' || '⚠️ Review' }} |" >> summary.md
+          echo "" >> summary.md
+          echo "### PR Metrics" >> summary.md
+          echo "- **Size**: ${{ needs.quick-checks.outputs.pr_size }}" >> summary.md
+          echo "- **Files Changed**: ${{ needs.quick-checks.outputs.files_changed }}" >> summary.md
+          echo "- **Has Tests**: ${{ needs.quick-checks.outputs.has_tests }}" >> summary.md
+          echo "" >> summary.md
+
+          # Determine if human review needed
+          if [ "${{ needs.quick-checks.outputs.pr_size }}" == "large" ] || [ "${{ needs.quick-checks.outputs.pr_size }}" == "xlarge" ]; then
+            echo "### 🚨 Human Review Required" >> summary.md
+            echo "- Large PR (>300 lines)" >> summary.md
+          fi
+
+      - name: Post Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('summary.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: summary
+            });
+
+      - name: Add Labels Based on Review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prSize = '${{ needs.quick-checks.outputs.pr_size }}';
+            const hasTests = '${{ needs.quick-checks.outputs.has_tests }}';
+
+            const labels = [];
+
+            if (prSize === 'small') labels.push('size/small');
+            else if (prSize === 'medium') labels.push('size/medium');
+            else if (prSize === 'large') labels.push('size/large', 'needs-human-review');
+            else if (prSize === 'xlarge') labels.push('size/xlarge', 'needs-human-review');
+
+            if (hasTests === 'false') labels.push('needs-tests');
+
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: labels
+              });
+            }

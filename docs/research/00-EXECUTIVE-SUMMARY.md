@@ -1,8 +1,23 @@
 # AgentScope Research: Executive Summary
 
 > **Research Date**: January 2026
-> **Documents**: 5 research reports from parallel swarm analysis
-> **Verdict**: Promising concept with significant scope concerns - recommend pivoting to a **4-week Lean MVP**
+> **Status**: ✅ DECISIONS FINALIZED - See `AgentScope-PRD-v2.md`
+> **Documents**: 8 research reports from parallel swarm analysis
+
+## Document Status
+
+| Document | Status | Notes |
+|----------|--------|-------|
+| `AgentScope-PRD-v2.md` | ✅ **AUTHORITATIVE** | Use this for implementation |
+| `00-EXECUTIVE-SUMMARY.md` | 📋 Reference | Summary of research findings |
+| `01-critical-analysis.md` | 📋 Reference | Risk analysis |
+| `02-alternatives-comparison.md` | 📋 Reference | Competitive landscape |
+| `04-component-solutions.md` | 📋 Reference | Tech stack recommendations |
+| `05-questions-and-decisions.md` | 📋 Reference | Decision rationale |
+| `06-claude-code-tuning-best-practices.md` | ✅ **ACTIVE** | Implementation guidance |
+| `07-tdd-quality-framework.md` | ✅ **ACTIVE** | Quality gates for development |
+| `08-future-roadmap.md` | ✅ **ACTIVE** | Post-MVP planning |
+| `archive/*` | 🗄️ Archived | Historical reference only |
 
 ---
 

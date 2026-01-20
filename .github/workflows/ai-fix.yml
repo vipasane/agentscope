@@ -1,0 +1,212 @@
+name: AI Auto-Fix
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+jobs:
+  auto-fix:
+    name: "🤖 Auto-Fix"
+    # Only run on PR comments containing trigger phrases
+    if: |
+      github.event.issue.pull_request &&
+      (contains(github.event.comment.body, '@claude fix') ||
+       contains(github.event.comment.body, '@ai fix') ||
+       contains(github.event.comment.body, '/fix'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Acknowledge Request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: Get PR Details
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('branch', pr.data.head.ref);
+            core.setOutput('sha', pr.data.head.sha);
+            return pr.data;
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Parse Fix Request
+        id: parse
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+
+          # Extract what to fix
+          if echo "$COMMENT" | grep -qi "lint\|eslint"; then
+            echo "fix_type=lint" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT" | grep -qi "type\|typescript\|tsc"; then
+            echo "fix_type=types" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT" | grep -qi "format\|prettier"; then
+            echo "fix_type=format" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT" | grep -qi "test"; then
+            echo "fix_type=tests" >> $GITHUB_OUTPUT
+          else
+            echo "fix_type=all" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Auto-Fixes
+        id: fix
+        run: |
+          FIXES_MADE=""
+
+          # ESLint auto-fix
+          if [[ "${{ steps.parse.outputs.fix_type }}" == "lint" || "${{ steps.parse.outputs.fix_type }}" == "all" ]]; then
+            echo "Running ESLint auto-fix..."
+            npx eslint . --fix 2>/dev/null || true
+            if git diff --quiet; then
+              echo "No lint fixes needed"
+            else
+              FIXES_MADE="$FIXES_MADE\n- ESLint auto-fixes applied"
+            fi
+          fi
+
+          # Prettier format
+          if [[ "${{ steps.parse.outputs.fix_type }}" == "format" || "${{ steps.parse.outputs.fix_type }}" == "all" ]]; then
+            echo "Running Prettier..."
+            npx prettier --write "src/**/*.{ts,tsx,js,jsx}" 2>/dev/null || true
+            if git diff --quiet; then
+              echo "No formatting fixes needed"
+            else
+              FIXES_MADE="$FIXES_MADE\n- Prettier formatting applied"
+            fi
+          fi
+
+          # Type fixes (limited - just adding missing imports)
+          if [[ "${{ steps.parse.outputs.fix_type }}" == "types" || "${{ steps.parse.outputs.fix_type }}" == "all" ]]; then
+            echo "Checking TypeScript..."
+            npx tsc --noEmit 2>&1 | head -20 > tsc-errors.txt || true
+            if [ -s tsc-errors.txt ]; then
+              FIXES_MADE="$FIXES_MADE\n- TypeScript errors detected (manual fix may be needed)"
+            fi
+          fi
+
+          echo "fixes_made<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$FIXES_MADE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Check if any changes were made
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit Fixes
+        if: steps.fix.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "fix: auto-fix from AI review
+
+          Triggered by: @${{ github.event.comment.user.login }}
+
+          Changes:
+          ${{ steps.fix.outputs.fixes_made }}
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+
+          git push
+
+      - name: Report Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const hasChanges = '${{ steps.fix.outputs.has_changes }}' === 'true';
+            const fixes = `${{ steps.fix.outputs.fixes_made }}`;
+
+            let body;
+            if (hasChanges) {
+              body = `## 🤖 Auto-Fix Applied
+
+            I've committed the following fixes:
+            ${fixes}
+
+            Please review the changes and re-run checks.`;
+
+              // Add success reaction
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: 'rocket'
+              });
+            } else {
+              body = `## 🤖 Auto-Fix Results
+
+            No automatic fixes were needed or available.
+
+            The issues may require manual intervention. Check the review comments for details.`;
+
+              // Add thumbs up reaction
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: '+1'
+              });
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+      - name: Handle Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'confused'
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '## ❌ Auto-Fix Failed\n\nSomething went wrong. Please check the workflow logs or fix manually.'
+            });
