@@ -723,6 +723,12 @@ main (protected)
 - Each small PR: <200 lines, one logical change
 - Branch from parent: `git checkout -b feat/part-2 feat/feature-name`
 
+**Exception - Direct to main OK if:**
+- Independent feature, won't break anything
+- Behind feature flag (disabled by default)
+- Self-contained fix/improvement
+- No dependencies on other pending work
+
 ### 🚫 Never Bypass Hooks
 ```
 Hook blocks → Split task → NOT --no-verify
