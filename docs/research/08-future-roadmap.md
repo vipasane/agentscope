@@ -9,7 +9,7 @@
 
 ## Overview
 
-This roadmap captures features intentionally excluded from the v1.0 MVP release. The Lean MVP approach (4 weeks) focuses on delivering maximum value with minimum scope. Features listed here will be prioritized based on user feedback, adoption metrics, and strategic alignment.
+This roadmap captures features intentionally excluded from the v1.0 MVP release. The Lean MVP approach (1-2 days with agentic coding) focuses on delivering maximum value with minimum scope. Features listed here will be prioritized based on user feedback, adoption metrics, and strategic alignment.
 
 **Philosophy**: Ship fast, learn from users, iterate based on evidence.
 
@@ -236,7 +236,46 @@ BMad Concept -> Unified Model Mapping:
 
 ---
 
-#### 3. Claude Code Skill Package
+#### 3. GitHub-Direct Scanning Mode
+
+**Description**: Scan GitHub repositories directly via API without cloning locally.
+
+**Prerequisite**: v1.1 stable, GitHub MCP server available
+
+**Effort Estimate**: 1-2 days
+
+**Usage**:
+```bash
+agentscope scan --github owner/repo
+agentscope scan --github https://github.com/owner/repo
+```
+
+**Trigger to Prioritize**:
+- CI/CD use cases where clone is expensive
+- Quick audits of public repos
+- >5 requests for remote scanning
+
+**Dependencies**:
+- GitHub API integration (Trees API, Contents API)
+- Authentication for private repos
+- Rate limit handling (5,000 req/hr authenticated)
+
+**Limitations (Document Clearly)**:
+- Cannot scan `~/.claude/` (user-level configs)
+- Slower than local scanning (API latency)
+- Rate limited for large repos
+- Requires token for private repos
+
+**Acceptance Criteria**:
+- [ ] `--github` flag accepts owner/repo or full URL
+- [ ] Scans public repos without authentication
+- [ ] Prompts for token on private repos
+- [ ] Gracefully handles rate limits
+- [ ] Documents limitations in output
+
+---
+
+#### 4. Claude Code Skill Package
 
 **Description**: Distribute AgentScope as a native Claude Code skill.
 
