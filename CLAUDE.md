@@ -699,6 +699,43 @@ This includes:
 
 Remember: **Claude Flow CLI coordinates, Claude Code Task tool creates!**
 
+---
+
+## 🔷 ATOMIC WORKFLOW RULES
+
+### Task Size
+- Aim for <100 lines, max 200
+- Each task = code + tests in one commit
+- If it doesn't fit, split further
+
+### Branching
+- Each task = new branch from PARENT
+- One task per branch, one PR per branch
+- `feat/[scope]-[thing]`
+
+### 🚫 Never Bypass Hooks
+```
+Hook blocks → Split task → NOT --no-verify
+```
+
+### 🛑 Stop Conditions
+| Condition | Action |
+|-----------|--------|
+| Same error 2x | Stop, report |
+| 3 failed attempts | Stop, move on |
+| Unclear fix | Stop after 1 try |
+
+### 📏 Large Change Format
+If >200 lines and can't split:
+```
+⚠️ LARGE CHANGE - Review needed
+Size: X files, Y lines
+Why can't split: [reason]
+Review: file.ts:42-58 [uncertain]
+```
+
+---
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
