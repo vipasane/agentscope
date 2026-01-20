@@ -42,12 +42,16 @@ patterns-export*.json
 # Claude Code - Runtime & Generated Files
 # ===========================================
 
-# Claude Code configuration and state
-.claude/
-
 # Claude Code task outputs
 .claude-tasks/
 task-output*.txt
+
+# Note: .claude/ is tracked for shared hooks and settings
+# Exclude only runtime/personal files:
+.claude/projects/
+.claude/statsig/
+.claude/todos/
+.claude/*.log
 
 # ===========================================
 # MCP (Model Context Protocol) Files
