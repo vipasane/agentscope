@@ -1,0 +1,199 @@
+# ===========================================
+# Claude Flow - Runtime & Generated Files
+# ===========================================
+
+# Claude Flow data directory (memory, sessions, patterns)
+.claude-flow/
+
+# Claude Flow memory database
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Claude Flow daemon files
+.claude-flow-daemon.pid
+.claude-flow-daemon.log
+daemon.log
+daemon.pid
+
+# Claude Flow session state
+.session-state/
+sessions/
+*.session.json
+
+# Claude Flow neural patterns & training data
+neural-patterns/
+*.onnx
+*.weights
+*.model
+training-data/
+
+# Claude Flow cache
+.cache/
+.claude-flow-cache/
+embeddings-cache/
+
+# Claude Flow memory exports
+memory-export*.json
+patterns-export*.json
+
+# ===========================================
+# Claude Code - Runtime & Generated Files
+# ===========================================
+
+# Claude Code configuration and state
+.claude/
+
+# Claude Code task outputs
+.claude-tasks/
+task-output*.txt
+
+# ===========================================
+# MCP (Model Context Protocol) Files
+# ===========================================
+
+# MCP server logs
+mcp-*.log
+.mcp-servers/
+
+# Note: .mcp.json may contain local paths - review before committing
+# Uncomment if you want to exclude it:
+# .mcp.json
+
+# ===========================================
+# Environment & Secrets
+# ===========================================
+
+# Environment files (may contain API keys)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.env
+
+# API keys and credentials
+.anthropic
+.openai
+credentials.json
+secrets.json
+*.pem
+*.key
+
+# ===========================================
+# Node.js
+# ===========================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Package lock files (uncomment if you prefer)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ===========================================
+# Python (if applicable)
+# ===========================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+
+# ===========================================
+# IDE & Editor Files
+# ===========================================
+
+# VS Code (keep .vscode for shared settings, exclude user-specific)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.#*
+
+# ===========================================
+# OS Generated Files
+# ===========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+# ===========================================
+# Logs & Temporary Files
+# ===========================================
+
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+
+# ===========================================
+# Testing & Coverage
+# ===========================================
+
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+
+# ===========================================
+# Documentation Build (if generated)
+# ===========================================
+
+docs/_build/
+site/
+.docusaurus/
