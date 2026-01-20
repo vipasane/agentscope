@@ -895,6 +895,59 @@ This includes:
 
 Remember: **Claude Flow CLI coordinates, Claude Code Task tool creates!**
 
+---
+
+## 🔷 ATOMIC WORKFLOW RULES
+
+### Task Size
+- Aim for <100 lines, max 200
+- Each task = code + tests in one commit
+- If it doesn't fit, split further
+
+### Stacked PR Workflow
+```
+main (protected)
+  └── feat/feature-name (PR to main - only when DONE)
+        ├── feat/feature-name-part-1 (PR to feature branch)
+        ├── feat/feature-name-part-2 (PR to feature branch)
+        └── feat/feature-name-part-3 (PR to feature branch)
+```
+
+**Rules:**
+- Small PRs → target FEATURE branch (parent)
+- Feature branch → target MAIN only when done+verified+tested
+- Each small PR: <200 lines, one logical change
+- Branch from parent: `git checkout -b feat/part-2 feat/feature-name`
+
+**Exception - Direct to main OK if:**
+- Independent feature, won't break anything
+- Behind feature flag (disabled by default)
+- Self-contained fix/improvement
+- No dependencies on other pending work
+
+### 🚫 Never Bypass Hooks
+```
+Hook blocks → Split task → NOT --no-verify
+```
+
+### 🛑 Stop Conditions
+| Condition | Action |
+|-----------|--------|
+| Same error 2x | Stop, report |
+| 3 failed attempts | Stop, move on |
+| Unclear fix | Stop after 1 try |
+
+### 📏 Large Change Format
+If >200 lines and can't split:
+```
+⚠️ LARGE CHANGE - Review needed
+Size: X files, Y lines
+Why can't split: [reason]
+Review: file.ts:42-58 [uncertain]
+```
+
+---
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
