@@ -1,0 +1,27 @@
+{
+  "name": "agentscope",
+  "version": "0.0.1",
+  "description": "Agent Architecture Documentation & Visualization Tool - From chaos to clarity",
+  "license": "SEE LICENSE FILE",
+  "author": "AgentScope Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vipasane/agentscope.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vipasane/agentscope/issues"
+  },
+  "homepage": "https://github.com/vipasane/agentscope#readme",
+  "keywords": [
+    "agent",
+    "claude",
+    "mcp",
+    "documentation",
+    "visualization",
+    "mermaid",
+    "cli"
+  ],
+  "devDependencies": {
+    "js-yaml": "^4.1.1"
+  }
+}
