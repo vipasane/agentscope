@@ -13,9 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-fix workflow triggered by `@claude fix` comments
 - Git hooks for conventional commits and secrets detection
 - Definition of Done documentation
+- **Architecture documentation** (20 files, 13K+ lines):
+  - DDD Implementation with 4 bounded contexts
+  - Security Architecture with STRIDE/DREAD threat model
+  - Memory Architecture with HNSW patterns
+  - 10 ADRs in MADR format
+  - Entity Catalog with 7 entity types
+  - Visualization Architecture with Mermaid diagrams
+- **Self-learning skills**:
+  - `commit-push-pr`: Automated commit→push→stacked PR workflow
+  - `pr-validator`: PR validation with deterministic checks + learning
+- **Deterministic First Principle** in CLAUDE.md
+- **Learned patterns database** for secret detection, whitespace, PR summaries
+- PR executive summaries in `docs/PRs/` directory
 
 ### Changed
-- Nothing yet
+- Updated CLAUDE.md with Deterministic First Principle
+- Renamed duplicate research file (10-*.md → 12-*.md)
+- Added historical warning to Executive Summary
 
 ### Deprecated
 - Nothing yet

@@ -1,5 +1,44 @@
 # Claude Code Configuration - Claude Flow V3
 
+## 🎯 DETERMINISTIC FIRST PRINCIPLE
+
+**Core Rule: Make everything deterministic first, use LLM only when it provides more value.**
+
+### Decision Order
+
+1. **Deterministic solutions FIRST** (regex, rules, templates, lookups)
+2. **Pattern matching SECOND** (learned patterns from memory)
+3. **LLM-assisted LAST** (only for semantic understanding, complex reasoning)
+
+### When to Use Each Approach
+
+| Task Type | Approach | Example |
+|-----------|----------|---------|
+| **Validation** | Deterministic | Regex for secrets, syntax checks, file existence |
+| **Formatting** | Deterministic | Prettier, ESLint, template-based generation |
+| **Known fixes** | Pattern lookup | Memory search for learned resolutions |
+| **Branch naming** | Deterministic | `{type}/{scope}-{timestamp}` template |
+| **Commit messages** | Deterministic | Conventional commits template |
+| **Summaries** | LLM-assisted | Human-readable diff explanations |
+| **Code review** | LLM-assisted | Semantic logic analysis |
+| **Unknown issues** | LLM-assisted | Classification, then store pattern |
+
+### Benefits
+
+- **Faster**: No API latency for deterministic checks
+- **Cheaper**: No token costs for pattern matching
+- **Reproducible**: Same input = same output
+- **Learnable**: Patterns can be stored and reused
+
+### Overflow Handling
+
+When deterministic approaches fail:
+1. Store the issue for learning
+2. Delegate to specialized agent OR defer to human
+3. After resolution, store the pattern for future deterministic handling
+
+---
+
 ## 🚨 AUTOMATIC SWARM ORCHESTRATION
 
 **When starting work on complex tasks, Claude Code MUST automatically:**
