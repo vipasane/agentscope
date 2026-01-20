@@ -118,6 +118,31 @@ Total: ~70 lines - fits in one atomic commit
 | Requirements unclear | Ask |
 | Destructive action | Ask |
 
+### 🛑 STOP CONDITIONS - Avoid Infinite Loops
+
+**CRITICAL: Never burn tokens trying to fix unfixable issues.**
+
+| Condition | Action |
+|-----------|--------|
+| Same error 2x | Stop, report issue |
+| Test fails 3x | Stop, document what's wrong |
+| Build fails 3x | Stop, ask for help |
+| Unclear fix | Stop after 1 attempt |
+| Circular dependency | Stop immediately |
+
+**When stuck:**
+```
+1. STOP trying to fix
+2. Commit what works (or stash)
+3. Document the issue clearly
+4. Move to next task OR ask user
+```
+
+**Never:**
+- Retry the same fix repeatedly
+- Keep changing code hoping it works
+- Spend >5 minutes on one error
+
 ### Quality Gates (Automatic)
 
 After every code change:

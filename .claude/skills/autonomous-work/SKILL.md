@@ -160,6 +160,31 @@ Before marking task complete:
 4. Fix or revert the specific change
 5. Continue with next atomic task
 
+### 🛑 STOP CONDITIONS - Never Loop
+
+**CRITICAL: Don't burn tokens on unfixable issues.**
+
+| Attempt | Action |
+|---------|--------|
+| 1st fail | Try one fix |
+| 2nd fail | Try different approach |
+| 3rd fail | **STOP** - document and move on |
+
+```
+STOP LOOP PROTOCOL:
+1. Same error twice? STOP.
+2. Stash or revert changes
+3. Document: "Blocked: [issue]"
+4. Move to next task
+5. Ask user only if critical path
+```
+
+**Never:**
+- Retry same fix >2 times
+- Spend >5 min on one error
+- Keep changing code randomly
+- Assume "one more try" will work
+
 ### If stuck:
 1. Commit current progress (WIP is ok)
 2. Document what's blocking
