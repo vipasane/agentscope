@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Pre-push hook - runs checks before push
+#
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}Running pre-push checks...${NC}"
+
+# Check if pushing to main
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REMOTE=$1
+
+while read local_ref local_sha remote_ref remote_sha; do
+    if [[ "$remote_ref" == *"refs/heads/main"* ]]; then
+        echo -e "${RED}⚠️  Direct push to main is not allowed!${NC}"
+        echo "Please create a pull request instead."
+        exit 1
+    fi
+done
+
+# Run tests if available
+if [ -f "package.json" ] && grep -q '"test"' package.json; then
+    echo "Running tests..."
+    npm test
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Tests failed. Push aborted.${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}✅ Pre-push checks passed${NC}"
+exit 0
