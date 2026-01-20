@@ -52,6 +52,7 @@ task-output*.txt
 .claude/statsig/
 .claude/todos/
 .claude/*.log
+.claude/memory.db
 
 # ===========================================
 # MCP (Model Context Protocol) Files
