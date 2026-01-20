@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateHierarchy - Snapshot Tests > should match snapshot for complex hierarchy 1`] = `
+"\`\`\`mermaid
+graph LR
+    %% Complex Hierarchy
+
+    main[["main"]]
+    sub1(["sub1"])
+    sub2{{"sub2"}}
+    worker1["worker1"]
+
+    %% Delegation Relationships
+    main -->|delegates| sub1
+    main -->|delegates| sub2
+    sub1 -->|delegates| worker1
+
+    %% Skills
+    skill_coding(["coding"])
+    skill_testing(["testing"])
+
+    %% Styling
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef worker fill:#f3e5f5,stroke:#4a148c
+    classDef reviewer fill:#fff3e0,stroke:#e65100
+    classDef specialist fill:#e8f5e9,stroke:#1b5e20
+    classDef skill fill:#e3f2fd,stroke:#0d47a1,stroke-dasharray: 5 5
+    class main coordinator
+    class sub1 specialist
+    class sub2 reviewer
+    class worker1 worker
+    class skill_coding skill
+    class skill_testing skill
+\`\`\`"
+`;
+
+exports[`generateHierarchy - Snapshot Tests > should match snapshot for simple hierarchy 1`] = `
+"\`\`\`mermaid
+graph TB
+    %% Agent Hierarchy
+
+    coordinator[["coordinator"]]
+    worker["worker"]
+
+    %% Delegation Relationships
+    coordinator -->|delegates| worker
+
+    %% Styling
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef worker fill:#f3e5f5,stroke:#4a148c
+    classDef reviewer fill:#fff3e0,stroke:#e65100
+    classDef specialist fill:#e8f5e9,stroke:#1b5e20
+    classDef skill fill:#e3f2fd,stroke:#0d47a1,stroke-dasharray: 5 5
+    class coordinator coordinator
+    class worker worker
+\`\`\`"
+`;
