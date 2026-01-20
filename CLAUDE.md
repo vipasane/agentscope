@@ -708,10 +708,20 @@ Remember: **Claude Flow CLI coordinates, Claude Code Task tool creates!**
 - Each task = code + tests in one commit
 - If it doesn't fit, split further
 
-### Branching
-- Each task = new branch from PARENT
-- One task per branch, one PR per branch
-- `feat/[scope]-[thing]`
+### Stacked PR Workflow
+```
+main (protected)
+  └── feat/feature-name (PR to main - only when DONE)
+        ├── feat/feature-name-part-1 (PR to feature branch)
+        ├── feat/feature-name-part-2 (PR to feature branch)
+        └── feat/feature-name-part-3 (PR to feature branch)
+```
+
+**Rules:**
+- Small PRs → target FEATURE branch (parent)
+- Feature branch → target MAIN only when done+verified+tested
+- Each small PR: <200 lines, one logical change
+- Branch from parent: `git checkout -b feat/part-2 feat/feature-name`
 
 ### 🚫 Never Bypass Hooks
 ```
