@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **SIMPLE-ARCHITECTURE.md** - Minimal MVP implementation guide (6 files, ~200 lines)
 - Project documentation structure (README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY)
 - GitHub Actions AI review workflow with multi-persona reviewers
 - Auto-fix workflow triggered by `@claude fix` comments
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PR executive summaries in `docs/PRs/` directory
 
 ### Changed
+- **Simplified architecture** - Moved DDD/Security/Memory docs to `v2-roadmap/` (not for MVP)
 - Updated CLAUDE.md with Deterministic First Principle
 - Renamed duplicate research file (10-*.md → 12-*.md)
 - Added historical warning to Executive Summary
