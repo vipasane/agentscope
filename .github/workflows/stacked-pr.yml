@@ -1,0 +1,131 @@
+name: Stacked PR Helper
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+  push:
+    branches:
+      - 'stack/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  detect-stack:
+    name: "Detect Stack"
+    runs-on: ubuntu-latest
+    outputs:
+      is_stacked: ${{ steps.check.outputs.is_stacked }}
+      stack_name: ${{ steps.check.outputs.stack_name }}
+      stack_order: ${{ steps.check.outputs.stack_order }}
+
+    steps:
+      - name: Check if Stacked Branch
+        id: check
+        run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+
+          # Pattern: stack/<feature-name>/<order>-<description>
+          # Example: stack/auth-system/01-models, stack/auth-system/02-api
+          if [[ "$BRANCH" =~ ^stack/([^/]+)/([0-9]+)-(.+)$ ]]; then
+            echo "is_stacked=true" >> $GITHUB_OUTPUT
+            echo "stack_name=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "stack_order=${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
+            echo "Stack detected: ${BASH_REMATCH[1]} #${BASH_REMATCH[2]}"
+          else
+            echo "is_stacked=false" >> $GITHUB_OUTPUT
+            echo "Not a stacked branch"
+          fi
+
+  label-stack:
+    name: "Label Stack PR"
+    runs-on: ubuntu-latest
+    needs: detect-stack
+    if: needs.detect-stack.outputs.is_stacked == 'true' && github.event_name == 'pull_request'
+
+    steps:
+      - name: Add Stack Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const stackName = '${{ needs.detect-stack.outputs.stack_name }}';
+            const stackOrder = '${{ needs.detect-stack.outputs.stack_order }}';
+
+            // Add labels
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [`stack:${stackName}`, `stack-order:${stackOrder}`]
+            });
+
+            // Add comment with stack info
+            const body = `## Stacked PR Information
+
+            This PR is part of the **${stackName}** stack (position #${stackOrder}).
+
+            ### Stack Navigation
+            To see all PRs in this stack, filter by label: \`stack:${stackName}\`
+
+            ### Merge Order
+            Please merge stacked PRs in order (01 → 02 → 03...).
+
+            After merging this PR, dependent PRs may need rebasing.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+  stack-guide:
+    name: "Stack Guidance"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+
+    steps:
+      - name: Check PR Size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            const additions = pr.data.additions;
+            const deletions = pr.data.deletions;
+            const total = additions + deletions;
+
+            // If PR is large and NOT already stacked, suggest splitting
+            if (total > 500 && !pr.data.head.ref.startsWith('stack/')) {
+              const body = `## Large PR Detected (${total} lines)
+
+              Consider splitting this into a stacked PR for easier review:
+
+              \`\`\`bash
+              # Create stacked branches
+              git checkout -b stack/your-feature/01-foundation
+              # ... make first set of changes, commit, push, create PR
+
+              git checkout -b stack/your-feature/02-implementation
+              # ... make second set of changes, commit, push, create PR
+              \`\`\`
+
+              Benefits:
+              - Faster reviews (smaller chunks)
+              - Earlier feedback
+              - Easier to revert if needed
+
+              [Learn more about stacked PRs](https://www.stacking.dev/)`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

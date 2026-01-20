@@ -2,7 +2,7 @@
 
 > **Research Date**: January 2026
 > **Status**: ✅ DECISIONS FINALIZED - See `AgentScope-PRD-v2.md`
-> **Documents**: 8 research reports from parallel swarm analysis
+> **Documents**: 11 research reports from parallel swarm analysis
 
 ## Document Status
 
@@ -12,11 +12,15 @@
 | `00-EXECUTIVE-SUMMARY.md` | 📋 Reference | Summary of research findings |
 | `01-critical-analysis.md` | 📋 Reference | Risk analysis |
 | `02-alternatives-comparison.md` | 📋 Reference | Competitive landscape |
+| `03-simplification-proposal.md` | 📋 Reference | MVP scope options |
 | `04-component-solutions.md` | 📋 Reference | Tech stack recommendations |
 | `05-questions-and-decisions.md` | 📋 Reference | Decision rationale |
 | `06-claude-code-tuning-best-practices.md` | ✅ **ACTIVE** | Implementation guidance |
 | `07-tdd-quality-framework.md` | ✅ **ACTIVE** | Quality gates for development |
 | `08-future-roadmap.md` | ✅ **ACTIVE** | Post-MVP planning |
+| `09-sdlc-standards-analysis.md` | 📋 Reference | GitHub/GitLab/Jenkins standards |
+| `10-automated-sdlc-documentation-frameworks.md` | 📋 Reference | Automated doc tools & patterns |
+| `11-documentation-frameworks-deep-analysis.md` | ✅ **ACTIVE** | Architecture doc standards (arc42, C4, ADRs) |
 | `archive/*` | 🗄️ Archived | Historical reference only |
 
 ---
@@ -198,6 +202,47 @@ From the Questions document, these need stakeholder input:
 
 ---
 
+## Documentation Framework Alignment (NEW)
+
+Based on research in `11-documentation-frameworks-deep-analysis.md`, AgentScope should align with industry standards:
+
+### Adopt (High Value, Low Complexity)
+
+| Standard | What to Generate | Rationale |
+|----------|------------------|-----------|
+| **C4 Model** | Component Map = C4 Level 2; Hierarchy = C4 Level 1 | De facto standard, maps perfectly to agents |
+| **MADR** | ADR template for agent decisions | Lightweight, widely adopted |
+| **llms.txt** | AI discovery file at project root | Emerging standard (844K+ sites), future-proofs |
+| **Mermaid** | All diagrams | GitHub/GitLab native rendering |
+
+### Adapt (Partial Adoption)
+
+| Standard | What to Use | What to Skip |
+|----------|-------------|--------------|
+| **arc42** | Sections 1-4 (context, constraints, strategy) + Section 9 (decisions) | Sections 5-8, 10-12 (too detailed for agent configs) |
+| **Diátaxis** | Structure user docs as tutorials vs reference | Full 4-quadrant implementation |
+
+### Reject (Overkill for Agent Documentation)
+
+| Standard | Why Not |
+|----------|---------|
+| **TOGAF** | 40+ artifacts, enterprise-only complexity |
+| **ArchiMate** | 50+ element types, requires specialized tools |
+| **IEEE 1016 SDD** | Too formal, designed for safety-critical systems |
+| **Full UML Suite** | Class diagrams, object diagrams irrelevant to agent configs |
+| **BPMN** | Business process focus, not software architecture |
+
+### C4 Mapping for Agents
+
+| C4 Level | AgentScope Equivalent | Diagram |
+|----------|----------------------|---------|
+| L1 System Context | Project + users + external systems | Workflow Sequence |
+| L2 Container | Agents, MCP servers, memory stores | **Component Map** |
+| L3 Component | Skills, tools, hooks | Agent Hierarchy |
+| L4 Code | (Skip - use IDE) | Not generated |
+
+---
+
 ## Research Documents Index
 
 | Document | Purpose | Key Insight |
@@ -207,6 +252,12 @@ From the Questions document, these need stakeholder input:
 | [03-simplification-proposal.md](./03-simplification-proposal.md) | Reduce scope | 4-week MVP recommended |
 | [04-component-solutions.md](./04-component-solutions.md) | Find npm packages | 60-70% time savings possible |
 | [05-questions-and-decisions.md](./05-questions-and-decisions.md) | Decision framework | 14 key decisions mapped |
+| [06-claude-code-tuning-best-practices.md](./06-claude-code-tuning-best-practices.md) | CLAUDE.md optimization | Model selection, swarm patterns |
+| [07-tdd-quality-framework.md](./07-tdd-quality-framework.md) | Quality control | TDD workflow, 80% coverage gates |
+| [08-future-roadmap.md](./08-future-roadmap.md) | Post-MVP planning | Icebox features, extension points |
+| [09-sdlc-standards-analysis.md](./09-sdlc-standards-analysis.md) | SDLC standards | Conventional Commits, DCO, stacked PRs |
+| [10-automated-sdlc-documentation-frameworks.md](./10-automated-sdlc-documentation-frameworks.md) | Automation tools | semantic-release, event-driven patterns |
+| [11-documentation-frameworks-deep-analysis.md](./11-documentation-frameworks-deep-analysis.md) | Architecture docs | C4, arc42, ADRs, visualization standards |
 
 ---
 
