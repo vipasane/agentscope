@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateComponentMap - Snapshot Tests > should match snapshot for full config 1`] = `Promise {}`;
+
+exports[`generateComponentMap - Snapshot Tests > should match snapshot for minimal config 1`] = `Promise {}`;

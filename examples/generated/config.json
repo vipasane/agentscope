@@ -1,0 +1,63 @@
+{
+  "agents": [
+    {
+      "name": "planner",
+      "path": "CLAUDE.md",
+      "description": "planner",
+      "type": "worker"
+    },
+    {
+      "name": "coder",
+      "path": "CLAUDE.md",
+      "description": "coder",
+      "type": "worker"
+    },
+    {
+      "name": "tester",
+      "path": "CLAUDE.md",
+      "description": "tester",
+      "type": "worker"
+    },
+    {
+      "name": "reviewer",
+      "path": "CLAUDE.md",
+      "description": "reviewer",
+      "type": "reviewer"
+    }
+  ],
+  "skills": [],
+  "hooks": [],
+  "commands": [],
+  "mcpServers": [
+    {
+      "name": "claude-flow",
+      "command": "npx",
+      "args": [
+        "@claude-flow/cli"
+      ],
+      "env": {},
+      "disabled": false,
+      "type": "stdio",
+      "tools": []
+    },
+    {
+      "name": "github",
+      "command": "gh",
+      "args": [
+        "mcp"
+      ],
+      "env": {},
+      "disabled": false,
+      "type": "stdio",
+      "tools": []
+    }
+  ],
+  "metadata": {
+    "scannedAt": "2026-01-22T18:33:18.976Z",
+    "rootPath": "/workspaces/agentscope/examples/sample-project",
+    "version": "0.1.0",
+    "duration": 6,
+    "filesScanned": 8,
+    "errors": []
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "../src/core/model/schema.json",
+  "agents": [
+    {
+      "name": "planner",
+      "type": "coordinator",
+      "description": "Task orchestration and workflow planning",
+      "delegatesTo": ["coder", "tester", "reviewer"]
+    },
+    {
+      "name": "coder",
+      "type": "worker",
+      "description": "Code implementation and refactoring",
+      "tools": ["github"]
+    },
+    {
+      "name": "tester",
+      "type": "worker",
+      "description": "Test writing and execution"
+    },
+    {
+      "name": "reviewer",
+      "type": "reviewer",
+      "description": "Code review and quality checks"
+    },
+    {
+      "name": "pr-manager",
+      "type": "coordinator",
+      "description": "Pull request lifecycle management",
+      "delegatesTo": ["coder", "reviewer"]
+    },
+    {
+      "name": "security-auditor",
+      "type": "specialist",
+      "description": "Security vulnerability analysis"
+    }
+  ],
+  "skills": [
+    {
+      "name": "github-review",
+      "path": ".claude/skills/github"
+    },
+    {
+      "name": "sparc-methodology",
+      "path": ".claude/skills/sparc"
+    }
+  ],
+  "mcpServers": [
+    {
+      "name": "claude-flow",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@claude-flow/cli"]
+    },
+    {
+      "name": "github",
+      "type": "stdio",
+      "command": "gh",
+      "args": ["mcp"]
+    }
+  ],
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "command": "echo 'Pre-tool hook'"
+    },
+    {
+      "event": "PostToolUse",
+      "command": "echo 'Post-tool hook'"
+    }
+  ]
+}

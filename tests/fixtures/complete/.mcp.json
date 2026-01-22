@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "github-server": {
+      "command": "npx",
+      "args": ["@github/mcp-server"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "filesystem-server": {
+      "command": "node",
+      "args": ["filesystem-server.js"],
+      "env": {}
+    },
+    "database-server": {
+      "command": "python",
+      "args": ["-m", "db_server"],
+      "env": {
+        "DB_CONNECTION": "${DB_URL}"
+      },
+      "autoStart": false
+    }
+  }
+}

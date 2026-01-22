@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": ["Bash", "Read", "Write", "Edit"]
+  },
+  "mcpServers": {
+    "claude-flow": {
+      "command": "npx",
+      "args": ["@claude-flow/cli"]
+    },
+    "github": {
+      "command": "gh",
+      "args": ["mcp"]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "echo 'Security check'"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "echo 'Format check'"
+      }
+    ]
+  }
+}
