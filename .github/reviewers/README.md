@@ -34,8 +34,8 @@ Each persona produces:
 
 ```bash
 # Run all reviewers locally
-npx agentscope review --all
+npx @vipasane/agentscope review --all
 
 # Run specific persona
-npx agentscope review --persona security
+npx @vipasane/agentscope review --persona security
 ```

@@ -7,8 +7,8 @@ Accepted
 ## Context
 
 AgentScope is distributed as a CLI tool that users invoke via:
-- `npm install -g agentscope` then `agentscope <command>`
-- `npx agentscope <command>` for one-off usage
+- `npm install -g @vipasane/agentscope` then `agentscope <command>`
+- `npx @vipasane/agentscope <command>` for one-off usage
 
 The CLI must support:
 

@@ -594,9 +594,9 @@ flowchart TB
     end
 
     subgraph Usage["Usage Patterns"]
-        NPM_GLOBAL[npm install -g agentscope]
-        NPM_DEV[npm install -D agentscope]
-        NPX[npx agentscope scan]
+        NPM_GLOBAL[npm install -g @vipasane/agentscope]
+        NPM_DEV[npm install -D @vipasane/agentscope]
+        NPX[npx @vipasane/agentscope scan]
     end
 
     PKG --> NPM_GLOBAL

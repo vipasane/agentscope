@@ -450,7 +450,7 @@ registry.register(new ClaudeCodeParser());
 registry.register(new MCPParser());
 
 // Future: External plugins
-// registry.register(require('agentscope-parser-bmad'));
+// registry.register(require('@vipasane/agentscope-parser-bmad'));
 ```
 
 ### 8.3 Extension Points
@@ -623,9 +623,9 @@ validation:
 
 | Method | Command |
 |--------|---------|
-| Global | `npm install -g agentscope` |
-| npx | `npx agentscope scan` |
-| Project | `npm install --save-dev agentscope` |
+| Global | `npm install -g @vipasane/agentscope` |
+| npx | `npx @vipasane/agentscope scan` |
+| Project | `npm install --save-dev @vipasane/agentscope` |
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "name": "agentscope",
+  "name": "@vipasane/agentscope",
   "version": "0.1.0",
   "description": "Agent Architecture Documentation & Visualization Tool - From chaos to clarity",
   "license": "SEE LICENSE FILE",
@@ -48,6 +48,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "agentscope": "file:agentscope-0.1.0.tgz",
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
     "fast-glob": "^3.3.3",

@@ -257,7 +257,7 @@ See [Theme Documentation](docs/themes.md) for full details and custom theme crea
 ## Programmatic API
 
 ```typescript
-import { scan, generateHierarchy, generateComponentMap } from 'agentscope';
+import { scan, generateHierarchy, generateComponentMap } from '@vipasane/agentscope';
 
 // Scan a directory
 const config = await scan('/path/to/project');
@@ -267,14 +267,14 @@ const hierarchy = generateHierarchy(config, { theme: 'dark' });
 const componentMap = generateComponentMap(config, { theme: 'colorblind-light' });
 
 // Export configuration
-import { exportConfig } from 'agentscope/export';
+import { exportConfig } from '@vipasane/agentscope/export';
 const exported = await exportConfig(config, {
   sanitizeSecrets: true,
   transformPaths: true
 });
 
 // Import configuration
-import { importConfig } from 'agentscope/import';
+import { importConfig } from '@vipasane/agentscope/import';
 await importConfig(exported, '/path/to/target');
 ```
 
