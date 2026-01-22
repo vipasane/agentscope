@@ -246,7 +246,7 @@ describe('generateHierarchy', () => {
         skills: [createSkill('coder-skill')],
       });
 
-      const result = generateHierarchy(config);
+      const result = generateHierarchy(config, { level: 'detail' });
 
       expect(result).toContain('-->|uses|');
     });

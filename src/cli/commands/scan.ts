@@ -7,12 +7,22 @@ import { resolve } from 'node:path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { scanAndGenerate, validate, VERSION, type ScanError } from '../../core/index.js';
+import type { AgentCategory } from '../../core/generators/diagrams/categories.js';
+import type { ZoomLevel } from '../../core/generators/diagrams/component-map.js';
 
 export interface ScanCommandOptions {
   format?: 'json' | 'markdown';
   output?: string;
   verbose?: boolean;
   validateOnly?: boolean;
+  level?: ZoomLevel;
+  compact?: boolean;
+  category?: string[];
+  type?: string[];
+  pattern?: string;
+  maxPerCategory?: string;
+  theme?: string;
+  themePath?: string;
 }
 
 /**
@@ -27,6 +37,14 @@ export function registerScanCommand(program: Command): void {
     .option('-o, --output <dir>', 'Output directory')
     .option('-v, --verbose', 'Verbose output', false)
     .option('--validate-only', 'Validate configuration without generating output', false)
+    .option('-l, --level <level>', 'Zoom level: summary, category, detail (default: category)', 'category')
+    .option('-c, --compact', 'Compact mode - names only, no descriptions', false)
+    .option('--category <categories...>', 'Filter by categories (github, security, sparc, etc.)')
+    .option('--type <types...>', 'Filter by agent types (coordinator, worker, etc.)')
+    .option('--pattern <pattern>', 'Filter by name pattern (glob-like, e.g., "github-*")')
+    .option('--max-per-category <n>', 'Maximum agents per category before collapsing', '20')
+    .option('--theme <name>', 'Color theme (light, dark, high-contrast-light, high-contrast-dark, colorblind-light, colorblind-dark)')
+    .option('--theme-path <path>', 'Path to custom theme JSON file')
     .action(async (path: string, options: ScanCommandOptions) => {
       await executeScan(path, options);
     });
@@ -40,6 +58,27 @@ async function executeScan(path: string, options: ScanCommandOptions): Promise<v
 
   console.log(chalk.blue('\n  AgentScope v' + VERSION));
   console.log(chalk.gray('  Scanning: ' + rootPath));
+
+  // Show active filters
+  if (options.level && options.level !== 'category') {
+    console.log(chalk.cyan(`  Zoom level: ${options.level}`));
+  }
+  if (options.compact) {
+    console.log(chalk.cyan('  Mode: compact'));
+  }
+  if (options.category?.length) {
+    console.log(chalk.cyan(`  Categories: ${options.category.join(', ')}`));
+  }
+  if (options.type?.length) {
+    console.log(chalk.cyan(`  Types: ${options.type.join(', ')}`));
+  }
+  if (options.pattern) {
+    console.log(chalk.cyan(`  Pattern: ${options.pattern}`));
+  }
+  if (options.theme) {
+    console.log(chalk.cyan(`  Theme: ${options.theme}`));
+  }
+
   console.log('');
 
   try {
@@ -113,10 +152,23 @@ async function runFullScan(rootPath: string, options: ScanCommandOptions): Promi
 
   console.log(chalk.yellow('  Scanning configuration...'));
 
+  // Build diagram options from CLI options
+  const diagramOptions = {
+    level: (options.level ?? 'category') as ZoomLevel,
+    compact: options.compact ?? false,
+    categories: options.category as AgentCategory[] | undefined,
+    types: options.type,
+    pattern: options.pattern,
+    maxPerCategory: options.maxPerCategory ? parseInt(options.maxPerCategory, 10) : 20,
+    theme: options.theme,
+    themePath: options.themePath,
+  };
+
   const { config, outputs } = await scanAndGenerate({
     rootPath,
     outputDir,
     verbose: options.verbose,
+    diagramOptions,
   });
 
   printSummary(config);
@@ -136,6 +188,15 @@ async function runFullScan(rootPath: string, options: ScanCommandOptions): Promi
   }
 
   console.log(chalk.green(`\n  Done in ${config.metadata.duration}ms`));
+
+  // Print usage tips for large configs
+  if (config.agents.length > 50 && options.level !== 'summary') {
+    console.log('');
+    console.log(chalk.cyan('  Tip: For better readability with large configs, try:'));
+    console.log(chalk.gray('    agentscope scan --level summary    # High-level overview'));
+    console.log(chalk.gray('    agentscope scan --compact          # Names only'));
+    console.log(chalk.gray('    agentscope scan --category github  # Filter by category'));
+  }
 }
 
 /**

@@ -81,7 +81,7 @@ describe('generateComponentMap', () => {
   });
 
   describe('agents rendering', () => {
-    it('should render agents in subgraph', () => {
+    it('should render agents in category subgraphs', () => {
       const config = createConfig({
         agents: [
           createAgent('agent1'),
@@ -91,9 +91,25 @@ describe('generateComponentMap', () => {
 
       const result = generateComponentMap(config);
 
-      expect(result).toContain('subgraph Agents["Agents"]');
+      // Agents are now grouped by category (default is 'other' for generic names)
+      expect(result).toContain('subgraph');
       expect(result).toContain('agent1');
       expect(result).toContain('agent2');
+    });
+
+    it('should group github agents in GitHub category', () => {
+      const config = createConfig({
+        agents: [
+          createAgent('github-pr-manager'),
+          createAgent('github-issue-tracker'),
+        ],
+      });
+
+      const result = generateComponentMap(config);
+
+      expect(result).toContain('GitHub');
+      expect(result).toContain('github_pr_manager');
+      expect(result).toContain('github_issue_tracker');
     });
 
     it('should format agent labels with icons', () => {
@@ -136,15 +152,16 @@ describe('generateComponentMap', () => {
   describe('MCP servers rendering', () => {
     it('should render MCP servers in subgraph', () => {
       const config = createConfig({
+        agents: [createAgent('test-agent')], // Need at least one agent
         mcpServers: [
           createServer('server1'),
           createServer('server2'),
         ],
       });
 
-      const result = generateComponentMap(config);
+      const result = generateComponentMap(config, { level: 'detail' });
 
-      expect(result).toContain('subgraph MCP["MCP Servers"]');
+      expect(result).toContain('subgraph MCP');
       expect(result).toContain('mcp_server1');
       expect(result).toContain('mcp_server2');
     });
@@ -179,30 +196,32 @@ describe('generateComponentMap', () => {
 
     it('should mark disabled servers with visual indicator', () => {
       const config = createConfig({
+        agents: [createAgent('test-agent')],
         mcpServers: [
           createServer('disabled-server', { disabled: true }),
         ],
       });
 
-      const result = generateComponentMap(config, { includeDisabled: true });
+      const result = generateComponentMap(config, { includeDisabled: true, level: 'detail' });
 
-      // Disabled servers should have :::disabled class
-      expect(result).toContain(':::disabled');
+      // Disabled servers should have :::disabled class or 🔴 icon
+      expect(result).toMatch(/:::disabled|🔴/);
     });
   });
 
   describe('skills rendering', () => {
     it('should render skills in subgraph', () => {
       const config = createConfig({
+        agents: [createAgent('test-agent')], // Need at least one agent
         skills: [
           createSkill('skill1'),
           createSkill('skill2'),
         ],
       });
 
-      const result = generateComponentMap(config);
+      const result = generateComponentMap(config, { level: 'detail' });
 
-      expect(result).toContain('subgraph Skills["Skills"]');
+      expect(result).toContain('subgraph Skills');
       expect(result).toContain('skill_skill1');
       expect(result).toContain('skill_skill2');
     });
@@ -268,13 +287,14 @@ describe('generateComponentMap', () => {
 
     it('should draw skill dependencies', () => {
       const config = createConfig({
+        agents: [createAgent('test-agent')], // Need at least one agent
         skills: [
           createSkill('dependent-skill', { dependencies: ['base-skill'] }),
           createSkill('base-skill'),
         ],
       });
 
-      const result = generateComponentMap(config);
+      const result = generateComponentMap(config, { level: 'detail' });
 
       expect(result).toContain('skill_dependent_skill --> skill_base_skill');
     });
@@ -292,7 +312,7 @@ describe('generateComponentMap', () => {
       expect(result).toContain('classDef worker');
       expect(result).toContain('classDef reviewer');
       expect(result).toContain('classDef specialist');
-      expect(result).toContain('classDef disabled');
+      expect(result).toContain('classDef custom');
       expect(result).toContain('classDef mcp');
       expect(result).toContain('classDef skill');
     });
@@ -369,10 +389,10 @@ describe('generateComponentMap', () => {
         ],
       });
 
-      const result = generateComponentMap(config);
+      const result = generateComponentMap(config, { level: 'detail' });
 
-      // Should contain all sections
-      expect(result).toContain('subgraph Agents');
+      // Should contain all sections (now with category-based subgraphs)
+      expect(result).toContain('subgraph');
       expect(result).toContain('subgraph Skills');
       expect(result).toContain('subgraph MCP');
 

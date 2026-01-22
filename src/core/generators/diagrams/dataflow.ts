@@ -4,6 +4,7 @@
  */
 
 import type { AgentScopeConfig, Agent, Hook, McpServer } from '../../model/types.js';
+import { MermaidThemeGenerator, resolveTheme, type ThemePalette } from '../../themes/index.js';
 
 export interface DataflowOptions {
   /** Include hooks in the diagram */
@@ -12,6 +13,10 @@ export interface DataflowOptions {
   includeMcpFlow?: boolean;
   /** Custom title */
   title?: string;
+  /** Theme palette or theme name */
+  theme?: ThemePalette | string;
+  /** Path to custom theme file */
+  themePath?: string;
 }
 
 /**
@@ -25,10 +30,20 @@ export function generateDataflow(
     includeHooks = true,
     includeMcpFlow = true,
     title = 'Agent Dataflow',
+    theme,
+    themePath,
   } = options;
+
+  // Resolve theme
+  const themeGenerator = new MermaidThemeGenerator(
+    typeof theme === 'string' || !theme
+      ? resolveTheme({ cliTheme: theme as string, themePath }).theme
+      : theme
+  );
 
   const lines: string[] = [
     '```mermaid',
+    themeGenerator.getInit(),
     'flowchart LR',
     `    %% ${title}`,
     '',
@@ -177,14 +192,7 @@ export function generateDataflow(
   // Add styling
   lines.push('');
   lines.push('    %% Styling');
-  lines.push('    classDef input fill:#bbdefb,stroke:#1976d2');
-  lines.push('    classDef hook fill:#fff9c4,stroke:#f9a825');
-  lines.push('    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:2px');
-  lines.push('    classDef worker fill:#f3e5f5,stroke:#4a148c');
-  lines.push('    classDef reviewer fill:#fff3e0,stroke:#e65100');
-  lines.push('    classDef specialist fill:#e8f5e9,stroke:#1b5e20');
-  lines.push('    classDef mcp fill:#fce4ec,stroke:#880e4f');
-  lines.push('    classDef output fill:#c8e6c9,stroke:#388e3c');
+  lines.push(...themeGenerator.getClassDefs().map(def => `    ${def}`));
 
   // Apply styling
   lines.push('    class USER,PROMPT input');
@@ -198,7 +206,7 @@ export function generateDataflow(
   }
 
   for (const agent of config.agents) {
-    const className = agent.type ?? 'worker';
+    const className = themeGenerator.getAgentClass(agent.type ?? 'worker');
     lines.push(`    class ${sanitizeId(agent.name)} ${className}`);
   }
 

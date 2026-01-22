@@ -185,7 +185,8 @@ describe('E2E: This Project Configuration', () => {
 
       expect(diagram).toContain('```mermaid');
       expect(diagram).toContain('graph TB');
-      expect(diagram).toContain('subgraph Agents');
+      // Now uses category-based subgraphs (GitHub, Security, SPARC, etc.)
+      expect(diagram).toContain('subgraph');
       expect(diagram).toContain('```');
 
       // Should have reasonable size

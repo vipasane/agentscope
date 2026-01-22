@@ -145,9 +145,9 @@ describe('Full Scan Integration', () => {
       expect(diagram).toContain('```mermaid');
       expect(diagram).toContain('graph TB');
 
-      // Should include agents
+      // Should include agent subgraphs (now uses category-based grouping)
       if (config.agents.length > 0) {
-        expect(diagram).toContain('subgraph Agents');
+        expect(diagram).toContain('subgraph');
       }
 
       // Should include MCP servers

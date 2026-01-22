@@ -7,8 +7,8 @@ import { resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { parseClaudeCode } from './parsers/claude-code.js';
 import { parseMcp } from './parsers/mcp.js';
-import { generateComponentMap } from './generators/diagrams/component-map.js';
-import { generateHierarchy } from './generators/diagrams/hierarchy.js';
+import { generateComponentMap, type ComponentMapOptions } from './generators/diagrams/component-map.js';
+import { generateHierarchy, type HierarchyOptions } from './generators/diagrams/hierarchy.js';
 import { generateDataflow } from './generators/diagrams/dataflow.js';
 import { generateMarkdown } from './generators/docs/markdown.js';
 import type {
@@ -18,6 +18,7 @@ import type {
   GeneratedOutput,
   ScanMetadata,
   ScanError,
+  DiagramOptions,
 } from './model/types.js';
 
 // Re-export types
@@ -28,10 +29,61 @@ export { parseClaudeCode, ClaudeCodeParser } from './parsers/index.js';
 export { parseMcp, McpParser } from './parsers/index.js';
 
 // Re-export generators
-export { generateComponentMap } from './generators/diagrams/component-map.js';
-export { generateHierarchy } from './generators/diagrams/hierarchy.js';
+export { generateComponentMap, type ComponentMapOptions } from './generators/diagrams/component-map.js';
+export { generateHierarchy, type HierarchyOptions } from './generators/diagrams/hierarchy.js';
 export { generateDataflow } from './generators/diagrams/dataflow.js';
 export { generateMarkdown } from './generators/docs/markdown.js';
+
+// Re-export category utilities
+export {
+  categorizeAgents,
+  detectCategory,
+  filterByCategory,
+  filterByType,
+  filterByPattern,
+  getCategoryInfo,
+  getAllCategories,
+  type AgentCategory,
+  type CategorizedAgents,
+} from './generators/diagrams/categories.js';
+
+// Re-export theme system
+export {
+  // Types
+  type ThemeColor,
+  type ThemePalette,
+  type ThemeResolveOptions,
+  type MermaidThemeConfig,
+  type MermaidBaseTheme,
+  type ThemeName,
+  type ThemeValidationResult,
+  type ColorScheme,
+  type AccessibilityLevel,
+  // Registry
+  ThemeRegistry,
+  getThemeRegistry,
+  getTheme,
+  getThemeOrDefault,
+  isBuiltinTheme,
+  // Loader
+  ThemeLoader,
+  resolveTheme,
+  type ThemeResolutionResult,
+  // Generator
+  MermaidThemeGenerator,
+  createThemeGenerator,
+  generateMermaidInit,
+  generateClassDefs,
+  // Palettes
+  lightTheme,
+  darkTheme,
+  highContrastLightTheme,
+  highContrastDarkTheme,
+  colorblindLightTheme,
+  colorblindDarkTheme,
+  builtinPalettes,
+  defaultTheme,
+} from './themes/index.js';
 
 // Version
 export const VERSION = '0.1.0';
@@ -91,26 +143,61 @@ export async function generate(
   options: GeneratorOptions
 ): Promise<GeneratedOutput[]> {
   const outputs: GeneratedOutput[] = [];
-  const { outputDir, diagrams = ['component-map', 'hierarchy', 'dataflow'], title } = options;
+  const {
+    outputDir,
+    diagrams = ['component-map', 'hierarchy', 'dataflow'],
+    title,
+    diagramOptions = {},
+  } = options;
 
   // Ensure output directory exists
   await mkdir(outputDir, { recursive: true });
 
+  // Build component map options
+  const componentMapOpts: ComponentMapOptions = {
+    title: title ? `${title} - Components` : undefined,
+    level: diagramOptions.level ?? 'category',
+    compact: diagramOptions.compact ?? false,
+    categories: diagramOptions.categories as ComponentMapOptions['categories'],
+    types: diagramOptions.types,
+    pattern: diagramOptions.pattern,
+    maxPerCategory: diagramOptions.maxPerCategory ?? 20,
+    theme: diagramOptions.theme,
+    themePath: diagramOptions.themePath,
+  };
+
+  // Build hierarchy options
+  const hierarchyOpts: HierarchyOptions = {
+    title: title ? `${title} - Hierarchy` : undefined,
+    level: diagramOptions.level ?? 'category',
+    compact: diagramOptions.compact ?? false,
+    categories: diagramOptions.categories as HierarchyOptions['categories'],
+    types: diagramOptions.types,
+    pattern: diagramOptions.pattern,
+    maxPerCategory: diagramOptions.maxPerCategory ?? 15,
+    theme: diagramOptions.theme,
+    themePath: diagramOptions.themePath,
+  };
+
   // Generate diagrams
   if (diagrams.includes('component-map')) {
-    const content = generateComponentMap(config, { title: title ? `${title} - Components` : undefined });
+    const content = generateComponentMap(config, componentMapOpts);
     const path = resolve(outputDir, 'component-map.md');
     outputs.push({ path, type: 'diagram', content });
   }
 
   if (diagrams.includes('hierarchy')) {
-    const content = generateHierarchy(config, { title: title ? `${title} - Hierarchy` : undefined });
+    const content = generateHierarchy(config, hierarchyOpts);
     const path = resolve(outputDir, 'hierarchy.md');
     outputs.push({ path, type: 'diagram', content });
   }
 
   if (diagrams.includes('dataflow')) {
-    const content = generateDataflow(config, { title: title ? `${title} - Dataflow` : undefined });
+    const content = generateDataflow(config, {
+      title: title ? `${title} - Dataflow` : undefined,
+      theme: diagramOptions.theme,
+      themePath: diagramOptions.themePath,
+    });
     const path = resolve(outputDir, 'dataflow.md');
     outputs.push({ path, type: 'diagram', content });
   }
@@ -120,6 +207,7 @@ export async function generate(
     title: title ?? 'Agent Architecture Documentation',
     includeDiagrams: true,
     includeMetadata: options.includeMetadata ?? true,
+    diagramOptions,
   });
   const docPath = resolve(outputDir, 'README.md');
   outputs.push({ path: docPath, type: 'documentation', content: docContent });
@@ -159,6 +247,7 @@ export async function scanAndGenerate(options: ScanOptions): Promise<{
   const outputs = await generate(config, {
     outputDir,
     includeMetadata: true,
+    diagramOptions: options.diagramOptions,
   });
 
   await writeOutputs(outputs);

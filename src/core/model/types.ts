@@ -192,6 +192,29 @@ export interface ScanOptions {
   verbose?: boolean;
   /** Validate only, don't generate output */
   validateOnly?: boolean;
+  /** Diagram generation options */
+  diagramOptions?: DiagramOptions;
+}
+
+export type ZoomLevel = 'summary' | 'category' | 'detail';
+
+export interface DiagramOptions {
+  /** Zoom level: summary (categories only), category (grouped), detail (full) */
+  level?: ZoomLevel;
+  /** Compact mode - names only, no descriptions */
+  compact?: boolean;
+  /** Filter by categories */
+  categories?: string[];
+  /** Filter by agent types */
+  types?: string[];
+  /** Filter by name pattern (glob-like) */
+  pattern?: string;
+  /** Maximum agents per category before collapsing */
+  maxPerCategory?: number;
+  /** Theme name (light, dark, high-contrast-light, high-contrast-dark, colorblind-light, colorblind-dark) */
+  theme?: string;
+  /** Path to custom theme JSON file */
+  themePath?: string;
 }
 
 // ============================================================================
@@ -212,6 +235,8 @@ export interface GeneratorOptions {
   includeMetadata?: boolean;
   /** Custom title for documentation */
   title?: string;
+  /** Diagram generation options (level, compact, filters) */
+  diagramOptions?: DiagramOptions;
 }
 
 export interface GeneratedOutput {

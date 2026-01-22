@@ -2,38 +2,53 @@
 
 exports[`generateComponentMap - Snapshot Tests > should match snapshot for full config 1`] = `
 "\`\`\`mermaid
+%%{init: {"theme":"default","themeVariables":{"background":"#ffffff","primaryBorderColor":"#e0e0e0","primaryTextColor":"#212121","secondaryTextColor":"#757575","primaryColor":"#fafafa","secondaryColor":"#e3f2fd","tertiaryColor":"#fff8e1","lineColor":"#e0e0e0","fontSize":"14px","fontFamily":"system-ui, -apple-system, sans-serif"}}}%%
 graph TB
-    %% Full Architecture
+    %% Full Architecture - Category View
 
-    subgraph Agents["Agents"]
+    subgraph coordination["👑 Coordination (1)"]
         main_coordinator["👑 main-coordinator"]
-        coder["🤖 coder"]
+    end
+
+    subgraph memory["🧠 Memory (1)"]
         tester["🎯 tester"]
     end
 
-    subgraph MCP["MCP Servers"]
+    subgraph development["💻 Development (1)"]
+        coder["🤖 coder"]
+    end
+
+    subgraph MCP["🔌 MCP Servers"]
         mcp_github["🟢 github"]
         mcp_filesystem["🟢 filesystem"]
     end
 
-    subgraph Skills["Skills"]
-        skill_code_review["⚡ code-review"]
-        skill_testing["⚡ testing"]
+    subgraph Skills["⚡ Skills"]
+        skill_code_review["code-review"]
+        skill_testing["testing"]
     end
 
-    %% Agent Relationships
+    %% Cross-category relationships
     main_coordinator --> coder
     main_coordinator --> tester
+
+    %% Tool connections
     coder -.-> mcp_github
 
     %% Styling
-    classDef coordinator fill:#e1f5fe,stroke:#01579b
-    classDef worker fill:#f3e5f5,stroke:#4a148c
-    classDef reviewer fill:#fff3e0,stroke:#e65100
-    classDef specialist fill:#e8f5e9,stroke:#1b5e20
-    classDef disabled fill:#eeeeee,stroke:#9e9e9e,stroke-dasharray: 5 5
-    classDef mcp fill:#fce4ec,stroke:#880e4f
-    classDef skill fill:#e3f2fd,stroke:#0d47a1
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,color:#01579b,stroke-width:3px
+    classDef worker fill:#f3e5f5,stroke:#4a148c,color:#4a148c,stroke-width:2px
+    classDef specialist fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20,stroke-width:2px
+    classDef reviewer fill:#fff3e0,stroke:#e65100,color:#e65100,stroke-width:2px
+    classDef custom fill:#fce4ec,stroke:#880e4f,color:#880e4f,stroke-width:2px
+    classDef input fill:#e8f5e9,stroke:#2e7d32,color:#2e7d32,stroke-width:2px
+    classDef output fill:#ffebee,stroke:#c62828,color:#c62828,stroke-width:2px
+    classDef hook fill:#fff8e1,stroke:#f57f17,color:#f57f17,stroke-width:2px,stroke-dasharray:5 5
+    classDef mcp fill:#e0f2f1,stroke:#00695c,color:#00695c,stroke-width:2px
+    classDef skill fill:#e3f2fd,stroke:#0d47a1,color:#0d47a1,stroke-width:2px,stroke-dasharray:5 5
+    classDef subgraph_style fill:#fafafa,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    classDef more fill:#f5f5f5,stroke:#757575,stroke-dasharray:3 3,color:#757575
+    classDef category fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
     class main_coordinator coordinator
     class coder worker
     class tester specialist
@@ -46,23 +61,32 @@ graph TB
 
 exports[`generateComponentMap - Snapshot Tests > should match snapshot for minimal config 1`] = `
 "\`\`\`mermaid
+%%{init: {"theme":"default","themeVariables":{"background":"#ffffff","primaryBorderColor":"#e0e0e0","primaryTextColor":"#212121","secondaryTextColor":"#757575","primaryColor":"#fafafa","secondaryColor":"#e3f2fd","tertiaryColor":"#fff8e1","lineColor":"#e0e0e0","fontSize":"14px","fontFamily":"system-ui, -apple-system, sans-serif"}}}%%
 graph TB
-    %% Agent Architecture Component Map
+    %% Agent Architecture Component Map - Category View
 
-    subgraph Agents["Agents"]
+    subgraph testing["🧪 Testing (1)"]
         test_agent["🤖 test-agent"]
     end
 
-    %% Agent Relationships
+    %% Cross-category relationships
+
+    %% Tool connections
 
     %% Styling
-    classDef coordinator fill:#e1f5fe,stroke:#01579b
-    classDef worker fill:#f3e5f5,stroke:#4a148c
-    classDef reviewer fill:#fff3e0,stroke:#e65100
-    classDef specialist fill:#e8f5e9,stroke:#1b5e20
-    classDef disabled fill:#eeeeee,stroke:#9e9e9e,stroke-dasharray: 5 5
-    classDef mcp fill:#fce4ec,stroke:#880e4f
-    classDef skill fill:#e3f2fd,stroke:#0d47a1
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,color:#01579b,stroke-width:3px
+    classDef worker fill:#f3e5f5,stroke:#4a148c,color:#4a148c,stroke-width:2px
+    classDef specialist fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20,stroke-width:2px
+    classDef reviewer fill:#fff3e0,stroke:#e65100,color:#e65100,stroke-width:2px
+    classDef custom fill:#fce4ec,stroke:#880e4f,color:#880e4f,stroke-width:2px
+    classDef input fill:#e8f5e9,stroke:#2e7d32,color:#2e7d32,stroke-width:2px
+    classDef output fill:#ffebee,stroke:#c62828,color:#c62828,stroke-width:2px
+    classDef hook fill:#fff8e1,stroke:#f57f17,color:#f57f17,stroke-width:2px,stroke-dasharray:5 5
+    classDef mcp fill:#e0f2f1,stroke:#00695c,color:#00695c,stroke-width:2px
+    classDef skill fill:#e3f2fd,stroke:#0d47a1,color:#0d47a1,stroke-width:2px,stroke-dasharray:5 5
+    classDef subgraph_style fill:#fafafa,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    classDef more fill:#f5f5f5,stroke:#757575,stroke-dasharray:3 3,color:#757575
+    classDef category fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
     class test_agent worker
 \`\`\`"
 `;

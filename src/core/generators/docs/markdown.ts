@@ -3,9 +3,9 @@
  * Generates comprehensive documentation from the scanned configuration
  */
 
-import type { AgentScopeConfig, Agent, Skill, Hook, Command, McpServer } from '../../model/types.js';
-import { generateComponentMap } from '../diagrams/component-map.js';
-import { generateHierarchy } from '../diagrams/hierarchy.js';
+import type { AgentScopeConfig, Agent, Skill, Hook, Command, McpServer, DiagramOptions } from '../../model/types.js';
+import { generateComponentMap, type ComponentMapOptions } from '../diagrams/component-map.js';
+import { generateHierarchy, type HierarchyOptions } from '../diagrams/hierarchy.js';
 import { generateDataflow } from '../diagrams/dataflow.js';
 
 export interface MarkdownOptions {
@@ -17,6 +17,8 @@ export interface MarkdownOptions {
   title?: string;
   /** Include table of contents */
   includeToc?: boolean;
+  /** Diagram generation options */
+  diagramOptions?: DiagramOptions;
 }
 
 /**
@@ -31,6 +33,7 @@ export function generateMarkdown(
     includeMetadata = true,
     title = 'Agent Architecture Documentation',
     includeToc = true,
+    diagramOptions = {},
   } = options;
 
   const sections: string[] = [];
@@ -105,15 +108,36 @@ export function generateMarkdown(
 
   // Diagrams
   if (includeDiagrams) {
+    // Build diagram options from user preferences
+    const componentMapOpts: ComponentMapOptions = {
+      title: 'Component Map',
+      level: diagramOptions.level ?? 'category',
+      compact: diagramOptions.compact ?? false,
+      categories: diagramOptions.categories as ComponentMapOptions['categories'],
+      types: diagramOptions.types,
+      pattern: diagramOptions.pattern,
+      maxPerCategory: diagramOptions.maxPerCategory ?? 20,
+    };
+
+    const hierarchyOpts: HierarchyOptions = {
+      title: 'Agent Hierarchy',
+      level: diagramOptions.level ?? 'category',
+      compact: diagramOptions.compact ?? false,
+      categories: diagramOptions.categories as HierarchyOptions['categories'],
+      types: diagramOptions.types,
+      pattern: diagramOptions.pattern,
+      maxPerCategory: diagramOptions.maxPerCategory ?? 15,
+    };
+
     sections.push('## Diagrams');
     sections.push('');
     sections.push('### Component Map');
     sections.push('');
-    sections.push(generateComponentMap(config, { title: 'Component Map' }));
+    sections.push(generateComponentMap(config, componentMapOpts));
     sections.push('');
     sections.push('### Agent Hierarchy');
     sections.push('');
-    sections.push(generateHierarchy(config, { title: 'Agent Hierarchy' }));
+    sections.push(generateHierarchy(config, hierarchyOpts));
     sections.push('');
     sections.push('### Dataflow');
     sections.push('');
