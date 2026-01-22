@@ -5,9 +5,53 @@
  * Part of DESIGN-001 security implementation.
  */
 
-import { MERMAID_RESERVED, DIRECTIVE_PATTERNS } from './validators.js';
+import { MERMAID_RESERVED, DIRECTIVE_PATTERNS, validateThemeName, detectInjectionPatterns as detectInjectionPatternsArray } from './validators.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+
+// Re-export validateThemeName for convenience
+export { validateThemeName };
+
+/**
+ * Detects potential injection patterns in input string.
+ * Returns true if any injection pattern is found.
+ *
+ * @param input - Input string to check
+ * @returns True if injection patterns detected, false otherwise
+ */
+export function detectInjectionPatterns(input: string): boolean {
+  if (!input || typeof input !== 'string') {
+    return false;
+  }
+
+  // Check for Mermaid directives
+  if (/%%\{/.test(input) || /\}%%/.test(input)) {
+    return true;
+  }
+
+  // Check for script tags (including with trailing space like <script >)
+  if (/<script\b/i.test(input) || /<\/script/i.test(input)) {
+    return true;
+  }
+
+  // Check for JavaScript protocol
+  if (/javascript:/i.test(input)) {
+    return true;
+  }
+
+  // Check for event handlers (onclick, onerror, onload, etc.)
+  // Allow for whitespace around = sign
+  if (/on\w+\s*=\s*/i.test(input)) {
+    return true;
+  }
+
+  // Check for eval
+  if (/\beval\s*\(/.test(input) || /\.eval\b/.test(input)) {
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Sanitizes a string to be safe for use as a Mermaid node ID.
