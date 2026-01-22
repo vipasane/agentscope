@@ -47,6 +47,41 @@ export {
   type CategorizedAgents,
 } from './generators/diagrams/categories.js';
 
+// Re-export formatters
+export {
+  // Types
+  type DocumentContext,
+  type DocumentSection,
+  type LegendEntry,
+  type RelationshipSummary,
+  type NavigationItem,
+  type CategorizedAgents as FormatterCategorizedAgents,
+  type DocumentBuilderOptions,
+  // Document Builder
+  DocumentBuilder,
+  // Navigation
+  generateNavLinks,
+  generateCategoryTable,
+  generateTableOfContents,
+  buildNavigationFromAgents,
+  generateBreadcrumbs,
+  // Legend
+  standardLegend,
+  mermaidLegend,
+  generateLegendTable,
+  generateCompactLegend,
+  filterLegendByCategory,
+  getLegendForDiagram,
+  // Relationships
+  calculateRelationships,
+  generateRelationshipTable,
+  getDelegationChains,
+  generateDelegationChainList,
+  getToolUsageByType,
+  generateToolUsageSummary,
+  findCircularDelegations,
+} from './formatters/index.js';
+
 // Re-export theme system
 export {
   // Types
@@ -181,7 +216,7 @@ export async function generate(
 
   // Generate diagrams
   if (diagrams.includes('component-map')) {
-    const content = generateComponentMap(config, componentMapOpts);
+    const content = await generateComponentMap(config, componentMapOpts);
     const path = resolve(outputDir, 'component-map.md');
     outputs.push({ path, type: 'diagram', content });
   }
@@ -203,7 +238,7 @@ export async function generate(
   }
 
   // Generate main documentation
-  const docContent = generateMarkdown(config, {
+  const docContent = await generateMarkdown(config, {
     title: title ?? 'Agent Architecture Documentation',
     includeDiagrams: true,
     includeMetadata: options.includeMetadata ?? true,

@@ -14,6 +14,14 @@ import {
   type CategorizedAgents,
 } from './categories.js';
 import { MermaidThemeGenerator, resolveTheme, type ThemePalette } from '../../themes/index.js';
+import { sanitizeId, sanitizeNodeLabel, validateThemeName } from '../../security/index.js';
+import {
+  invokePreGenerateHook,
+  invokePostGenerateHook,
+  generateRequestId,
+  type PreGenerateHookInput,
+  type ComponentMapOptions as HookComponentMapOptions,
+} from '../../hooks/index.js';
 
 export type ZoomLevel = 'summary' | 'category' | 'detail';
 
@@ -45,15 +53,45 @@ export interface ComponentMapOptions {
 /**
  * Generate a component map diagram showing all system components
  */
-export function generateComponentMap(
+export async function generateComponentMap(
   config: AgentScopeConfig,
   options: ComponentMapOptions = {}
-): string {
+): Promise<string> {
+  const requestId = generateRequestId();
+  const startTime = Date.now();
+
+  // Invoke pre-generate hook
+  const preHookInput: PreGenerateHookInput = {
+    config,
+    options: options as HookComponentMapOptions,
+    requestId,
+    context: {
+      timestamp: startTime,
+      caller: 'generateComponentMap',
+      version: '1.0.0',
+    },
+  };
+
+  const preHookResult = await invokePreGenerateHook(preHookInput);
+
+  // Check validation
+  if (!preHookResult.validated) {
+    throw new Error(`Input validation failed: ${preHookResult.warnings.join(', ')}`);
+  }
+
+  // Return cached result if available
+  if (preHookResult.cachedResult) {
+    console.log('[Component Map] Returning cached result');
+    return preHookResult.cachedResult;
+  }
+
+  // Use sanitized options from hook (cast back to local type)
+  const sanitizedOptions = preHookResult.sanitizedOptions as ComponentMapOptions;
   const {
     includeDisabled = false,
     showTools = true,
     title = 'Agent Architecture Component Map',
-    level = 'category',
+    level = sanitizedOptions.level ?? 'category',
     compact = false,
     categories,
     types,
@@ -61,14 +99,24 @@ export function generateComponentMap(
     maxPerCategory = 20,
     theme,
     themePath,
-  } = options;
+  } = sanitizedOptions;
 
-  // Resolve theme
-  const themeGenerator = new MermaidThemeGenerator(
-    typeof theme === 'string' || !theme
-      ? resolveTheme({ cliTheme: theme as string, themePath }).theme
-      : theme
-  );
+  // Resolve and validate theme
+  let resolvedTheme: ThemePalette;
+
+  if (typeof theme === 'string') {
+    // Validate theme name before resolving
+    if (theme && !validateThemeName(theme)) {
+      throw new Error(`Invalid theme name: "${theme}". Must be one of: light, dark, high-contrast-light, high-contrast-dark, colorblind-light, colorblind-dark`);
+    }
+    resolvedTheme = resolveTheme({ cliTheme: theme, themePath }).theme;
+  } else if (theme) {
+    resolvedTheme = theme;
+  } else {
+    resolvedTheme = resolveTheme({ cliTheme: undefined, themePath }).theme;
+  }
+
+  const themeGenerator = new MermaidThemeGenerator(resolvedTheme);
 
   // Apply filters
   let agents = [...config.agents];
@@ -86,28 +134,65 @@ export function generateComponentMap(
   }
 
   // Generate based on zoom level
-  switch (level) {
-    case 'summary':
-      return generateSummaryDiagram(agents, config, { title, includeDisabled, themeGenerator });
-    case 'category':
-      return generateCategoryDiagram(agents, config, {
-        title,
-        includeDisabled,
-        showTools,
-        compact,
-        maxPerCategory,
-        themeGenerator,
-      });
-    case 'detail':
-    default:
-      return generateDetailDiagram(agents, config, {
-        title,
-        includeDisabled,
-        showTools,
-        compact,
-        themeGenerator,
-      });
+  let diagram: string;
+  let success = true;
+  let error: Error | undefined;
+
+  try {
+    switch (level) {
+      case 'summary':
+        diagram = generateSummaryDiagram(agents, config, { title, includeDisabled, themeGenerator });
+        break;
+      case 'category':
+        diagram = generateCategoryDiagram(agents, config, {
+          title,
+          includeDisabled,
+          showTools,
+          compact,
+          maxPerCategory,
+          themeGenerator,
+        });
+        break;
+      case 'detail':
+      default:
+        diagram = generateDetailDiagram(agents, config, {
+          title,
+          includeDisabled,
+          showTools,
+          compact,
+          themeGenerator,
+        });
+    }
+  } catch (err) {
+    success = false;
+    error = err as Error;
+    diagram = '';
   }
+
+  // Calculate metrics
+  const nodeCount = countNodes(diagram);
+  const edgeCount = countEdges(diagram);
+  const generationTimeMs = Date.now() - startTime;
+
+  // Invoke post-generate hook
+  await invokePostGenerateHook({
+    requestId,
+    input: preHookInput,
+    output: {
+      diagram,
+      generationTimeMs,
+      nodeCount,
+      edgeCount,
+    },
+    success,
+    error,
+  });
+
+  if (!success) {
+    throw error;
+  }
+
+  return diagram;
 }
 
 /**
@@ -138,7 +223,8 @@ function generateSummaryDiagram(
   // Category nodes with counts
   for (const cat of categorized) {
     const id = sanitizeId(cat.category);
-    lines.push(`    ${id}["${cat.icon} ${cat.label}<br/><b>${cat.agents.length} agents</b>"]`);
+    const label = sanitizeNodeLabel(`${cat.icon} ${cat.label}<br/><b>${cat.agents.length} agents</b>`);
+    lines.push(`    ${id}["${label}"]`);
     lines.push(`    System --> ${id}`);
   }
 
@@ -172,6 +258,11 @@ function generateSummaryDiagram(
   }
 
   lines.push('```');
+
+  // Add timestamp footer
+  lines.push('');
+  lines.push('---');
+  lines.push(`*Generated by AgentScope on ${new Date().toISOString().replace('T', ' at ').replace(/\\.\\d{3}Z$/, ' UTC')}*`);
 
   return lines.join('\n');
 }
@@ -214,9 +305,10 @@ function generateCategoryDiagram(
 
     for (const agent of displayAgents) {
       const agentId = sanitizeId(agent.name);
-      const label = options.compact
+      const rawLabel = options.compact
         ? agent.name
         : formatAgentLabelCompact(agent);
+      const label = sanitizeNodeLabel(rawLabel);
       lines.push(`        ${agentId}["${label}"]`);
     }
 
@@ -233,7 +325,8 @@ function generateCategoryDiagram(
   if (servers.length > 0) {
     lines.push('    subgraph MCP["🔌 MCP Servers"]');
     for (const server of servers) {
-      const label = formatServerLabel(server);
+      const rawLabel = formatServerLabel(server);
+      const label = sanitizeNodeLabel(rawLabel);
       lines.push(`        mcp_${sanitizeId(server.name)}["${label}"]`);
     }
     lines.push('    end');
@@ -245,7 +338,8 @@ function generateCategoryDiagram(
     lines.push('    subgraph Skills["⚡ Skills"]');
     const displaySkills = config.skills.slice(0, 10);
     for (const skill of displaySkills) {
-      lines.push(`        skill_${sanitizeId(skill.name)}["${skill.name}"]`);
+      const label = sanitizeNodeLabel(skill.name);
+      lines.push(`        skill_${sanitizeId(skill.name)}["${label}"]`);
     }
     if (config.skills.length > 10) {
       const moreCount = config.skills.length - 10;
@@ -295,6 +389,11 @@ function generateCategoryDiagram(
 
   lines.push('```');
 
+  // Add timestamp footer
+  lines.push('');
+  lines.push('---');
+  lines.push(`*Generated by AgentScope on ${new Date().toISOString().replace('T', ' at ').replace(/\\.\\d{3}Z$/, ' UTC')}*`);
+
   return lines.join('\n');
 }
 
@@ -333,9 +432,10 @@ function generateDetailDiagram(
 
     for (const agent of cat.agents) {
       const agentId = sanitizeId(agent.name);
-      const label = options.compact
+      const rawLabel = options.compact
         ? agent.name
         : formatAgentLabel(agent);
+      const label = sanitizeNodeLabel(rawLabel);
       lines.push(`        ${agentId}["${label}"]`);
     }
 
@@ -347,7 +447,8 @@ function generateDetailDiagram(
   if (servers.length > 0) {
     lines.push('    subgraph MCP["🔌 MCP Servers"]');
     for (const server of servers) {
-      const label = formatServerLabel(server);
+      const rawLabel = formatServerLabel(server);
+      const label = sanitizeNodeLabel(rawLabel);
       const style = server.disabled ? ':::disabled' : '';
       lines.push(`        mcp_${sanitizeId(server.name)}["${label}"]${style}`);
     }
@@ -359,7 +460,8 @@ function generateDetailDiagram(
   if (config.skills.length > 0) {
     lines.push('    subgraph Skills["⚡ Skills"]');
     for (const skill of config.skills) {
-      const label = formatSkillLabel(skill);
+      const rawLabel = formatSkillLabel(skill);
+      const label = sanitizeNodeLabel(rawLabel);
       lines.push(`        skill_${sanitizeId(skill.name)}["${label}"]`);
     }
     lines.push('    end');
@@ -398,6 +500,11 @@ function generateDetailDiagram(
   addStyling(lines, categorized, agents, servers, config.skills, options.themeGenerator);
 
   lines.push('```');
+
+  // Add timestamp footer
+  lines.push('');
+  lines.push('---');
+  lines.push(`*Generated by AgentScope on ${new Date().toISOString().replace('T', ' at ').replace(/\\.\\d{3}Z$/, ' UTC')}*`);
 
   return lines.join('\n');
 }
@@ -509,12 +616,6 @@ function getAgentIcon(type: Agent['type']): string {
   }
 }
 
-/**
- * Sanitize string for use as Mermaid ID
- */
-function sanitizeId(str: string): string {
-  return str.replace(/[^a-zA-Z0-9_]/g, '_');
-}
 
 /**
  * Truncate string to max length
@@ -532,12 +633,32 @@ function findServerByTool(servers: McpServer[], tool: string): McpServer | undef
 }
 
 /**
+ * Count nodes in diagram (for metrics)
+ */
+function countNodes(diagram: string): number {
+  // Count lines with node definitions (contain ["..."])
+  const nodePattern = /\["[^\]]+"\]/g;
+  const matches = diagram.match(nodePattern);
+  return matches ? matches.length : 0;
+}
+
+/**
+ * Count edges in diagram (for metrics)
+ */
+function countEdges(diagram: string): number {
+  // Count lines with arrows (-->, -.->)
+  const edgePattern = /(-->|-.->)/g;
+  const matches = diagram.match(edgePattern);
+  return matches ? matches.length : 0;
+}
+
+/**
  * Generate separate diagrams for each category
  */
-export function generateCategoryDiagrams(
+export async function generateCategoryDiagrams(
   config: AgentScopeConfig,
   options: Omit<ComponentMapOptions, 'categories'> = {}
-): Map<AgentCategory, string> {
+): Promise<Map<AgentCategory, string>> {
   const categorized = categorizeAgents(config.agents);
   const diagrams = new Map<AgentCategory, string>();
 
@@ -548,7 +669,7 @@ export function generateCategoryDiagrams(
     };
 
     const info = getCategoryInfo(cat.category);
-    const diagram = generateComponentMap(categoryConfig, {
+    const diagram = await generateComponentMap(categoryConfig, {
       ...options,
       title: `${info.icon} ${info.label} Agents`,
       level: 'detail',

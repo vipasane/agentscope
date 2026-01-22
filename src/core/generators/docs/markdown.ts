@@ -24,10 +24,10 @@ export interface MarkdownOptions {
 /**
  * Generate comprehensive markdown documentation
  */
-export function generateMarkdown(
+export async function generateMarkdown(
   config: AgentScopeConfig,
   options: MarkdownOptions = {}
-): string {
+): Promise<string> {
   const {
     includeDiagrams = true,
     includeMetadata = true,
@@ -133,7 +133,7 @@ export function generateMarkdown(
     sections.push('');
     sections.push('### Component Map');
     sections.push('');
-    sections.push(generateComponentMap(config, componentMapOpts));
+    sections.push(await generateComponentMap(config, componentMapOpts));
     sections.push('');
     sections.push('### Agent Hierarchy');
     sections.push('');

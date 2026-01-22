@@ -26,6 +26,20 @@ export interface ClaudeCodeParseResult {
   errors: ScanError[];
 }
 
+interface HeadingContext {
+  type: Agent['type'];
+  level: number;
+  startLine: number;
+  endLine?: number;
+}
+
+interface BulletAgent {
+  name: string;
+  description: string;
+  lineNumber: number;
+  indentLevel: number;
+}
+
 interface SettingsJson {
   hooks?: HookConfig[] | Record<string, HookEventConfig[]>;
   permissions?: PermissionsConfig;
@@ -171,31 +185,308 @@ export class ClaudeCodeParser {
     try {
       const content = await readFile(filePath, 'utf-8');
 
-      // Look for agent table patterns
-      const agentTableRegex = /\|\s*`?(\w+)`?\s*\|\s*([^|]+)\s*\|/g;
-      const matches = content.matchAll(agentTableRegex);
+      // Step 1: Parse heading contexts to understand agent type sections
+      const headingContexts = this.parseHeadingContexts(content);
 
-      for (const match of matches) {
-        const name = match[1];
-        const description = match[2]?.trim();
+      // Step 2: Extract global delegation relationships
+      const delegatesTo = this.extractDelegatesTo(content);
 
-        // Skip header rows and common non-agent entries
-        if (!name || name.toLowerCase() === 'agent' || name.toLowerCase() === 'name') {
+      // Step 3: Extract global tool associations
+      const tools = this.extractTools(content);
+
+      // Step 4: Parse bullet list agents with context awareness
+      const bulletAgents = this.parseBulletAgents(content);
+      for (const bulletAgent of bulletAgents) {
+        // Find the heading context for this agent
+        const context = headingContexts.find(
+          ctx => bulletAgent.lineNumber >= ctx.startLine &&
+                 (!ctx.endLine || bulletAgent.lineNumber <= ctx.endLine)
+        );
+
+        agents.push({
+          name: bulletAgent.name,
+          path: relative(this.rootPath, filePath),
+          description: bulletAgent.description,
+          type: context?.type || this.inferAgentType(bulletAgent.name),
+          delegatesTo: delegatesTo[bulletAgent.name] || [],
+          tools: tools[bulletAgent.name] || [],
+        });
+      }
+
+      // Step 5: Parse agent tables as fallback
+      const tableAgents = this.parseAgentTable(content);
+      for (const tableAgent of tableAgents) {
+        // Skip if already parsed from bullet list or if missing required fields
+        if (!tableAgent.name || agents.some(a => a.name === tableAgent.name)) {
           continue;
         }
-
-        // Check if this looks like an agent name
-        if (this.looksLikeAgentName(name)) {
-          agents.push({
-            name,
-            path: relative(this.rootPath, filePath),
-            description,
-            type: this.inferAgentType(name),
-          });
-        }
+        agents.push({
+          name: tableAgent.name,
+          path: relative(this.rootPath, filePath),
+          description: tableAgent.description,
+          type: tableAgent.type || 'worker',
+          delegatesTo: tableAgent.delegatesTo || [],
+          tools: tableAgent.tools || [],
+        });
       }
     } catch (error) {
       this.addError('warning', 'CLAUDE_MD_PARSE_ERROR', `Failed to parse CLAUDE.md: ${filePath}`, filePath);
+    }
+
+    return agents;
+  }
+
+  /**
+   * Extract agent type from markdown headings
+   * Regex: /^(#{2,4})\s+(Coordinators?|Orchestrators?|Workers?|Specialists?|Experts?|Reviewers?|Custom)\s*$/gim
+   */
+  private parseHeadingContexts(content: string): HeadingContext[] {
+    const contexts: HeadingContext[] = [];
+    const lines = content.split('\n');
+    const headingRegex = /^(#{2,4})\s+(Coordinators?|Orchestrators?|Workers?|Specialists?|Experts?|Reviewers?|Custom)\s*$/i;
+
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(headingRegex);
+      if (match) {
+        const level = match[1].length;
+        const typeText = match[2].toLowerCase();
+
+        // Map heading text to agent type
+        let type: Agent['type'] = 'worker';
+        if (typeText.startsWith('coordinator') || typeText.startsWith('orchestrator')) {
+          type = 'coordinator';
+        } else if (typeText.startsWith('reviewer')) {
+          type = 'reviewer';
+        } else if (typeText.startsWith('specialist') || typeText.startsWith('expert')) {
+          type = 'specialist';
+        } else if (typeText.startsWith('worker')) {
+          type = 'worker';
+        } else if (typeText.startsWith('custom')) {
+          type = 'custom';
+        }
+
+        contexts.push({
+          type,
+          level,
+          startLine: i + 1,
+        });
+      }
+    }
+
+    // Set endLine for each context (up to the next heading of same or higher level)
+    for (let i = 0; i < contexts.length; i++) {
+      const current = contexts[i];
+      const next = contexts.find((ctx, idx) => idx > i && ctx.level <= current.level);
+      if (next) {
+        current.endLine = next.startLine - 1;
+      }
+    }
+
+    return contexts;
+  }
+
+  /**
+   * Extract delegation relationships from content
+   * Regex: /(?:(?:\*\*)?Delegates?\s*(?:to)?(?:\*\*)?:\s*)([`\w,\s-]+)/gi
+   */
+  private extractDelegatesTo(content: string): Record<string, string[]> {
+    const result: Record<string, string[]> = {};
+    const lines = content.split('\n');
+
+    let currentAgent: string | null = null;
+
+    for (const line of lines) {
+      // Track current agent from bullet list (no indent or minimal indent)
+      const agentMatch = line.match(/^[\s]{0,2}[-*]\s+(?:`([a-z][\w-]*)`|\*\*([a-z][\w-]*)\*\*)/i);
+      if (agentMatch) {
+        currentAgent = agentMatch[1] || agentMatch[2];
+      }
+
+      // Extract delegation info from nested bullets or inline
+      if (currentAgent && /Delegates?\s*(?:to)?:/i.test(line)) {
+        const delegateMatch = line.match(/Delegates?\s*(?:to)?:\s*([`\w,\s-]+)/i);
+        if (delegateMatch && delegateMatch[1]) {
+          const delegates = delegateMatch[1]
+            .split(',')
+            .map(d => d.trim().replace(/`/g, ''))
+            .filter(d => d.length > 0);
+
+          result[currentAgent] = delegates;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract tool associations from content
+   * Regex: /(?:(?:\*\*)?(Tools?|Uses|Available\s+tools?)(?:\*\*)?:\s*)([^-\n]+)/gi
+   */
+  private extractTools(content: string): Record<string, string[]> {
+    const result: Record<string, string[]> = {};
+    const lines = content.split('\n');
+
+    let currentAgent: string | null = null;
+
+    for (const line of lines) {
+      // Track current agent from bullet list (no indent or minimal indent)
+      const agentMatch = line.match(/^[\s]{0,2}[-*]\s+(?:`([a-z][\w-]*)`|\*\*([a-z][\w-]*)\*\*)/i);
+      if (agentMatch) {
+        currentAgent = agentMatch[1] || agentMatch[2];
+      }
+
+      // Extract tool info from nested bullets or inline
+      if (currentAgent && /Tools?:/i.test(line)) {
+        const toolMatch = line.match(/Tools?:\s*(.+)/i);
+        if (toolMatch && toolMatch[1]) {
+          const tools = toolMatch[1]
+            .split(',')
+            .map(t => t.trim().replace(/`/g, ''))
+            .filter(t => t.length > 0);
+
+          result[currentAgent] = tools;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract agents from bullet lists
+   * Regex: /^[-*]\s+(?:`([a-z][\w-]*)`|\*\*([a-z][\w-]*)\*\*)\s*[:\-]\s*(.+)$/gim
+   */
+  private parseBulletAgents(content: string): BulletAgent[] {
+    const agents: BulletAgent[] = [];
+    const lines = content.split('\n');
+    const bulletRegex = /^([\s]*)[-*]\s+(?:`([a-z][\w-]*)`|\*\*([a-z][\w-]*)\*\*)\s*[:\-]\s*(.+)$/i;
+
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(bulletRegex);
+      if (match) {
+        const indent = match[1];
+        const name = match[2] || match[3];
+        const description = match[4].trim();
+
+        // Calculate indent level (2 spaces = 1 level)
+        const indentLevel = Math.floor(indent.length / 2);
+
+        agents.push({
+          name,
+          description,
+          lineNumber: i + 1,
+          indentLevel,
+        });
+      }
+    }
+
+    return agents;
+  }
+
+  /**
+   * Parse multi-column agent tables
+   * Detects columns: agent/name, type, description, tools, delegates
+   */
+  private parseAgentTable(content: string): Partial<Agent>[] {
+    const agents: Partial<Agent>[] = [];
+    const lines = content.split('\n');
+
+    // Find table headers
+    let headerLine = -1;
+    let separatorLine = -1;
+    const columnMap: Record<string, number> = {};
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check for header row
+      if (line.startsWith('|') && line.endsWith('|')) {
+        const columns = line.split('|').map(c => c.trim().toLowerCase()).filter(c => c);
+
+        // Check if this looks like a header row
+        if (columns.some(c => c.includes('agent') || c.includes('name') || c.includes('type'))) {
+          headerLine = i;
+
+          // Map column names to indices
+          columns.forEach((col, idx) => {
+            if (col.includes('agent') || col.includes('name')) {
+              columnMap.name = idx;
+            } else if (col === 'type' || col.includes('subagent')) {
+              columnMap.type = idx;
+            } else if (col.includes('description')) {
+              columnMap.description = idx;
+            } else if (col.includes('tool')) {
+              columnMap.tools = idx;
+            } else if (col.includes('delegate')) {
+              columnMap.delegates = idx;
+            }
+          });
+
+          // Check for separator line
+          if (i + 1 < lines.length && lines[i + 1].match(/^\|[\s:-]+\|/)) {
+            separatorLine = i + 1;
+            break;
+          }
+        }
+      }
+    }
+
+    // Parse table rows
+    if (headerLine >= 0 && separatorLine >= 0) {
+      for (let i = separatorLine + 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        // Stop at end of table
+        if (!line.startsWith('|') || !line.endsWith('|')) {
+          break;
+        }
+
+        const cells = line.split('|').map(c => c.trim()).filter(c => c);
+
+        // Extract agent info based on column map
+        const name = columnMap.name !== undefined ? cells[columnMap.name]?.replace(/`/g, '') : '';
+
+        if (!name || !this.looksLikeAgentName(name)) {
+          continue;
+        }
+
+        const agent: Partial<Agent> = {
+          name,
+        };
+
+        if (columnMap.description !== undefined) {
+          agent.description = cells[columnMap.description];
+        }
+
+        if (columnMap.type !== undefined) {
+          const typeText = cells[columnMap.type]?.toLowerCase();
+          if (typeText) {
+            agent.type = this.inferAgentType(typeText);
+          }
+        }
+
+        if (columnMap.tools !== undefined) {
+          const toolsText = cells[columnMap.tools];
+          if (toolsText) {
+            agent.tools = toolsText.split(',').map(t => t.trim()).filter(t => t);
+          }
+        }
+
+        if (columnMap.delegates !== undefined) {
+          const delegatesText = cells[columnMap.delegates];
+          if (delegatesText) {
+            agent.delegatesTo = delegatesText.split(',').map(d => d.trim().replace(/`/g, '')).filter(d => d);
+          }
+        }
+
+        // Infer type if not explicitly set
+        if (!agent.type) {
+          agent.type = this.inferAgentType(name);
+        }
+
+        agents.push(agent);
+      }
     }
 
     return agents;

@@ -1,30 +1,7 @@
 ```mermaid
+%%{init: {"theme":"default","themeVariables":{"background":"#ffffff","primaryBorderColor":"#e0e0e0","primaryTextColor":"#212121","secondaryTextColor":"#757575","primaryColor":"#fafafa","secondaryColor":"#e3f2fd","tertiaryColor":"#fff8e1","lineColor":"#e0e0e0","fontSize":"14px","fontFamily":"system-ui, -apple-system, sans-serif"}}}%%
 graph TB
     %% Agent Architecture Component Map - Category View
-
-    subgraph other["📦 Other (59)"]
-        _code_analyzer_["🤖 "code-analyzer""]
-        _code_analyzer_["🤖 "code-analyzer""]
-        _system_architect_["🤖 "system-architect""]
-        _system_architect_["🤖 "system-architect""]
-        browser_agent["🤖 browser-agent"]
-        _ml_developer_["🤖 "ml-developer""]
-        _ml_developer_["🤖 "ml-developer""]
-        _cicd_engineer_["🤖 "cicd-engineer""]
-        _cicd_engineer_["🤖 "cicd-engineer""]
-        Performance_Monitor["🤖 Performance Monitor"]
-        Resource_Allocator["🤖 Resource Allocator"]
-        Topology_Optimizer["🤖 Topology Optimizer"]
-        _mobile_dev_["🤖 "mobile-dev""]
-        _mobile_dev_["🤖 "mobile-dev""]
-        Tier["🤖 Tier"]
-        Cost["🤖 Cost"]
-        Haiku["🤖 Haiku"]
-        Trigger["🤖 Trigger"]
-        map["🤖 map"]
-        Code["🤖 Code"]
-        other_more[["... +39 more"]]
-    end
 
     subgraph github["🐙 GitHub (14)"]
         code_review_swarm["🤖 code-review-swarm"]
@@ -43,6 +20,23 @@ graph TB
         pr_manager["🤖 pr-manager"]
     end
 
+    subgraph other["📦 Other (14)"]
+        code_analyzer["🤖 \"code-analyzer\""]
+        code_analyzer["🤖 \"code-analyzer\""]
+        system_architect["🤖 \"system-architect\""]
+        system_architect["🤖 \"system-architect\""]
+        browser_agent["🤖 browser-agent"]
+        ml_developer["🤖 \"ml-developer\""]
+        ml_developer["🤖 \"ml-developer\""]
+        cicd_engineer["🤖 \"cicd-engineer\""]
+        cicd_engineer["🤖 \"cicd-engineer\""]
+        Performance_Monitor["🤖 Performance Monitor"]
+        Resource_Allocator["🤖 Resource Allocator"]
+        Topology_Optimizer["🤖 Topology Optimizer"]
+        mobile_dev["🤖 \"mobile-dev\""]
+        mobile_dev["🤖 \"mobile-dev\""]
+    end
+
     subgraph coordination["👑 Coordination (11)"]
         planner["👑 planner"]
         Load_Balancing_Coordinator["🤖 Load Balancing Coordinator"]
@@ -57,33 +51,6 @@ graph TB
         swarm_memory_manager["👑 swarm-memory-manager"]
     end
 
-    subgraph performance["📈 Performance (11)"]
-        performance_benchmarker["🤖 performance-benchmarker"]
-        Benchmark_Suite["🤖 Benchmark Suite"]
-        matrix_optimizer["🤖 matrix-optimizer"]
-        pagerank_analyzer["🤖 pagerank-analyzer"]
-        performance_optimizer["🤖 performance-optimizer"]
-        trading_predictor["🤖 trading-predictor"]
-        perf_analyzer["🤖 perf-analyzer"]
-        performance_engineer["🤖 performance-engineer"]
-        optimize["🤖 optimize"]
-        optimize["🤖 optimize"]
-        benchmark["🤖 benchmark"]
-    end
-
-    subgraph security["🔒 Security (10)"]
-        security_manager["🤖 security-manager"]
-        aidefence_guardian["🤖 aidefence-guardian"]
-        claims_authorizer["🤖 claims-authorizer"]
-        injection_analyst["🤖 injection-analyst"]
-        pii_detector["🤖 pii-detector"]
-        security_architect_aidefence["🤖 security-architect-aidefence"]
-        security_architect["🤖 security-architect"]
-        security_auditor["🤖 security-auditor"]
-        audit["🤖 audit"]
-        audit["🤖 audit"]
-    end
-
     subgraph flow_nexus["🌊 Flow Nexus (9)"]
         flow_nexus_app_store["🤖 flow-nexus-app-store"]
         flow_nexus_auth["🤖 flow-nexus-auth"]
@@ -96,15 +63,26 @@ graph TB
         flow_nexus_workflow["🤖 flow-nexus-workflow"]
     end
 
-    subgraph development["💻 Development (8)"]
-        coder["🤖 coder"]
-        _backend_dev_["🤖 "backend-dev""]
-        _backend_dev_["🤖 "backend-dev""]
-        sublinear_goal_planner["🤖 sublinear-goal-planner"]
-        goal_planner["🤖 goal-planner"]
-        agentic_payments["🤖 agentic-payments"]
-        base_template_generator["🤖 base-template-generator"]
-        refactor["🤖 refactor"]
+    subgraph security["🔒 Security (8)"]
+        security_manager["🤖 security-manager"]
+        aidefence_guardian["🤖 aidefence-guardian"]
+        claims_authorizer["🤖 claims-authorizer"]
+        injection_analyst["🤖 injection-analyst"]
+        pii_detector["🤖 pii-detector"]
+        security_architect_aidefence["🤖 security-architect-aidefence"]
+        security_architect["🤖 security-architect"]
+        security_auditor["🤖 security-auditor"]
+    end
+
+    subgraph performance["📈 Performance (8)"]
+        performance_benchmarker["🤖 performance-benchmarker"]
+        Benchmark_Suite["🤖 Benchmark Suite"]
+        matrix_optimizer["🤖 matrix-optimizer"]
+        pagerank_analyzer["🤖 pagerank-analyzer"]
+        performance_optimizer["🤖 performance-optimizer"]
+        trading_predictor["🤖 trading-predictor"]
+        perf_analyzer["🤖 perf-analyzer"]
+        performance_engineer["🤖 performance-engineer"]
     end
 
     subgraph sparc["⚡ SPARC (7)"]
@@ -117,14 +95,14 @@ graph TB
         sparc_orchestrator["👑 sparc-orchestrator"]
     end
 
-    subgraph testing["🧪 Testing (7)"]
-        reviewer["🤖 reviewer"]
-        tester["🤖 tester"]
-        test_long_runner["🤖 test-long-runner"]
-        production_validator["🤖 production-validator"]
-        tdd_london_swarm["🤖 tdd-london-swarm"]
-        testgaps["🤖 testgaps"]
-        testgaps["🤖 testgaps"]
+    subgraph development["💻 Development (7)"]
+        coder["🤖 coder"]
+        backend_dev["🤖 \"backend-dev\""]
+        backend_dev["🤖 \"backend-dev\""]
+        sublinear_goal_planner["🤖 sublinear-goal-planner"]
+        goal_planner["🤖 goal-planner"]
+        agentic_payments["🤖 agentic-payments"]
+        base_template_generator["🤖 base-template-generator"]
     end
 
     subgraph consensus["🤝 Consensus (6)"]
@@ -144,26 +122,26 @@ graph TB
         v3_integration_architect["🤖 v3-integration-architect"]
     end
 
-    subgraph memory["🧠 Memory (5)"]
-        memory_specialist["🎯 memory-specialist"]
-        ultralearn["🤖 ultralearn"]
-        consolidate["🤖 consolidate"]
-        predict["🤖 predict"]
-        preload["🤖 preload"]
+    subgraph testing["🧪 Testing (5)"]
+        reviewer["🤖 reviewer"]
+        tester["🤖 tester"]
+        test_long_runner["🤖 test-long-runner"]
+        production_validator["🤖 production-validator"]
+        tdd_london_swarm["🤖 tdd-london-swarm"]
     end
 
-    subgraph analysis["🔍 Analysis (4)"]
+    subgraph analysis["🔍 Analysis (2)"]
         analyst["🤖 analyst"]
         researcher["🤖 researcher"]
-        deepdive["🤖 deepdive"]
-        deepdive["🤖 deepdive"]
     end
 
-    subgraph documentation["📚 Documentation (4)"]
-        _api_docs_["🤖 "api-docs""]
-        _api_docs_["🤖 "api-docs""]
-        document["🤖 document"]
-        document["🤖 document"]
+    subgraph documentation["📚 Documentation (2)"]
+        api_docs["🤖 \"api-docs\""]
+        api_docs["🤖 \"api-docs\""]
+    end
+
+    subgraph memory["🧠 Memory (1)"]
+        memory_specialist["🎯 memory-specialist"]
     end
 
     subgraph MCP["🔌 MCP Servers"]
@@ -171,11 +149,11 @@ graph TB
     end
 
     subgraph Skills["⚡ Skills"]
-        skill__AgentDB_Advanced_Features_[""AgentDB Advanced Features""]
-        skill__AgentDB_Learning_Plugins_[""AgentDB Learning Plugins""]
-        skill__AgentDB_Memory_Patterns_[""AgentDB Memory Patterns""]
-        skill__AgentDB_Performance_Optimization_[""AgentDB Performance Optimization""]
-        skill__AgentDB_Vector_Search_[""AgentDB Vector Search""]
+        skill_AgentDB_Advanced_Features["\"AgentDB Advanced Features\""]
+        skill_AgentDB_Learning_Plugins["\"AgentDB Learning Plugins\""]
+        skill_AgentDB_Memory_Patterns["\"AgentDB Memory Patterns\""]
+        skill_AgentDB_Performance_Optimization["\"AgentDB Performance Optimization\""]
+        skill_AgentDB_Vector_Search["\"AgentDB Vector Search\""]
         skill_browser["browser"]
         skill_github_code_review["github-code-review"]
         skill_github_multi_repo["github-multi-repo"]
@@ -189,41 +167,46 @@ graph TB
     %% Tool connections
 
     %% Styling
-    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef worker fill:#f3e5f5,stroke:#4a148c
-    classDef reviewer fill:#fff3e0,stroke:#e65100
-    classDef specialist fill:#e8f5e9,stroke:#1b5e20
-    classDef disabled fill:#eeeeee,stroke:#9e9e9e,stroke-dasharray: 5 5
-    classDef mcp fill:#fce4ec,stroke:#880e4f
-    classDef skill fill:#e3f2fd,stroke:#0d47a1
-    classDef more fill:#f5f5f5,stroke:#bdbdbd,stroke-dasharray: 3 3
-    class _code_analyzer_ worker
-    class analyst worker
-    class _code_analyzer_ worker
-    class _system_architect_ worker
-    class _system_architect_ worker
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,color:#01579b,stroke-width:3px
+    classDef worker fill:#f3e5f5,stroke:#4a148c,color:#4a148c,stroke-width:2px
+    classDef specialist fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20,stroke-width:2px
+    classDef reviewer fill:#fff3e0,stroke:#e65100,color:#e65100,stroke-width:2px
+    classDef custom fill:#fce4ec,stroke:#880e4f,color:#880e4f,stroke-width:2px
+    classDef input fill:#e8f5e9,stroke:#2e7d32,color:#2e7d32,stroke-width:2px
+    classDef output fill:#ffebee,stroke:#c62828,color:#c62828,stroke-width:2px
+    classDef hook fill:#fff8e1,stroke:#f57f17,color:#f57f17,stroke-width:2px,stroke-dasharray:5 5
+    classDef mcp fill:#e0f2f1,stroke:#00695c,color:#00695c,stroke-width:2px
+    classDef skill fill:#e3f2fd,stroke:#0d47a1,color:#0d47a1,stroke-width:2px,stroke-dasharray:5 5
+    classDef subgraph_style fill:#fafafa,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    classDef more fill:#f5f5f5,stroke:#757575,stroke-dasharray:3 3,color:#757575
+    classDef category fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
+    class code_analyzer custom
+    class analyst custom
+    class code_analyzer custom
+    class system_architect custom
+    class system_architect custom
     class browser_agent worker
     class byzantine_coordinator coordinator
-    class crdt_synchronizer worker
+    class crdt_synchronizer custom
     class gossip_coordinator coordinator
-    class performance_benchmarker worker
+    class performance_benchmarker custom
     class quorum_manager coordinator
     class raft_manager coordinator
-    class security_manager worker
-    class coder worker
+    class security_manager custom
+    class coder custom
     class planner coordinator
-    class researcher worker
-    class reviewer reviewer
-    class tester reviewer
+    class researcher custom
+    class reviewer custom
+    class tester custom
     class test_long_runner worker
-    class _ml_developer_ worker
-    class _ml_developer_ worker
-    class _backend_dev_ worker
-    class _backend_dev_ worker
-    class _cicd_engineer_ worker
-    class _cicd_engineer_ worker
-    class _api_docs_ worker
-    class _api_docs_ worker
+    class ml_developer custom
+    class ml_developer custom
+    class backend_dev custom
+    class backend_dev custom
+    class cicd_engineer custom
+    class cicd_engineer custom
+    class api_docs custom
+    class api_docs custom
     class flow_nexus_app_store worker
     class flow_nexus_auth worker
     class flow_nexus_challenges worker
@@ -233,34 +216,34 @@ graph TB
     class flow_nexus_swarm worker
     class flow_nexus_user_tools worker
     class flow_nexus_workflow worker
-    class code_review_swarm worker
-    class github_modes worker
-    class issue_tracker worker
-    class multi_repo_swarm worker
-    class pr_manager worker
-    class project_board_sync worker
-    class release_manager worker
-    class release_swarm worker
-    class repo_architect worker
-    class swarm_issue worker
-    class swarm_pr worker
-    class sync_coordinator worker
-    class workflow_automation worker
+    class code_review_swarm custom
+    class github_modes custom
+    class issue_tracker custom
+    class multi_repo_swarm custom
+    class pr_manager custom
+    class project_board_sync custom
+    class release_manager custom
+    class release_swarm custom
+    class repo_architect custom
+    class swarm_issue custom
+    class swarm_pr custom
+    class sync_coordinator custom
+    class workflow_automation custom
     class sublinear_goal_planner worker
     class goal_planner worker
-    class Benchmark_Suite worker
-    class Load_Balancing_Coordinator worker
-    class Performance_Monitor worker
-    class Resource_Allocator worker
-    class Topology_Optimizer worker
+    class Benchmark_Suite custom
+    class Load_Balancing_Coordinator custom
+    class Performance_Monitor custom
+    class Resource_Allocator custom
+    class Topology_Optimizer custom
     class agentic_payments worker
-    class sona_learning_optimizer worker
-    class architecture worker
-    class pseudocode worker
-    class refinement worker
-    class specification worker
-    class _mobile_dev_ worker
-    class _mobile_dev_ worker
+    class sona_learning_optimizer custom
+    class architecture custom
+    class pseudocode custom
+    class refinement custom
+    class specification custom
+    class mobile_dev custom
+    class mobile_dev custom
     class consensus_coordinator coordinator
     class matrix_optimizer worker
     class pagerank_analyzer worker
@@ -269,100 +252,39 @@ graph TB
     class adaptive_coordinator coordinator
     class hierarchical_coordinator coordinator
     class mesh_coordinator coordinator
-    class smart_agent worker
+    class smart_agent custom
     class base_template_generator worker
-    class swarm_init worker
-    class pr_manager worker
-    class sparc_coder worker
-    class memory_coordinator worker
-    class task_orchestrator worker
-    class perf_analyzer worker
-    class sparc_coord worker
-    class production_validator reviewer
-    class tdd_london_swarm worker
-    class adr_architect worker
-    class aidefence_guardian worker
-    class claims_authorizer worker
+    class swarm_init custom
+    class pr_manager custom
+    class sparc_coder custom
+    class memory_coordinator custom
+    class task_orchestrator custom
+    class perf_analyzer custom
+    class sparc_coord custom
+    class production_validator custom
+    class tdd_london_swarm custom
+    class adr_architect custom
+    class aidefence_guardian custom
+    class claims_authorizer custom
     class collective_intelligence_coordinator coordinator
-    class ddd_domain_expert worker
-    class injection_analyst worker
+    class ddd_domain_expert custom
+    class injection_analyst custom
     class memory_specialist specialist
-    class performance_engineer worker
-    class pii_detector worker
+    class performance_engineer custom
+    class pii_detector custom
     class reasoningbank_learner specialist
-    class security_architect_aidefence worker
-    class security_architect worker
-    class security_auditor worker
+    class security_architect_aidefence custom
+    class security_architect custom
+    class security_auditor custom
     class sparc_orchestrator coordinator
     class swarm_memory_manager coordinator
-    class v3_integration_architect worker
-    class Tier worker
-    class Cost worker
-    class Haiku worker
-    class Trigger worker
-    class optimize worker
-    class testgaps worker
-    class audit worker
-    class document worker
-    class map worker
-    class deepdive worker
-    class Code worker
-    class Command worker
-    class init worker
-    class swarm worker
-    class memory worker
-    class mcp worker
-    class task worker
-    class session worker
-    class config worker
-    class status worker
-    class workflow worker
-    class hooks worker
-    class Command worker
-    class daemon worker
-    class neural worker
-    class security worker
-    class performance worker
-    class providers worker
-    class plugins worker
-    class deployment worker
-    class embeddings worker
-    class claims worker
-    class migrate worker
-    class doctor worker
-    class completions worker
-    class Hook worker
-    class route worker
-    class explain worker
-    class pretrain worker
-    class metrics worker
-    class transfer worker
-    class list worker
-    class intelligence worker
-    class worker worker
-    class progress worker
-    class statusline worker
-    class Worker worker
-    class ultralearn worker
-    class optimize worker
-    class consolidate worker
-    class predict worker
-    class audit worker
-    class map worker
-    class preload worker
-    class deepdive worker
-    class document worker
-    class refactor worker
-    class benchmark worker
-    class testgaps worker
-    class Metric worker
-    class Condition worker
+    class v3_integration_architect custom
     class mcp_claude_flow mcp
-    class skill__AgentDB_Advanced_Features_ skill
-    class skill__AgentDB_Learning_Plugins_ skill
-    class skill__AgentDB_Memory_Patterns_ skill
-    class skill__AgentDB_Performance_Optimization_ skill
-    class skill__AgentDB_Vector_Search_ skill
+    class skill_AgentDB_Advanced_Features skill
+    class skill_AgentDB_Learning_Plugins skill
+    class skill_AgentDB_Memory_Patterns skill
+    class skill_AgentDB_Performance_Optimization skill
+    class skill_AgentDB_Vector_Search skill
     class skill_browser skill
     class skill_github_code_review skill
     class skill_github_multi_repo skill
@@ -371,22 +293,24 @@ graph TB
     class skill_github_workflow_automation skill
     class skill_Hooks_Automation skill
     class skill_Pair_Programming skill
-    class skill__ReasoningBank_with_AgentDB_ skill
-    class skill__ReasoningBank_Intelligence_ skill
-    class skill__Skill_Builder_ skill
+    class skill_ReasoningBank_with_AgentDB skill
+    class skill_ReasoningBank_Intelligence skill
+    class skill_Skill_Builder skill
     class skill_sparc_methodology skill
     class skill_stream_chain skill
     class skill_swarm_advanced skill
-    class skill__Swarm_Orchestration_ skill
-    class skill__V3_CLI_Modernization_ skill
-    class skill__V3_Core_Implementation_ skill
-    class skill__V3_DDD_Architecture_ skill
-    class skill__V3_Deep_Integration_ skill
-    class skill__V3_MCP_Optimization_ skill
-    class skill__V3_Memory_Unification_ skill
-    class skill__V3_Performance_Optimization_ skill
-    class skill__V3_Security_Overhaul_ skill
-    class skill__V3_Swarm_Coordination_ skill
-    class skill__Verification___Quality_Assurance_ skill
-    class other_more more
+    class skill_Swarm_Orchestration skill
+    class skill_V3_CLI_Modernization skill
+    class skill_V3_Core_Implementation skill
+    class skill_V3_DDD_Architecture skill
+    class skill_V3_Deep_Integration skill
+    class skill_V3_MCP_Optimization skill
+    class skill_V3_Memory_Unification skill
+    class skill_V3_Performance_Optimization skill
+    class skill_V3_Security_Overhaul skill
+    class skill_V3_Swarm_Coordination skill
+    class skill_Verification_Quality_Assurance skill
 ```
+
+---
+*Generated by AgentScope on 2026-01-22 at 19:12:37.296Z*

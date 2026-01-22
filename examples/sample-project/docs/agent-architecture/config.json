@@ -1,0 +1,96 @@
+{
+  "agents": [
+    {
+      "name": "planner",
+      "path": "CLAUDE.md",
+      "description": "Task orchestration agent for workflow planning",
+      "type": "coordinator",
+      "delegatesTo": [
+        "coder",
+        "tester",
+        "reviewer"
+      ],
+      "tools": []
+    },
+    {
+      "name": "pr-manager",
+      "path": "CLAUDE.md",
+      "description": "Pull request lifecycle coordinator",
+      "type": "coordinator",
+      "delegatesTo": [
+        "coder",
+        "reviewer"
+      ],
+      "tools": []
+    },
+    {
+      "name": "coder",
+      "path": "CLAUDE.md",
+      "description": "Implementation specialist for writing code",
+      "type": "worker",
+      "delegatesTo": [],
+      "tools": [
+        "github MCP server"
+      ]
+    },
+    {
+      "name": "tester",
+      "path": "CLAUDE.md",
+      "description": "Test writing and execution agent",
+      "type": "worker",
+      "delegatesTo": [],
+      "tools": []
+    },
+    {
+      "name": "reviewer",
+      "path": "CLAUDE.md",
+      "description": "Code review and quality specialist",
+      "type": "reviewer",
+      "delegatesTo": [],
+      "tools": []
+    },
+    {
+      "name": "security-auditor",
+      "path": "CLAUDE.md",
+      "description": "Security vulnerability analysis expert",
+      "type": "specialist",
+      "delegatesTo": [],
+      "tools": []
+    }
+  ],
+  "skills": [],
+  "hooks": [],
+  "commands": [],
+  "mcpServers": [
+    {
+      "name": "claude-flow",
+      "command": "npx",
+      "args": [
+        "@claude-flow/cli"
+      ],
+      "env": {},
+      "disabled": false,
+      "type": "stdio",
+      "tools": []
+    },
+    {
+      "name": "github",
+      "command": "gh",
+      "args": [
+        "mcp"
+      ],
+      "env": {},
+      "disabled": false,
+      "type": "stdio",
+      "tools": []
+    }
+  ],
+  "metadata": {
+    "scannedAt": "2026-01-22T19:07:06.094Z",
+    "rootPath": "/workspaces/agentscope/examples/sample-project",
+    "version": "0.1.0",
+    "duration": 13,
+    "filesScanned": 10,
+    "errors": []
+  }
+}
