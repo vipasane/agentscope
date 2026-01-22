@@ -1,8 +1,10 @@
 # AgentScope Research: Executive Summary
 
+> ⚠️ **HISTORICAL DOCUMENT**: This research was conducted before PRD v2 finalized the **1-2 day MVP with agentic coding** approach. Timeline references to "4 weeks" or "20 weeks" are superseded. See `AgentScope-PRD-v2.md` for authoritative implementation timeline.
+
 > **Research Date**: January 2026
 > **Status**: ✅ DECISIONS FINALIZED - See `AgentScope-PRD-v2.md`
-> **Documents**: 11 research reports from parallel swarm analysis
+> **Documents**: 12 research reports from parallel swarm analysis
 
 ## Document Status
 
@@ -19,7 +21,8 @@
 | `07-tdd-quality-framework.md` | ✅ **ACTIVE** | Quality gates for development |
 | `08-future-roadmap.md` | ✅ **ACTIVE** | Post-MVP planning |
 | `09-sdlc-standards-analysis.md` | 📋 Reference | GitHub/GitLab/Jenkins standards |
-| `10-automated-sdlc-documentation-frameworks.md` | 📋 Reference | Automated doc tools & patterns |
+| `10-automated-sdlc-documentation-tools.md` | 📋 Reference | Automated doc tools & patterns |
+| `12-automated-sdlc-documentation-frameworks.md` | 📋 Reference | Event-driven doc patterns |
 | `11-documentation-frameworks-deep-analysis.md` | ✅ **ACTIVE** | Architecture doc standards (arc42, C4, ADRs) |
 | `archive/*` | 🗄️ Archived | Historical reference only |
 

@@ -340,17 +340,58 @@ await importConfig(exported, '/path/to/target');
 
 See [LICENSE](LICENSE) for details.
 
+## Development Setup
+
+After cloning the repository, run the setup script to enable git hooks:
+
+```bash
+# Install git hooks (required once after clone)
+./.githooks/install.sh
+
+# Or manually:
+git config core.hooksPath .githooks
+```
+
+### What's Included
+
+| Directory | Contents |
+|-----------|----------|
+| `.claude/agents/` | 60+ agent definitions (coder, reviewer, security, etc.) |
+| `.claude/skills/` | Reusable skills (commit-push-pr, pr-validator, etc.) |
+| `.claude/hooks/` | Claude Code hooks for automation |
+| `.githooks/` | Git hooks (secrets check, conventional commits) |
+| `.secretsignore` | Exclusion list for false positive secrets |
+
+### Git Hooks
+
+- **pre-commit** - Secrets detection with `.secretsignore` support
+- **commit-msg** - Enforces conventional commit format
+- **pre-push** - Blocks direct push to main
+
+To add false positive exclusions, edit `.secretsignore`:
+```
+# File paths
+docs/architecture/SECURITY-ARCHITECTURE.md
+
+# Line patterns (regex detection patterns in docs)
+PATTERN:/sk-ant-
+
+# Context patterns (placeholders)
+CONTEXT:EXAMPLE_
+```
+
 ## Contributing
 
 We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
 
 **Quick summary:**
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/amazing-feature`)
-3. Write tests first (TDD required)
-4. Make your changes
-5. Sign your commits with DCO (`git commit -s`)
-6. Submit a pull request
+2. Clone and run `./.githooks/install.sh`
+3. Create a feature branch (`git checkout -b feat/amazing-feature`)
+4. Write tests first (TDD required)
+5. Make your changes
+6. Sign your commits with DCO (`git commit -s`)
+7. Submit a pull request
 
 ## Security
 
