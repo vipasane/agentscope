@@ -17,10 +17,10 @@ AgentScope is an open-source CLI tool that automatically scans Claude Code agent
 
 ```bash
 # Install globally
-npm install -g agentscope
+npm install -g @vipasane/agentscope
 
 # Or run directly with npx
-npx agentscope scan
+npx @vipasane/agentscope scan
 ```
 
 ---
