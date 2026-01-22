@@ -8,7 +8,7 @@
 
 AgentScope is an open-source CLI tool that automatically scans Claude Code agent configurations and generates Mermaid diagrams plus shareable documentation. It answers the fundamental question every developer has: *"What agents, skills, hooks, and MCPs do I have?"*
 
-[![npm version](https://img.shields.io/npm/v/agentscope.svg)](https://www.npmjs.com/package/agentscope)
+[![npm version](https://img.shields.io/npm/v/agentscope.svg)](https://www.npmjs.com/package/@vipasane/agentscope)
 [![License](https://img.shields.io/badge/license-SEE%20LICENSE-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/vipasane/agentscope)
