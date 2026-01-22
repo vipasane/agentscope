@@ -41,6 +41,14 @@
       "type": "\"architecture\""
     },
     {
+      "name": "browser-agent",
+      "path": ".claude/agents/browser/browser-agent.yaml",
+      "description": "name: browser-agent\ndescription: Web automation specialist using agent-browser with AI-optimized snapshots\nversion: 1.0.0",
+      "tools": [],
+      "delegatesTo": [],
+      "type": "worker"
+    },
+    {
       "name": "byzantine-coordinator",
       "path": ".claude/agents/consensus/byzantine-coordinator.md",
       "description": "Coordinates Byzantine fault-tolerant consensus protocols with malicious actor detection",
@@ -1193,6 +1201,14 @@
       "enabled": true
     },
     {
+      "name": "browser",
+      "path": ".claude/skills/browser/SKILL.md",
+      "description": "Web browser automation with AI-optimized snapshots for claude-flow agents",
+      "triggers": [],
+      "dependencies": [],
+      "enabled": true
+    },
+    {
       "name": "github-code-review",
       "path": ".claude/skills/github-code-review/SKILL.md",
       "description": "Comprehensive GitHub code review with AI-powered swarm coordination",
@@ -1912,11 +1928,11 @@
     }
   ],
   "metadata": {
-    "scannedAt": "2026-01-20T22:33:32.196Z",
+    "scannedAt": "2026-01-22T14:54:51.033Z",
     "rootPath": "/workspaces/agentscope",
     "version": "0.1.0",
-    "duration": 399,
-    "filesScanned": 279,
+    "duration": 780,
+    "filesScanned": 281,
     "errors": []
   }
 }

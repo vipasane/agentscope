@@ -31,6 +31,7 @@ flowchart LR
             swarm_memory_manager["swarm-memory-manager"]
         end
         subgraph Workers["Workers"]
+            browser_agent["browser-agent"]
             test_long_runner["test-long-runner"]
             flow_nexus_app_store["flow-nexus-app-store"]
             flow_nexus_auth["flow-nexus-auth"]
@@ -156,6 +157,7 @@ flowchart LR
     class _code_analyzer_ "analysis"
     class _system_architect_ "architecture"
     class _system_architect_ "architecture"
+    class browser_agent worker
     class byzantine_coordinator coordinator
     class crdt_synchronizer synchronizer
     class gossip_coordinator coordinator

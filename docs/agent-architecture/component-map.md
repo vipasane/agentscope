@@ -1,241 +1,229 @@
 ```mermaid
 graph TB
-    %% Agent Architecture Component Map
+    %% Agent Architecture Component Map - Category View
 
-    subgraph Agents["Agents"]
-        _code_analyzer_["🤖 "code-analyzer"<br/><small>"Advanced code quality anal...</small>"]
-        analyst["🤖 analyst<br/><small>"Advanced code quality anal...</small>"]
-        _code_analyzer_["🤖 "code-analyzer"<br/><small>"Advanced code quality anal...</small>"]
-        _system_architect_["🤖 "system-architect"<br/><small>"Expert agent for system ar...</small>"]
-        _system_architect_["🤖 "system-architect"<br/><small>"Expert agent for system ar...</small>"]
-        byzantine_coordinator["👑 byzantine-coordinator<br/><small>Coordinates Byzantine fault...</small>"]
-        crdt_synchronizer["🤖 crdt-synchronizer<br/><small>Implements Conflict-free Re...</small>"]
-        gossip_coordinator["👑 gossip-coordinator<br/><small>Coordinates gossip-based co...</small>"]
-        performance_benchmarker["🤖 performance-benchmarker<br/><small>Implements comprehensive pe...</small>"]
-        quorum_manager["👑 quorum-manager<br/><small>Implements dynamic quorum a...</small>"]
-        raft_manager["👑 raft-manager<br/><small>Manages Raft consensus algo...</small>"]
-        security_manager["🤖 security-manager<br/><small>Implements comprehensive se...</small>"]
-        coder["🤖 coder<br/><small>Implementation specialist f...</small>"]
-        planner["👑 planner<br/><small>Strategic planning and task...</small>"]
-        researcher["🤖 researcher<br/><small>Deep research and informati...</small>"]
-        reviewer["🤖 reviewer<br/><small>Code review and quality ass...</small>"]
-        tester["🤖 tester<br/><small>Comprehensive testing and q...</small>"]
-        test_long_runner["🤖 test-long-runner<br/><small>Test agent that can run for...</small>"]
-        _ml_developer_["🤖 "ml-developer"<br/><small>"ML developer with self-lea...</small>"]
-        _ml_developer_["🤖 "ml-developer"<br/><small>"Specialized agent for mach...</small>"]
-        _backend_dev_["🤖 "backend-dev"<br/><small>"Specialized agent for back...</small>"]
-        _backend_dev_["🤖 "backend-dev"<br/><small>"Specialized agent for back...</small>"]
-        _cicd_engineer_["🤖 "cicd-engineer"<br/><small>"Specialized agent for GitH...</small>"]
-        _cicd_engineer_["🤖 "cicd-engineer"<br/><small>"Specialized agent for GitH...</small>"]
-        _api_docs_["🤖 "api-docs"<br/><small>"Expert agent for creating ...</small>"]
-        _api_docs_["🤖 "api-docs"<br/><small>"Expert agent for creating ...</small>"]
-        flow_nexus_app_store["🤖 flow-nexus-app-store<br/><small>Application marketplace and...</small>"]
-        flow_nexus_auth["🤖 flow-nexus-auth<br/><small>Flow Nexus authentication a...</small>"]
-        flow_nexus_challenges["🤖 flow-nexus-challenges<br/><small>Coding challenges and gamif...</small>"]
-        flow_nexus_neural["🤖 flow-nexus-neural<br/><small>Neural network training and...</small>"]
-        flow_nexus_payments["🤖 flow-nexus-payments<br/><small>Credit management and billi...</small>"]
-        flow_nexus_sandbox["🤖 flow-nexus-sandbox<br/><small>E2B sandbox deployment and ...</small>"]
-        flow_nexus_swarm["🤖 flow-nexus-swarm<br/><small>AI swarm orchestration and ...</small>"]
-        flow_nexus_user_tools["🤖 flow-nexus-user-tools<br/><small>User management and system ...</small>"]
-        flow_nexus_workflow["🤖 flow-nexus-workflow<br/><small>Event-driven workflow autom...</small>"]
-        code_review_swarm["🤖 code-review-swarm<br/><small>Deploy specialized AI agent...</small>"]
-        github_modes["🤖 github-modes<br/><small>Comprehensive GitHub integr...</small>"]
-        issue_tracker["🤖 issue-tracker<br/><small>Intelligent issue managemen...</small>"]
-        multi_repo_swarm["🤖 multi-repo-swarm<br/><small>Cross-repository swarm orch...</small>"]
-        pr_manager["🤖 pr-manager<br/><small>Comprehensive pull request ...</small>"]
-        project_board_sync["🤖 project-board-sync<br/><small>Synchronize AI swarms with ...</small>"]
-        release_manager["🤖 release-manager<br/><small>Automated release coordinat...</small>"]
-        release_swarm["🤖 release-swarm<br/><small>Orchestrate complex softwar...</small>"]
-        repo_architect["🤖 repo-architect<br/><small>Repository structure optimi...</small>"]
-        swarm_issue["🤖 swarm-issue<br/><small>GitHub issue-based swarm co...</small>"]
-        swarm_pr["🤖 swarm-pr<br/><small>Pull request swarm manageme...</small>"]
-        sync_coordinator["🤖 sync-coordinator<br/><small>Multi-repository synchroniz...</small>"]
-        workflow_automation["🤖 workflow-automation<br/><small>GitHub Actions workflow aut...</small>"]
-        sublinear_goal_planner["🤖 sublinear-goal-planner<br/><small>"Goal-Oriented Action Plann...</small>"]
-        goal_planner["🤖 goal-planner<br/><small>"Goal-Oriented Action Plann...</small>"]
-        Benchmark_Suite["🤖 Benchmark Suite<br/><small>Comprehensive performance b...</small>"]
-        Load_Balancing_Coordinator["🤖 Load Balancing Coordinator<br/><small>Dynamic task distribution, ...</small>"]
-        Performance_Monitor["🤖 Performance Monitor<br/><small>Real-time metrics collectio...</small>"]
-        Resource_Allocator["🤖 Resource Allocator<br/><small>Adaptive resource allocatio...</small>"]
-        Topology_Optimizer["🤖 Topology Optimizer<br/><small>Dynamic swarm topology reco...</small>"]
-        agentic_payments["🤖 agentic-payments<br/><small>Multi-agent payment authori...</small>"]
-        sona_learning_optimizer["🤖 sona-learning-optimizer<br/><small>SONA-powered self-optimizin...</small>"]
-        architecture["🤖 architecture<br/><small>SPARC Architecture phase sp...</small>"]
-        pseudocode["🤖 pseudocode<br/><small>SPARC Pseudocode phase spec...</small>"]
-        refinement["🤖 refinement<br/><small>SPARC Refinement phase spec...</small>"]
-        specification["🤖 specification<br/><small>SPARC Specification phase s...</small>"]
-        _mobile_dev_["🤖 "mobile-dev"<br/><small>"Expert agent for React Nat...</small>"]
-        _mobile_dev_["🤖 "mobile-dev"<br/><small>"Expert agent for React Nat...</small>"]
-        consensus_coordinator["👑 consensus-coordinator<br/><small>Distributed consensus agent...</small>"]
-        matrix_optimizer["🤖 matrix-optimizer<br/><small>Expert agent for matrix ana...</small>"]
-        pagerank_analyzer["🤖 pagerank-analyzer<br/><small>Expert agent for graph anal...</small>"]
-        performance_optimizer["🤖 performance-optimizer<br/><small>System performance optimiza...</small>"]
-        trading_predictor["🤖 trading-predictor<br/><small>Advanced financial trading ...</small>"]
-        adaptive_coordinator["👑 adaptive-coordinator<br/><small>Dynamic topology switching ...</small>"]
-        hierarchical_coordinator["👑 hierarchical-coordinator<br/><small>Queen-led hierarchical swar...</small>"]
-        mesh_coordinator["👑 mesh-coordinator<br/><small>Peer-to-peer mesh network s...</small>"]
-        smart_agent["🤖 smart-agent<br/><small>Intelligent agent coordinat...</small>"]
-        base_template_generator["🤖 base-template-generator<br/><small>Use this agent when you nee...</small>"]
-        swarm_init["🤖 swarm-init<br/><small>Swarm initialization and to...</small>"]
-        pr_manager["🤖 pr-manager<br/><small>Complete pull request lifec...</small>"]
-        sparc_coder["🤖 sparc-coder<br/><small>Transform specifications in...</small>"]
-        memory_coordinator["🤖 memory-coordinator<br/><small>Manage persistent memory ac...</small>"]
-        task_orchestrator["🤖 task-orchestrator<br/><small>Central coordination agent ...</small>"]
-        perf_analyzer["🤖 perf-analyzer<br/><small>Performance bottleneck anal...</small>"]
-        sparc_coord["🤖 sparc-coord<br/><small>SPARC methodology orchestra...</small>"]
-        production_validator["🤖 production-validator<br/><small>Production validation speci...</small>"]
-        tdd_london_swarm["🤖 tdd-london-swarm<br/><small>TDD London School specialis...</small>"]
-        adr_architect["🤖 adr-architect<br/><small>V3 Architecture Decision Re...</small>"]
-        aidefence_guardian["🤖 aidefence-guardian<br/><small>AI Defense Guardian agent t...</small>"]
-        claims_authorizer["🤖 claims-authorizer<br/><small>V3 Claims-based authorizati...</small>"]
-        collective_intelligence_coordinator["👑 collective-intelligence-coordinator<br/><small>Hive-mind collective decisi...</small>"]
-        ddd_domain_expert["🤖 ddd-domain-expert<br/><small>V3 Domain-Driven Design spe...</small>"]
-        injection_analyst["🤖 injection-analyst<br/><small>Deep analysis specialist fo...</small>"]
-        memory_specialist["🎯 memory-specialist<br/><small>V3 memory optimization spec...</small>"]
-        performance_engineer["🤖 performance-engineer<br/><small>V3 Performance Engineering ...</small>"]
-        pii_detector["🤖 pii-detector<br/><small>Specialized PII detection a...</small>"]
-        reasoningbank_learner["🎯 reasoningbank-learner<br/><small>V3 ReasoningBank integratio...</small>"]
-        security_architect_aidefence["🤖 security-architect-aidefence<br/><small>|</small>"]
-        security_architect["🤖 security-architect<br/><small>V3 Security Architecture sp...</small>"]
-        security_auditor["🤖 security-auditor<br/><small>Advanced security auditor w...</small>"]
-        sparc_orchestrator["👑 sparc-orchestrator<br/><small>V3 SPARC methodology orches...</small>"]
-        swarm_memory_manager["👑 swarm-memory-manager<br/><small>V3 distributed memory manag...</small>"]
-        v3_integration_architect["🤖 v3-integration-architect<br/><small>V3 deep agentic-flow@alpha ...</small>"]
-        Tier["🤖 Tier<br/><small>Handler</small>"]
-        Cost["🤖 Cost<br/><small>Use Cases</small>"]
-        Haiku["🤖 Haiku<br/><small>~500ms</small>"]
-        Trigger["🤖 Trigger<br/><small>Worker</small>"]
-        optimize["🤖 optimize<br/><small>Performance optimization</small>"]
-        testgaps["🤖 testgaps<br/><small>Find missing test coverage</small>"]
-        audit["🤖 audit<br/><small>Security analysis</small>"]
-        document["🤖 document<br/><small>Update documentation</small>"]
-        map["🤖 map<br/><small>Update codebase map</small>"]
-        deepdive["🤖 deepdive<br/><small>Deep code analysis</small>"]
-        Code["🤖 Code<br/><small>Task</small>"]
-        Command["🤖 Command<br/><small>Subcommands</small>"]
-        init["🤖 init<br/><small>4</small>"]
-        swarm["🤖 swarm<br/><small>6</small>"]
-        memory["🤖 memory<br/><small>11</small>"]
-        mcp["🤖 mcp<br/><small>9</small>"]
-        task["🤖 task<br/><small>6</small>"]
-        session["🤖 session<br/><small>7</small>"]
-        config["🤖 config<br/><small>7</small>"]
-        status["🤖 status<br/><small>3</small>"]
-        workflow["🤖 workflow<br/><small>6</small>"]
-        hooks["🤖 hooks<br/><small>17</small>"]
-        Command["🤖 Command<br/><small>Subcommands</small>"]
-        daemon["🤖 daemon<br/><small>5</small>"]
-        neural["🤖 neural<br/><small>5</small>"]
-        security["🤖 security<br/><small>6</small>"]
-        performance["🤖 performance<br/><small>5</small>"]
-        providers["🤖 providers<br/><small>5</small>"]
-        plugins["🤖 plugins<br/><small>5</small>"]
-        deployment["🤖 deployment<br/><small>5</small>"]
-        embeddings["🤖 embeddings<br/><small>4</small>"]
-        claims["🤖 claims<br/><small>4</small>"]
-        migrate["🤖 migrate<br/><small>5</small>"]
-        doctor["🤖 doctor<br/><small>1</small>"]
-        completions["🤖 completions<br/><small>4</small>"]
-        Hook["🤖 Hook<br/><small>Description</small>"]
-        route["🤖 route<br/><small>Route task to optimal agent</small>"]
-        explain["🤖 explain<br/><small>Explain routing decision</small>"]
-        pretrain["🤖 pretrain<br/><small>Bootstrap intelligence from...</small>"]
-        metrics["🤖 metrics<br/><small>View learning metrics dashb...</small>"]
-        transfer["🤖 transfer<br/><small>Transfer patterns via IPFS ...</small>"]
-        list["🤖 list<br/><small>List all registered hooks</small>"]
-        intelligence["🤖 intelligence<br/><small>RuVector intelligence system</small>"]
-        worker["🤖 worker<br/><small>Background worker management</small>"]
-        progress["🤖 progress<br/><small>Check V3 implementation pro...</small>"]
-        statusline["🤖 statusline<br/><small>Generate dynamic statusline</small>"]
-        Worker["🤖 Worker<br/><small>Priority</small>"]
-        ultralearn["🤖 ultralearn<br/><small>normal</small>"]
-        optimize["🤖 optimize<br/><small>high</small>"]
-        consolidate["🤖 consolidate<br/><small>low</small>"]
-        predict["🤖 predict<br/><small>normal</small>"]
-        audit["🤖 audit<br/><small>critical</small>"]
-        map["🤖 map<br/><small>normal</small>"]
-        preload["🤖 preload<br/><small>low</small>"]
-        deepdive["🤖 deepdive<br/><small>normal</small>"]
-        document["🤖 document<br/><small>normal</small>"]
-        refactor["🤖 refactor<br/><small>normal</small>"]
-        benchmark["🤖 benchmark<br/><small>normal</small>"]
-        testgaps["🤖 testgaps<br/><small>normal</small>"]
-        Metric["🤖 Metric<br/><small>Target</small>"]
-        Condition["🤖 Condition<br/><small>Action</small>"]
+    subgraph other["📦 Other (59)"]
+        _code_analyzer_["🤖 "code-analyzer""]
+        _code_analyzer_["🤖 "code-analyzer""]
+        _system_architect_["🤖 "system-architect""]
+        _system_architect_["🤖 "system-architect""]
+        browser_agent["🤖 browser-agent"]
+        _ml_developer_["🤖 "ml-developer""]
+        _ml_developer_["🤖 "ml-developer""]
+        _cicd_engineer_["🤖 "cicd-engineer""]
+        _cicd_engineer_["🤖 "cicd-engineer""]
+        Performance_Monitor["🤖 Performance Monitor"]
+        Resource_Allocator["🤖 Resource Allocator"]
+        Topology_Optimizer["🤖 Topology Optimizer"]
+        _mobile_dev_["🤖 "mobile-dev""]
+        _mobile_dev_["🤖 "mobile-dev""]
+        Tier["🤖 Tier"]
+        Cost["🤖 Cost"]
+        Haiku["🤖 Haiku"]
+        Trigger["🤖 Trigger"]
+        map["🤖 map"]
+        Code["🤖 Code"]
+        other_more[["... +39 more"]]
     end
 
-    subgraph MCP["MCP Servers"]
+    subgraph github["🐙 GitHub (14)"]
+        code_review_swarm["🤖 code-review-swarm"]
+        github_modes["🤖 github-modes"]
+        issue_tracker["🤖 issue-tracker"]
+        multi_repo_swarm["🤖 multi-repo-swarm"]
+        pr_manager["🤖 pr-manager"]
+        project_board_sync["🤖 project-board-sync"]
+        release_manager["🤖 release-manager"]
+        release_swarm["🤖 release-swarm"]
+        repo_architect["🤖 repo-architect"]
+        swarm_issue["🤖 swarm-issue"]
+        swarm_pr["🤖 swarm-pr"]
+        sync_coordinator["🤖 sync-coordinator"]
+        workflow_automation["🤖 workflow-automation"]
+        pr_manager["🤖 pr-manager"]
+    end
+
+    subgraph coordination["👑 Coordination (11)"]
+        planner["👑 planner"]
+        Load_Balancing_Coordinator["🤖 Load Balancing Coordinator"]
+        adaptive_coordinator["👑 adaptive-coordinator"]
+        hierarchical_coordinator["👑 hierarchical-coordinator"]
+        mesh_coordinator["👑 mesh-coordinator"]
+        smart_agent["🤖 smart-agent"]
+        swarm_init["🤖 swarm-init"]
+        memory_coordinator["🤖 memory-coordinator"]
+        task_orchestrator["🤖 task-orchestrator"]
+        collective_intelligence_coordinator["👑 collective-intelligence-coordinator"]
+        swarm_memory_manager["👑 swarm-memory-manager"]
+    end
+
+    subgraph performance["📈 Performance (11)"]
+        performance_benchmarker["🤖 performance-benchmarker"]
+        Benchmark_Suite["🤖 Benchmark Suite"]
+        matrix_optimizer["🤖 matrix-optimizer"]
+        pagerank_analyzer["🤖 pagerank-analyzer"]
+        performance_optimizer["🤖 performance-optimizer"]
+        trading_predictor["🤖 trading-predictor"]
+        perf_analyzer["🤖 perf-analyzer"]
+        performance_engineer["🤖 performance-engineer"]
+        optimize["🤖 optimize"]
+        optimize["🤖 optimize"]
+        benchmark["🤖 benchmark"]
+    end
+
+    subgraph security["🔒 Security (10)"]
+        security_manager["🤖 security-manager"]
+        aidefence_guardian["🤖 aidefence-guardian"]
+        claims_authorizer["🤖 claims-authorizer"]
+        injection_analyst["🤖 injection-analyst"]
+        pii_detector["🤖 pii-detector"]
+        security_architect_aidefence["🤖 security-architect-aidefence"]
+        security_architect["🤖 security-architect"]
+        security_auditor["🤖 security-auditor"]
+        audit["🤖 audit"]
+        audit["🤖 audit"]
+    end
+
+    subgraph flow_nexus["🌊 Flow Nexus (9)"]
+        flow_nexus_app_store["🤖 flow-nexus-app-store"]
+        flow_nexus_auth["🤖 flow-nexus-auth"]
+        flow_nexus_challenges["🤖 flow-nexus-challenges"]
+        flow_nexus_neural["🤖 flow-nexus-neural"]
+        flow_nexus_payments["🤖 flow-nexus-payments"]
+        flow_nexus_sandbox["🤖 flow-nexus-sandbox"]
+        flow_nexus_swarm["🤖 flow-nexus-swarm"]
+        flow_nexus_user_tools["🤖 flow-nexus-user-tools"]
+        flow_nexus_workflow["🤖 flow-nexus-workflow"]
+    end
+
+    subgraph development["💻 Development (8)"]
+        coder["🤖 coder"]
+        _backend_dev_["🤖 "backend-dev""]
+        _backend_dev_["🤖 "backend-dev""]
+        sublinear_goal_planner["🤖 sublinear-goal-planner"]
+        goal_planner["🤖 goal-planner"]
+        agentic_payments["🤖 agentic-payments"]
+        base_template_generator["🤖 base-template-generator"]
+        refactor["🤖 refactor"]
+    end
+
+    subgraph sparc["⚡ SPARC (7)"]
+        architecture["🤖 architecture"]
+        pseudocode["🤖 pseudocode"]
+        refinement["🤖 refinement"]
+        specification["🤖 specification"]
+        sparc_coder["🤖 sparc-coder"]
+        sparc_coord["🤖 sparc-coord"]
+        sparc_orchestrator["👑 sparc-orchestrator"]
+    end
+
+    subgraph testing["🧪 Testing (7)"]
+        reviewer["🤖 reviewer"]
+        tester["🤖 tester"]
+        test_long_runner["🤖 test-long-runner"]
+        production_validator["🤖 production-validator"]
+        tdd_london_swarm["🤖 tdd-london-swarm"]
+        testgaps["🤖 testgaps"]
+        testgaps["🤖 testgaps"]
+    end
+
+    subgraph consensus["🤝 Consensus (6)"]
+        byzantine_coordinator["👑 byzantine-coordinator"]
+        crdt_synchronizer["🤖 crdt-synchronizer"]
+        gossip_coordinator["👑 gossip-coordinator"]
+        quorum_manager["👑 quorum-manager"]
+        raft_manager["👑 raft-manager"]
+        consensus_coordinator["👑 consensus-coordinator"]
+    end
+
+    subgraph v3_core["🚀 V3 Core (5)"]
+        sona_learning_optimizer["🤖 sona-learning-optimizer"]
+        adr_architect["🤖 adr-architect"]
+        ddd_domain_expert["🤖 ddd-domain-expert"]
+        reasoningbank_learner["🎯 reasoningbank-learner"]
+        v3_integration_architect["🤖 v3-integration-architect"]
+    end
+
+    subgraph memory["🧠 Memory (5)"]
+        memory_specialist["🎯 memory-specialist"]
+        ultralearn["🤖 ultralearn"]
+        consolidate["🤖 consolidate"]
+        predict["🤖 predict"]
+        preload["🤖 preload"]
+    end
+
+    subgraph analysis["🔍 Analysis (4)"]
+        analyst["🤖 analyst"]
+        researcher["🤖 researcher"]
+        deepdive["🤖 deepdive"]
+        deepdive["🤖 deepdive"]
+    end
+
+    subgraph documentation["📚 Documentation (4)"]
+        _api_docs_["🤖 "api-docs""]
+        _api_docs_["🤖 "api-docs""]
+        document["🤖 document"]
+        document["🤖 document"]
+    end
+
+    subgraph MCP["🔌 MCP Servers"]
         mcp_claude_flow["🟢 claude-flow"]
     end
 
-    subgraph Skills["Skills"]
-        skill__AgentDB_Advanced_Features_["⚡ "AgentDB Advanced Features""]
-        skill__AgentDB_Learning_Plugins_["⚡ "AgentDB Learning Plugins""]
-        skill__AgentDB_Memory_Patterns_["⚡ "AgentDB Memory Patterns""]
-        skill__AgentDB_Performance_Optimization_["⚡ "AgentDB Performance Optimization""]
-        skill__AgentDB_Vector_Search_["⚡ "AgentDB Vector Search""]
-        skill_github_code_review["⚡ github-code-review"]
-        skill_github_multi_repo["⚡ github-multi-repo"]
-        skill_github_project_management["⚡ github-project-management"]
-        skill_github_release_management["⚡ github-release-management"]
-        skill_github_workflow_automation["⚡ github-workflow-automation"]
-        skill_Hooks_Automation["⚡ Hooks Automation"]
-        skill_Pair_Programming["⚡ Pair Programming"]
-        skill__ReasoningBank_with_AgentDB_["⚡ "ReasoningBank with AgentDB""]
-        skill__ReasoningBank_Intelligence_["⚡ "ReasoningBank Intelligence""]
-        skill__Skill_Builder_["⚡ "Skill Builder""]
-        skill_sparc_methodology["⚡ sparc-methodology"]
-        skill_stream_chain["⚡ stream-chain"]
-        skill_swarm_advanced["⚡ swarm-advanced"]
-        skill__Swarm_Orchestration_["⚡ "Swarm Orchestration""]
-        skill__V3_CLI_Modernization_["⚡ "V3 CLI Modernization""]
-        skill__V3_Core_Implementation_["⚡ "V3 Core Implementation""]
-        skill__V3_DDD_Architecture_["⚡ "V3 DDD Architecture""]
-        skill__V3_Deep_Integration_["⚡ "V3 Deep Integration""]
-        skill__V3_MCP_Optimization_["⚡ "V3 MCP Optimization""]
-        skill__V3_Memory_Unification_["⚡ "V3 Memory Unification""]
-        skill__V3_Performance_Optimization_["⚡ "V3 Performance Optimization""]
-        skill__V3_Security_Overhaul_["⚡ "V3 Security Overhaul""]
-        skill__V3_Swarm_Coordination_["⚡ "V3 Swarm Coordination""]
-        skill__Verification___Quality_Assurance_["⚡ "Verification & Quality Assurance""]
+    subgraph Skills["⚡ Skills"]
+        skill__AgentDB_Advanced_Features_[""AgentDB Advanced Features""]
+        skill__AgentDB_Learning_Plugins_[""AgentDB Learning Plugins""]
+        skill__AgentDB_Memory_Patterns_[""AgentDB Memory Patterns""]
+        skill__AgentDB_Performance_Optimization_[""AgentDB Performance Optimization""]
+        skill__AgentDB_Vector_Search_[""AgentDB Vector Search""]
+        skill_browser["browser"]
+        skill_github_code_review["github-code-review"]
+        skill_github_multi_repo["github-multi-repo"]
+        skill_github_project_management["github-project-management"]
+        skill_github_release_management["github-release-management"]
+        skills_more[["... +20 more"]]
     end
 
-    %% Agent Relationships
+    %% Cross-category relationships
+
+    %% Tool connections
 
     %% Styling
-    classDef coordinator fill:#e1f5fe,stroke:#01579b
+    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef worker fill:#f3e5f5,stroke:#4a148c
     classDef reviewer fill:#fff3e0,stroke:#e65100
     classDef specialist fill:#e8f5e9,stroke:#1b5e20
     classDef disabled fill:#eeeeee,stroke:#9e9e9e,stroke-dasharray: 5 5
     classDef mcp fill:#fce4ec,stroke:#880e4f
     classDef skill fill:#e3f2fd,stroke:#0d47a1
-    class _code_analyzer_ "analysis"
-    class analyst code-analyzer
-    class _code_analyzer_ "analysis"
-    class _system_architect_ "architecture"
-    class _system_architect_ "architecture"
+    classDef more fill:#f5f5f5,stroke:#bdbdbd,stroke-dasharray: 3 3
+    class _code_analyzer_ worker
+    class analyst worker
+    class _code_analyzer_ worker
+    class _system_architect_ worker
+    class _system_architect_ worker
+    class browser_agent worker
     class byzantine_coordinator coordinator
-    class crdt_synchronizer synchronizer
+    class crdt_synchronizer worker
     class gossip_coordinator coordinator
-    class performance_benchmarker analyst
+    class performance_benchmarker worker
     class quorum_manager coordinator
     class raft_manager coordinator
-    class security_manager security
-    class coder developer
+    class security_manager worker
+    class coder worker
     class planner coordinator
-    class researcher analyst
-    class reviewer validator
-    class tester validator
+    class researcher worker
+    class reviewer reviewer
+    class tester reviewer
     class test_long_runner worker
-    class _ml_developer_ "data"
-    class _ml_developer_ "data"
-    class _backend_dev_ "development"
-    class _backend_dev_ "development"
-    class _cicd_engineer_ "devops"
-    class _cicd_engineer_ "devops"
-    class _api_docs_ "documentation"
-    class _api_docs_ "documentation"
+    class _ml_developer_ worker
+    class _ml_developer_ worker
+    class _backend_dev_ worker
+    class _backend_dev_ worker
+    class _cicd_engineer_ worker
+    class _cicd_engineer_ worker
+    class _api_docs_ worker
+    class _api_docs_ worker
     class flow_nexus_app_store worker
     class flow_nexus_auth worker
     class flow_nexus_challenges worker
@@ -245,34 +233,34 @@ graph TB
     class flow_nexus_swarm worker
     class flow_nexus_user_tools worker
     class flow_nexus_workflow worker
-    class code_review_swarm development
-    class github_modes development
-    class issue_tracker development
-    class multi_repo_swarm coordination
-    class pr_manager development
-    class project_board_sync coordination
-    class release_manager development
-    class release_swarm coordination
-    class repo_architect architecture
-    class swarm_issue coordination
-    class swarm_pr development
-    class sync_coordinator coordination
-    class workflow_automation automation
+    class code_review_swarm worker
+    class github_modes worker
+    class issue_tracker worker
+    class multi_repo_swarm worker
+    class pr_manager worker
+    class project_board_sync worker
+    class release_manager worker
+    class release_swarm worker
+    class repo_architect worker
+    class swarm_issue worker
+    class swarm_pr worker
+    class sync_coordinator worker
+    class workflow_automation worker
     class sublinear_goal_planner worker
     class goal_planner worker
-    class Benchmark_Suite agent
-    class Load_Balancing_Coordinator agent
-    class Performance_Monitor agent
-    class Resource_Allocator agent
-    class Topology_Optimizer agent
+    class Benchmark_Suite worker
+    class Load_Balancing_Coordinator worker
+    class Performance_Monitor worker
+    class Resource_Allocator worker
+    class Topology_Optimizer worker
     class agentic_payments worker
-    class sona_learning_optimizer adaptive-learning
-    class architecture architect
-    class pseudocode architect
-    class refinement developer
-    class specification analyst
-    class _mobile_dev_ "specialized"
-    class _mobile_dev_ "specialized"
+    class sona_learning_optimizer worker
+    class architecture worker
+    class pseudocode worker
+    class refinement worker
+    class specification worker
+    class _mobile_dev_ worker
+    class _mobile_dev_ worker
     class consensus_coordinator coordinator
     class matrix_optimizer worker
     class pagerank_analyzer worker
@@ -281,33 +269,33 @@ graph TB
     class adaptive_coordinator coordinator
     class hierarchical_coordinator coordinator
     class mesh_coordinator coordinator
-    class smart_agent automation
+    class smart_agent worker
     class base_template_generator worker
-    class swarm_init coordination
-    class pr_manager development
-    class sparc_coder development
-    class memory_coordinator coordination
-    class task_orchestrator orchestration
-    class perf_analyzer analysis
-    class sparc_coord coordination
-    class production_validator validator
-    class tdd_london_swarm tester
-    class adr_architect architect
-    class aidefence_guardian security
-    class claims_authorizer security
+    class swarm_init worker
+    class pr_manager worker
+    class sparc_coder worker
+    class memory_coordinator worker
+    class task_orchestrator worker
+    class perf_analyzer worker
+    class sparc_coord worker
+    class production_validator reviewer
+    class tdd_london_swarm worker
+    class adr_architect worker
+    class aidefence_guardian worker
+    class claims_authorizer worker
     class collective_intelligence_coordinator coordinator
-    class ddd_domain_expert architect
-    class injection_analyst security
+    class ddd_domain_expert worker
+    class injection_analyst worker
     class memory_specialist specialist
-    class performance_engineer optimization
-    class pii_detector security
+    class performance_engineer worker
+    class pii_detector worker
     class reasoningbank_learner specialist
-    class security_architect_aidefence security
-    class security_architect security
-    class security_auditor security
+    class security_architect_aidefence worker
+    class security_architect worker
+    class security_auditor worker
     class sparc_orchestrator coordinator
     class swarm_memory_manager coordinator
-    class v3_integration_architect architect
+    class v3_integration_architect worker
     class Tier worker
     class Cost worker
     class Haiku worker
@@ -375,6 +363,7 @@ graph TB
     class skill__AgentDB_Memory_Patterns_ skill
     class skill__AgentDB_Performance_Optimization_ skill
     class skill__AgentDB_Vector_Search_ skill
+    class skill_browser skill
     class skill_github_code_review skill
     class skill_github_multi_repo skill
     class skill_github_project_management skill
@@ -399,4 +388,5 @@ graph TB
     class skill__V3_Security_Overhaul_ skill
     class skill__V3_Swarm_Coordination_ skill
     class skill__Verification___Quality_Assurance_ skill
+    class other_more more
 ```
