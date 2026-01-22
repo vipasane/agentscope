@@ -7,6 +7,7 @@ import { resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { parseClaudeCode } from './parsers/claude-code.js';
 import { parseMcp } from './parsers/mcp.js';
+import { scanSettings, scanUserSettings, mergeSettings } from './scanner/settings-scanner.js';
 import { generateComponentMap, type ComponentMapOptions } from './generators/diagrams/component-map.js';
 import { generateHierarchy, type HierarchyOptions } from './generators/diagrams/hierarchy.js';
 import { generateDataflow } from './generators/diagrams/dataflow.js';
@@ -27,6 +28,15 @@ export * from './model/types.js';
 // Re-export parsers
 export { parseClaudeCode, ClaudeCodeParser } from './parsers/index.js';
 export { parseMcp, McpParser } from './parsers/index.js';
+
+// Re-export settings scanner
+export {
+  SettingsScanner,
+  scanSettings,
+  scanUserSettings,
+  mergeSettings,
+  type SettingsScanResult,
+} from './scanner/settings-scanner.js';
 
 // Re-export generators
 export { generateComponentMap, type ComponentMapOptions } from './generators/diagrams/component-map.js';
@@ -57,6 +67,9 @@ export {
   type NavigationItem,
   type CategorizedAgents as FormatterCategorizedAgents,
   type DocumentBuilderOptions,
+  type FormatterOptions,
+  type HookDisplayInfo,
+  type QuickStatsInput,
   // Document Builder
   DocumentBuilder,
   // Navigation
@@ -80,6 +93,23 @@ export {
   getToolUsageByType,
   generateToolUsageSummary,
   findCircularDelegations,
+  // Section formatters for all 7 entity types
+  formatHooksSection,
+  formatCommandsSection,
+  formatPluginsSection,
+  formatPermissionsSection,
+  formatAgentsComparisonTable,
+  formatAgentsCapabilitiesMatrix,
+  formatMcpServersSection,
+  formatSkillsSection,
+  formatQuickStats,
+  // Sanitization utilities
+  sanitize,
+  truncate,
+  escapeTableCell,
+  getStatusIcon,
+  formatTimeout,
+  toAnchorId,
 } from './formatters/index.js';
 
 // Re-export theme system
@@ -120,6 +150,69 @@ export {
   defaultTheme,
 } from './themes/index.js';
 
+// Re-export export/import system
+export {
+  // Path Transformer
+  type PathType,
+  type TransformResult,
+  type PathTransformOptions,
+  detectPathType,
+  toPortablePath,
+  toPortablePathWithInfo,
+  fromPortablePath,
+  fromPortablePathWithInfo,
+  toPortablePaths,
+  fromPortablePaths,
+  transformObjectPaths,
+  restoreObjectPaths,
+  normalizeSeparators,
+  isPathUnder,
+  isPathKey,
+  getPlatform,
+  isValidPortablePath,
+  // Secrets Sanitizer
+  type SanitizeResult,
+  type SecretReference,
+  type SecretType,
+  type SanitizeStats,
+  type SanitizeOptions,
+  sanitizeSecrets,
+  generateSecretsDoc,
+  detectEnvReference,
+  detectSecretTypeFromKey,
+  detectSecretTypeFromValue,
+  isSecretKey,
+  isSecretValue,
+  validateNoSecrets,
+  getSecretPatterns,
+  // Exporter
+  type ExportOptions,
+  type ExportManifest,
+  type EntityCounts,
+  type ExportedFile,
+  type McpBundle,
+  type McpServerBundle,
+  type ExportResult,
+  exportConfig,
+  validateForExport,
+  previewExport,
+} from './export/index.js';
+
+export {
+  // Importer
+  type ImportOptions,
+  type ImportResult,
+  type ManifestValidation,
+  type ImportPreview,
+  importConfig,
+  previewImport,
+  validateImport,
+  validateConfigFile,
+  validateManifest,
+  listExports,
+  getExportInfo,
+} from './import/index.js';
+
 // Version
 export const VERSION = '0.1.0';
 
@@ -133,14 +226,23 @@ export async function scan(options: ScanOptions): Promise<AgentScopeConfig> {
   let filesScanned = 0;
 
   // Parse all configuration sources in parallel
-  const [claudeResult, mcpResult] = await Promise.all([
+  const [claudeResult, mcpResult, settingsResult] = await Promise.all([
     parseClaudeCode(rootPath),
     parseMcp(rootPath),
+    scanSettings(rootPath),
   ]);
+
+  // Optionally merge with user settings
+  let finalSettingsResult = settingsResult;
+  if (options.includeUserConfig) {
+    const userSettingsResult = await scanUserSettings();
+    finalSettingsResult = mergeSettings(settingsResult, userSettingsResult);
+  }
 
   // Collect errors
   errors.push(...claudeResult.errors);
   errors.push(...mcpResult.errors);
+  errors.push(...finalSettingsResult.errors);
 
   // Estimate files scanned (can be made more accurate)
   filesScanned =
@@ -148,7 +250,8 @@ export async function scan(options: ScanOptions): Promise<AgentScopeConfig> {
     claudeResult.skills.length +
     claudeResult.commands.length +
     mcpResult.servers.length +
-    2; // For CLAUDE.md and .mcp.json
+    finalSettingsResult.plugins.length +
+    3; // For CLAUDE.md, .mcp.json, and settings.json
 
   // Build metadata
   const metadata: ScanMetadata = {
@@ -160,12 +263,41 @@ export async function scan(options: ScanOptions): Promise<AgentScopeConfig> {
     errors,
   };
 
+  // Merge hooks from claude parser and settings scanner (settings takes precedence)
+  const hookMap = new Map<string, typeof claudeResult.hooks[0]>();
+  for (const hook of claudeResult.hooks) {
+    hookMap.set(`${hook.event}:${hook.command ?? hook.path}`, hook);
+  }
+  for (const hook of finalSettingsResult.hooks) {
+    hookMap.set(`${hook.event}:${hook.command ?? hook.path}`, hook);
+  }
+
+  // Merge MCP servers (settings scanner has more detailed info)
+  const serverMap = new Map<string, typeof mcpResult.servers[0]>();
+  for (const server of mcpResult.servers) {
+    serverMap.set(server.name, server);
+  }
+  for (const server of finalSettingsResult.mcpServers) {
+    serverMap.set(server.name, server);
+  }
+
+  // Merge commands (settings scanner may have additional commands)
+  const commandMap = new Map<string, typeof claudeResult.commands[0]>();
+  for (const cmd of claudeResult.commands) {
+    commandMap.set(cmd.name, cmd);
+  }
+  for (const cmd of finalSettingsResult.commands) {
+    commandMap.set(cmd.name, cmd);
+  }
+
   return {
     agents: claudeResult.agents,
     skills: claudeResult.skills,
-    hooks: claudeResult.hooks,
-    commands: claudeResult.commands,
-    mcpServers: mcpResult.servers,
+    hooks: Array.from(hookMap.values()),
+    commands: Array.from(commandMap.values()),
+    mcpServers: Array.from(serverMap.values()),
+    plugins: finalSettingsResult.plugins,
+    permissions: finalSettingsResult.permissions,
     metadata,
   };
 }

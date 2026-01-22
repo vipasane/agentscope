@@ -83,15 +83,33 @@ export interface Hook {
   timeout?: number;
   /** Whether hook is enabled */
   enabled?: boolean;
+  /** Additional metadata about the hook */
+  metadata?: {
+    /** Hook type (command or prompt) */
+    type?: 'command' | 'prompt';
+    /** Matcher pattern for tool filtering */
+    matcher?: string;
+    /** Continue execution on error */
+    continueOnError?: boolean;
+    /** LLM prompt content */
+    prompt?: string;
+  };
 }
 
+/**
+ * Hook event types (2026.01 schema)
+ * @see https://json.schemastore.org/claude-code-settings.json
+ */
 export type HookEvent =
   | 'PreToolUse'
   | 'PostToolUse'
   | 'Notification'
   | 'Stop'
   | 'SubagentStop'
-  | 'UserPromptSubmit';
+  | 'UserPromptSubmit'
+  | 'SessionStart'
+  | 'SessionEnd'
+  | 'PreCompact';
 
 // ============================================================================
 // Command Types

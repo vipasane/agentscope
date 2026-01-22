@@ -97,6 +97,11 @@ export function validateColor(color: string): boolean {
   // Trim whitespace
   const trimmed = color.trim();
 
+  // Prevent ReDoS by limiting input length (reasonable max for color strings)
+  if (trimmed.length > 50) {
+    return false;
+  }
+
   // Check for injection patterns
   if (/[<>;"'`\\]/.test(trimmed)) {
     return false;

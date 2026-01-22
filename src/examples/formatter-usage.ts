@@ -96,6 +96,13 @@ function buildWithRelationships() {
     hooks: [],
     commands: [],
     mcpServers: [],
+    plugins: [],
+    permissions: {
+      allowCount: 0,
+      denyCount: 0,
+      askCount: 0,
+      rules: [],
+    },
     metadata: {
       scannedAt: new Date(),
       rootPath: '/test',

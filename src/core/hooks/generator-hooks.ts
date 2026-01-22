@@ -3,7 +3,7 @@
  * Based on DESIGN-001: Security and Hooks Integration
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import type {
   PreGenerateHookInput,
   PreGenerateHookOutput,
@@ -24,7 +24,7 @@ import { DiagramCache } from './cache.js';
 
 const SECURITY_THRESHOLD = 0.5;
 const QUALITY_THRESHOLD = 0.8;
-const CLI_COMMAND = 'npx @claude-flow/cli@latest';
+// CLI command is invoked via execFileSync with argument arrays for security
 
 // Mermaid directive injection patterns (for names only - strict)
 const NAME_INJECTION_PATTERNS = [
@@ -117,12 +117,18 @@ export async function invokePreGenerateHook(
       getCategoryCount(input.config)
     );
 
-    // 5. Invoke CLI hook (optional)
+    // 5. Invoke CLI hook (optional) - using execFileSync to prevent command injection
     try {
       const taskId = `pre-${input.requestId}`;
       const description = `Generate diagram: ${sanitizedOptions.level ?? 'category'} level for ${input.config.agents.length} agents`;
-      const hookCmd = `${CLI_COMMAND} hooks pre-task --task-id "${taskId}" --description "${description}"`;
-      execSync(hookCmd, { stdio: 'pipe', timeout: 5000 });
+      // Use execFileSync with argument array to prevent injection
+      execFileSync('npx', [
+        '@claude-flow/cli@latest',
+        'hooks',
+        'pre-task',
+        '--task-id', taskId,
+        '--description', description
+      ], { stdio: 'pipe', timeout: 5000 });
     } catch (error) {
       // Non-blocking, continue if hook fails
       console.warn('[Pre-Generate] Hook invocation failed:', error);
@@ -203,15 +209,26 @@ export async function invokePostGenerateHook(
     // 5. Generate optimization suggestions
     const suggestedOptimizations = generateOptimizationSuggestions(metrics);
 
-    // 6. Invoke CLI hooks (optional)
+    // 6. Invoke CLI hooks (optional) - using execFileSync to prevent command injection
     try {
       if (input.success) {
-        const postTaskCmd = `${CLI_COMMAND} hooks post-task --task-id "${input.requestId}" --success true --store-results true`;
-        execSync(postTaskCmd, { stdio: 'pipe', timeout: 5000 });
+        execFileSync('npx', [
+          '@claude-flow/cli@latest',
+          'hooks',
+          'post-task',
+          '--task-id', input.requestId,
+          '--success', 'true',
+          '--store-results', 'true'
+        ], { stdio: 'pipe', timeout: 5000 });
 
         // Train neural patterns on successful generation
-        const postEditCmd = `${CLI_COMMAND} hooks post-edit --file "diagram-output" --success true`;
-        execSync(postEditCmd, { stdio: 'pipe', timeout: 5000 });
+        execFileSync('npx', [
+          '@claude-flow/cli@latest',
+          'hooks',
+          'post-edit',
+          '--file', 'diagram-output',
+          '--success', 'true'
+        ], { stdio: 'pipe', timeout: 5000 });
       }
     } catch (error) {
       // Non-blocking
@@ -418,11 +435,17 @@ async function getAdaptiveLevelSuggestion(
   categoryCount: number
 ): Promise<ZoomLevel | undefined> {
   try {
-    // Query learned patterns via CLI
+    // Query learned patterns via CLI - using execFileSync to prevent injection
     const query = `agents:${agentCount} categories:${categoryCount}`;
-    const searchCmd = `${CLI_COMMAND} memory search --query "${query}" --namespace diagram-patterns --limit 5`;
 
-    const output = execSync(searchCmd, {
+    const output = execFileSync('npx', [
+      '@claude-flow/cli@latest',
+      'memory',
+      'search',
+      '--query', query,
+      '--namespace', 'diagram-patterns',
+      '--limit', '5'
+    ], {
       encoding: 'utf-8',
       stdio: 'pipe',
       timeout: 3000
@@ -488,14 +511,21 @@ function createGenerationPattern(
 }
 
 /**
- * Store pattern in memory via CLI
+ * Store pattern in memory via CLI - using execFileSync to prevent injection
  */
 async function storePattern(pattern: any): Promise<boolean> {
   try {
     const patternJson = JSON.stringify(pattern);
-    const storeCmd = `${CLI_COMMAND} memory store --namespace "diagram-patterns" --key "${pattern.id}" --value '${patternJson}'`;
 
-    execSync(storeCmd, { stdio: 'pipe', timeout: 5000 });
+    execFileSync('npx', [
+      '@claude-flow/cli@latest',
+      'memory',
+      'store',
+      '--namespace', 'diagram-patterns',
+      '--key', pattern.id,
+      '--value', patternJson
+    ], { stdio: 'pipe', timeout: 5000 });
+
     console.log(`[Post-Generate] Stored pattern: ${pattern.id}`);
     return true;
   } catch (error) {

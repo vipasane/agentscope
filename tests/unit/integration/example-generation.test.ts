@@ -54,7 +54,7 @@ describe('Example Generation Integration', () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  it('should generate example-style output from sample project', () => {
+  it('should generate example-style output from sample project', async () => {
     const diagram = generateHierarchy(parsedAgents);
 
     const builder = new DocumentBuilder();
@@ -86,7 +86,7 @@ describe('Example Generation Integration', () => {
     expect(document).toContain('tester');
   });
 
-  it('should include navigation links', () => {
+  it('should include navigation links', async () => {
     const diagram = generateHierarchy(parsedAgents);
 
     const builder = new DocumentBuilder();
@@ -102,7 +102,7 @@ describe('Example Generation Integration', () => {
     expect(document).toContain('[Next →](details.md)');
   });
 
-  it('should include legend', () => {
+  it('should include legend', async () => {
     const diagram = generateHierarchy(parsedAgents);
 
     const builder = new DocumentBuilder();
@@ -119,7 +119,7 @@ describe('Example Generation Integration', () => {
     expect(document).toContain('Delegates to');
   });
 
-  it('should include relationship summary', () => {
+  it('should include relationship summary', async () => {
     const diagram = generateHierarchy(parsedAgents);
 
     const builder = new DocumentBuilder();
@@ -136,7 +136,7 @@ describe('Example Generation Integration', () => {
     expect(document).toContain('→ tester');
   });
 
-  it('should parse all agents correctly', () => {
+  it('should parse all agents correctly', async () => {
     expect(parsedAgents).toHaveLength(4);
 
     // Verify planner
@@ -165,7 +165,7 @@ describe('Example Generation Integration', () => {
     expect(tester?.tools).toEqual(['Read', 'Write', 'Bash']);
   });
 
-  it('should generate valid Mermaid syntax', () => {
+  it('should generate valid Mermaid syntax', async () => {
     const diagram = generateHierarchy(parsedAgents);
 
     // Verify Mermaid structure
@@ -187,13 +187,13 @@ describe('Example Generation Integration', () => {
     expect(diagram).toMatch(/tester:::worker/);
   });
 
-  it('should apply custom theme', () => {
+  it('should apply custom theme', async () => {
     const diagram = generateHierarchy(parsedAgents, { theme: 'dark' });
 
     expect(diagram).toContain('%%{init: {"theme": "dark"}}%%');
   });
 
-  it('should generate complete document matching example format', () => {
+  it('should generate complete document matching example format', async () => {
     const diagram = generateHierarchy(parsedAgents, {
       theme: 'forest'
     });
