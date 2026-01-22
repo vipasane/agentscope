@@ -157,6 +157,62 @@ export interface ScanMetadata {
 }
 
 // ============================================================================
+// Plugin Types (from Claude Code schema 2026.01)
+// ============================================================================
+
+export type MarketplaceSourceType = 'github' | 'git' | 'url' | 'npm' | 'file' | 'directory';
+
+export interface Plugin {
+  /** Plugin identifier (format: plugin-id@marketplace-id) */
+  id: string;
+  /** Plugin name */
+  name: string;
+  /** Marketplace where plugin is installed from */
+  marketplace?: string;
+  /** Whether plugin is enabled */
+  enabled: boolean;
+  /** Plugin version if known */
+  version?: string;
+  /** Plugin description */
+  description?: string;
+  /** Source location */
+  source?: {
+    type: MarketplaceSourceType;
+    location: string;
+  };
+}
+
+// ============================================================================
+// Permission Types (from Claude Code schema 2026.01)
+// ============================================================================
+
+export interface PermissionRule {
+  /** Permission rule pattern (e.g., "Bash(npm run:*)", "Read(./.env)") */
+  pattern: string;
+  /** Rule type */
+  type: 'allow' | 'deny' | 'ask';
+  /** Tool this rule applies to */
+  tool?: string;
+  /** Description of what this rule does */
+  description?: string;
+}
+
+export interface PermissionSummary {
+  /** Number of allow rules */
+  allowCount: number;
+  /** Number of deny rules */
+  denyCount: number;
+  /** Number of ask rules */
+  askCount: number;
+  /** All permission rules */
+  rules: PermissionRule[];
+  /** Default permission mode */
+  defaultMode?: 'acceptEdits' | 'bypassPermissions' | 'default' | 'plan';
+  /** Additional scoped directories */
+  additionalDirectories?: string[];
+}
+
+// ============================================================================
 // Main Configuration Interface
 // ============================================================================
 
@@ -171,6 +227,10 @@ export interface AgentScopeConfig {
   commands: Command[];
   /** MCP server configurations */
   mcpServers: McpServer[];
+  /** Installed plugins */
+  plugins: Plugin[];
+  /** Permission configuration */
+  permissions: PermissionSummary;
   /** Scan metadata */
   metadata: ScanMetadata;
 }
