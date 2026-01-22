@@ -6,6 +6,10 @@
 
 AgentScope is an open-source CLI tool that automatically scans Claude Code agent configurations and generates Mermaid diagrams plus shareable documentation. It answers the fundamental question every developer has: *"What agents, skills, hooks, and MCPs do I have?"*
 
+[![npm version](https://img.shields.io/npm/v/agentscope.svg)](https://www.npmjs.com/package/agentscope)
+[![License](https://img.shields.io/badge/license-SEE%20LICENSE-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+
 ## Quick Start
 
 ```bash
@@ -20,9 +24,11 @@ npx agentscope scan
 
 - **Claude Code Scanner** - Scans `.claude/`, `CLAUDE.md`, and user-level configs
 - **MCP Scanner** - Parses `.mcp.json` for server definitions
+- **Hierarchy Diagram** - Shows agent delegation relationships
 - **Component Map Diagram** - Shows all agents, skills, hooks, commands, MCPs
-- **Workflow Sequence Diagram** - Shows request flow from user to agent to tools
-- **Auto-generated Documentation** - README.md overview + detailed AGENTS.md
+- **Dataflow Diagram** - Shows request flow from user to agent to tools
+- **Auto-generated Documentation** - README.md overview + detailed architecture docs
+- **6 Built-in Themes** - Light, dark, high-contrast, and colorblind-safe options
 
 ## Usage
 
@@ -36,6 +42,14 @@ agentscope scan --output ./docs/agents/
 # Generate specific diagram only
 agentscope scan --diagram hierarchy
 
+# Use a specific theme
+agentscope scan --theme dark
+agentscope scan --theme colorblind-light
+agentscope scan --theme high-contrast-dark
+
+# Use custom theme file
+agentscope scan --theme-path ./my-theme.json
+
 # Output raw JSON (for tooling)
 agentscope scan --format json
 
@@ -48,7 +62,7 @@ agentscope validate
 ```
 $ agentscope scan
 
-AgentScope v1.0.0
+AgentScope v0.1.0
 Scanning: /Users/dev/my-project
 
 Found:
@@ -59,17 +73,74 @@ Found:
 
 Generated:
   ✓ docs/agent-architecture/README.md
-  ✓ docs/agent-architecture/AGENTS.md
-  ✓ docs/agent-architecture/raw/agentscope.json
+  ✓ docs/agent-architecture/hierarchy.md
+  ✓ docs/agent-architecture/component-map.md
+  ✓ docs/agent-architecture/dataflow.md
+  ✓ docs/agent-architecture/config.json
+```
+
+## Theme System
+
+AgentScope includes 6 built-in themes for customizing diagram appearance:
+
+| Theme | Description | Use Case |
+|-------|-------------|----------|
+| `light` | Default light theme with blue accents | Light mode, printing |
+| `dark` | Dark theme with vibrant colors | Dark mode, terminals |
+| `high-contrast-light` | WCAG AAA on light background | Accessibility |
+| `high-contrast-dark` | WCAG AAA on dark background | Accessibility |
+| `colorblind-light` | Okabe-Ito palette on light | Color vision deficiencies |
+| `colorblind-dark` | Okabe-Ito palette on dark | Color vision deficiencies |
+
+### Quick Theme Usage
+
+```bash
+# CLI flag
+agentscope scan --theme dark
+
+# Environment variable
+export AGENTSCOPE_THEME=colorblind-light
+agentscope scan
+
+# Config file (agentscope.config.json)
+{
+  "theme": "high-contrast-dark"
+}
+```
+
+See [Theme Documentation](docs/themes.md) for full details and custom theme creation.
+
+### Theme Examples
+
+View all themes rendered: [Theme Examples](docs/agent-architecture/examples/theme-examples.md)
+
+## Programmatic API
+
+```typescript
+import { scan, generateHierarchy, generateComponentMap } from 'agentscope';
+
+// Scan a directory
+const config = await scan('/path/to/project');
+
+// Generate diagrams with theme
+const hierarchy = generateHierarchy(config, { theme: 'dark' });
+const componentMap = generateComponentMap(config, { theme: 'colorblind-light' });
 ```
 
 ## Documentation
 
-- [Product Requirements (PRD)](docs/AgentScope-PRD-v2.md) - Full specification
-- [Research & Decisions](docs/research/) - Background research and rationale
-- [Changelog](docs/CHANGELOG.md) - Version history
+- [Theme System](docs/themes.md) - Customizing diagram appearance
+- [Theme Examples](docs/agent-architecture/examples/theme-examples.md) - Visual examples of all themes
+- [API Documentation](docs/architecture/interfaces.md) - TypeScript interfaces
+- [Architecture](docs/architecture/ARCHITECTURE.md) - System design
+- [Changelog](CHANGELOG.md) - Version history
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Code of Conduct](CODE_OF_CONDUCT.md) - Community guidelines
+
+## Requirements
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0
 
 ## License
 

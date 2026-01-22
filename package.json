@@ -15,11 +15,17 @@
   "keywords": [
     "agent",
     "claude",
+    "claude-code",
     "mcp",
     "documentation",
     "visualization",
     "mermaid",
-    "cli"
+    "diagram",
+    "cli",
+    "theme",
+    "accessibility",
+    "colorblind",
+    "dark-mode"
   ],
   "type": "module",
   "main": "dist/src/index.js",

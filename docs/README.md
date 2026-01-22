@@ -6,60 +6,87 @@
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [**AgentScope-PRD-v2.md**](./AgentScope-PRD-v2.md) | Product Requirements (authoritative) | ✅ Current |
-| [**research/**](./research/) | Research findings and frameworks | ✅ Active |
-| [**archive/**](./archive/) | Superseded documents | 🗄️ Historical |
+| [**themes.md**](./themes.md) | Theme system documentation | ✅ Current |
+| [**agent-architecture/**](./agent-architecture/) | Generated documentation examples | ✅ Current |
+| [**architecture/**](./architecture/) | System architecture & interfaces | ✅ Current |
+| [**adr/**](./adr/) | Architecture Decision Records | ✅ Current |
+| [**AgentScope-PRD-v2.md**](./AgentScope-PRD-v2.md) | Product Requirements | ✅ Reference |
+| [**archive/**](./archive/) | Historical & internal docs | 🗄️ Archived |
 
 ---
 
 ## Document Map
 
-### Authoritative Documents (Use These)
+### User Documentation
 
 ```
 docs/
-├── AgentScope-PRD-v2.md              # THE PRD - start here
-└── research/
-    ├── 00-EXECUTIVE-SUMMARY.md       # Research overview + status
-    ├── 06-claude-code-tuning-best-practices.md  # How to tune agents
-    ├── 07-tdd-quality-framework.md   # Testing & quality gates
-    └── 08-future-roadmap.md          # Post-MVP feature planning
+├── themes.md                    # Theme system guide - START HERE for themes
+└── agent-architecture/
+    ├── README.md                # Generated output example
+    ├── hierarchy.md             # Agent hierarchy diagram
+    ├── component-map.md         # Component relationships
+    ├── dataflow.md              # Request flow diagram
+    └── examples/
+        └── theme-examples.md    # All 6 themes visualized
 ```
 
-### Reference Documents (Context & Decisions)
+### Developer Documentation
 
 ```
-docs/research/
-├── 01-critical-analysis.md           # Risk analysis of original PRD
-├── 02-alternatives-comparison.md     # Competitive landscape
-├── 04-component-solutions.md         # npm stack recommendations
-└── 05-questions-and-decisions.md     # Decision rationale
+docs/
+├── architecture/
+│   ├── ARCHITECTURE.md          # System design overview
+│   ├── component-diagram.md     # Module structure
+│   └── interfaces.md            # TypeScript interfaces
+├── adr/
+│   ├── README.md                # ADR index
+│   ├── ADR-001-mermaid-theme-system.md  # Theme system decisions
+│   ├── ARCHITECTURE-theme-system.md     # Theme architecture
+│   ├── DDD-theme-system.md              # Domain design
+│   └── SECURITY-theme-system.md         # Security considerations
+├── DEFINITION_OF_DONE.md        # Quality gates
+└── CHANGELOG.md                 # Version history (also at repo root)
 ```
 
-### Archived (Historical Only)
+### Archived Documentation
 
 ```
 docs/archive/
-├── README.md                         # Why these were archived
-├── AgentScope-PRD-v1-ARCHIVED.md     # Original 20-week PRD
-└── 03-simplification-proposal-SUPERSEDED.md  # Incorporated into v2
+├── README.md                    # Archive index
+├── AgentScope-PRD-v1-ARCHIVED.md
+├── research/                    # Development research docs
+├── review/                      # Code review docs
+└── performance/                 # Performance analysis docs
 ```
 
 ---
 
-## For Developers
+## For Users
+
+### Getting Started
+1. Install: `npm install -g agentscope`
+2. Run: `agentscope scan`
+3. Configure theme: `agentscope scan --theme dark`
+
+### Customize Themes
+- See [themes.md](./themes.md) for theme documentation
+- See [theme-examples.md](./agent-architecture/examples/theme-examples.md) for visual examples
+
+---
+
+## For Contributors
 
 ### Start Here
-1. Read [AgentScope-PRD-v2.md](./AgentScope-PRD-v2.md) - scope and requirements
-2. Review [07-tdd-quality-framework.md](./research/07-tdd-quality-framework.md) - testing requirements
-3. Check [06-claude-code-tuning-best-practices.md](./research/06-claude-code-tuning-best-practices.md) - agentic coding practices
+1. Read [ARCHITECTURE.md](./architecture/ARCHITECTURE.md) - system design
+2. Review [interfaces.md](./architecture/interfaces.md) - TypeScript interfaces
+3. Check [DEFINITION_OF_DONE.md](./DEFINITION_OF_DONE.md) - quality requirements
 
-### Before Adding Features
-1. Check [08-future-roadmap.md](./research/08-future-roadmap.md) - is it already planned?
-2. Review acceptance criteria in PRD v2
-
-### Tech Stack Reference
-- [04-component-solutions.md](./research/04-component-solutions.md) - npm packages to use
+### Adding Features
+1. Create ADR in `adr/` folder
+2. Follow existing patterns in codebase
+3. Add tests (80% coverage required)
+4. Update documentation
 
 ---
 
@@ -67,8 +94,7 @@ docs/archive/
 
 | Version | Date | Changes |
 |---------|------|---------|
-| v2.0 | Jan 2026 | PRD revised for 1-2 day MVP, quality gates added |
-| v1.0 | Jan 2026 | Initial PRD (archived) |
+| v0.1.0 | Jan 2025 | Initial release with theme system |
 
 ---
 
