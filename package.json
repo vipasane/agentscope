@@ -45,7 +45,10 @@
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "benchmark": "npm run build && node --expose-gc dist/benchmarks/run-benchmarks.js",
+    "benchmark:profile": "npm run build && node --expose-gc --prof dist/benchmarks/run-benchmarks.js",
+    "benchmark:inspect": "npm run build && node --expose-gc --inspect dist/benchmarks/run-benchmarks.js"
   },
   "dependencies": {
     "agentscope": "file:agentscope-0.1.0.tgz",

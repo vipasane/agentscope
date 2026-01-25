@@ -154,6 +154,11 @@ export class ClaudeCodeParser {
         ? frontmatter.type
         : this.inferAgentType(agentName);
 
+      // Extract category from frontmatter (Task 2.1: Category Extraction)
+      const category = typeof frontmatter.category === 'string' && frontmatter.category.trim().length > 0
+        ? frontmatter.category.trim()
+        : undefined;
+
       return {
         name: agentName,
         path: relative(this.rootPath, filePath),
@@ -161,6 +166,7 @@ export class ClaudeCodeParser {
         tools: Array.isArray(frontmatter.tools) ? frontmatter.tools as string[] : [],
         delegatesTo: Array.isArray(frontmatter.delegatesTo) ? frontmatter.delegatesTo as string[] : [],
         type: agentType,
+        category,
         metadata: typeof frontmatter.metadata === 'object' ? frontmatter.metadata as Record<string, unknown> : undefined,
       };
     } catch (error) {

@@ -35,6 +35,8 @@ export interface Agent {
   delegatesTo?: string[];
   /** Agent type classification */
   type?: AgentType;
+  /** Category for multi-file organization (v1.2) */
+  category?: string;
   /** Custom metadata */
   metadata?: Record<string, unknown>;
 }

@@ -12,6 +12,7 @@ import { generateComponentMap, type ComponentMapOptions } from './generators/dia
 import { generateHierarchy, type HierarchyOptions } from './generators/diagrams/hierarchy.js';
 import { generateDataflow } from './generators/diagrams/dataflow.js';
 import { generateMarkdown } from './generators/docs/markdown.js';
+import { writeCategoryFiles } from './generators/docs/category-writer.js';
 import type {
   AgentScopeConfig,
   ScanOptions,
@@ -369,6 +370,24 @@ export async function generate(
     outputs.push({ path, type: 'diagram', content });
   }
 
+  // Generate category files (Task 2.5: Category File Output)
+  // Only generate if there are agents to categorize
+  let categorySummary = '';
+  if (config.agents.length > 0) {
+    const categoryResult = await writeCategoryFiles({
+      outputDir,
+      agents: config.agents,
+      relativePathToRoot: '.',
+    });
+
+    // Add category files to outputs
+    for (const filePath of categoryResult.filePaths) {
+      outputs.push({ path: filePath, type: 'diagram', content: '' });
+    }
+
+    categorySummary = categoryResult.categorySummary;
+  }
+
   // Generate main documentation
   const docContent = await generateMarkdown(config, {
     title: title ?? 'Agent Architecture Documentation',
@@ -376,8 +395,14 @@ export async function generate(
     includeMetadata: options.includeMetadata ?? true,
     diagramOptions,
   });
+
+  // Inject category summary into main README if categories were generated
+  const finalDocContent = categorySummary.length > 0
+    ? injectCategorySummary(docContent, categorySummary)
+    : docContent;
+
   const docPath = resolve(outputDir, 'README.md');
-  outputs.push({ path: docPath, type: 'documentation', content: docContent });
+  outputs.push({ path: docPath, type: 'documentation', content: finalDocContent });
 
   // Generate JSON export
   const jsonContent = JSON.stringify(config, null, 2);
@@ -392,8 +417,67 @@ export async function generate(
  */
 export async function writeOutputs(outputs: GeneratedOutput[]): Promise<void> {
   await Promise.all(
-    outputs.map(output => writeFile(output.path, output.content, 'utf-8'))
+    outputs.map(output =>
+      output.content.length > 0
+        ? writeFile(output.path, output.content, 'utf-8')
+        : Promise.resolve() // Skip empty content (already written by category writer)
+    )
   );
+}
+
+/**
+ * Inject category summary into README content
+ * Inserts after Quick Stats section
+ */
+function injectCategorySummary(docContent: string, categorySummary: string): string {
+  // Find the Quick Stats section end (marked by ---)
+  const quickStatsEndMarker = '## Quick Stats';
+  const quickStatsIndex = docContent.indexOf(quickStatsEndMarker);
+
+  if (quickStatsIndex === -1) {
+    // If no Quick Stats section, prepend before Agents section
+    const agentsMarker = '## Agents Comparison';
+    const agentsIndex = docContent.indexOf(agentsMarker);
+
+    if (agentsIndex !== -1) {
+      return (
+        docContent.slice(0, agentsIndex) +
+        '\n' +
+        categorySummary +
+        '\n\n---\n\n' +
+        docContent.slice(agentsIndex)
+      );
+    }
+
+    // Fallback: append after title
+    const firstHeading = docContent.indexOf('\n## ');
+    if (firstHeading !== -1) {
+      return (
+        docContent.slice(0, firstHeading) +
+        '\n\n' +
+        categorySummary +
+        '\n' +
+        docContent.slice(firstHeading)
+      );
+    }
+  }
+
+  // Find the end of Quick Stats section (next ---)
+  const sectionEndMarker = '\n---\n';
+  const sectionEndIndex = docContent.indexOf(sectionEndMarker, quickStatsIndex);
+
+  if (sectionEndIndex !== -1) {
+    return (
+      docContent.slice(0, sectionEndIndex) +
+      '\n\n' +
+      categorySummary +
+      '\n' +
+      docContent.slice(sectionEndIndex)
+    );
+  }
+
+  // Fallback: append at the end
+  return docContent + '\n\n' + categorySummary;
 }
 
 /**
