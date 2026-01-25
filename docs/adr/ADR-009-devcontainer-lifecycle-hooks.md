@@ -2,7 +2,11 @@
 
 ## Status
 
-**Proposed**
+**REJECTED - OUT OF SCOPE**
+
+> **Decision Date**: January 2026
+> **Reason**: DevContainer lifecycle hooks are infrastructure configuration, not agent configuration. AgentScope scope is limited to agent architecture documentation. See [SCOPE.md](../../SCOPE.md) for details.
+> **Alternative**: DevContainer Scanner (separate project) for container configuration documentation.
 
 | Field | Value |
 |-------|-------|

@@ -1,6 +1,10 @@
 # DDD-002: DevContainer Scanning & Documentation Domain Model
 
-**Status:** Proposed
+**Status:** REJECTED - OUT OF SCOPE
+
+> **Decision Date**: January 2026
+> **Reason**: DevContainer domain modeling is infrastructure configuration, not agent configuration. AgentScope scope is limited to agent architecture documentation. See [SCOPE.md](../../SCOPE.md) for details.
+> **Alternative**: DevContainer Scanner (separate project) for container configuration documentation.
 **Created:** 2026-01-25
 **Author:** V3 DDD Domain Expert Agent
 **Domain:** DevContainerScanning, ConfigurationParsing, DocumentationGeneration, LifecycleHooks

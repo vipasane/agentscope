@@ -1,9 +1,11 @@
 # ADR-011: DevContainer Security Architecture (v1.2)
 
-> **Status**: Proposed
+> **Status**: REJECTED - OUT OF SCOPE
 > **Date**: 2026-01-25
 > **Component**: DevContainer Security Scanning
 > **Related ADRs**: [ADR-009](../architecture/decisions/ADR-009-security-model.md), [DESIGN-001](./DESIGN-001-security-hooks.md)
+> **Reason**: DevContainer security is infrastructure configuration, not agent configuration. AgentScope scope is limited to agent architecture documentation. See [SCOPE.md](../../SCOPE.md) for details.
+> **Alternative**: DevContainer Scanner (separate project) for container security documentation.
 
 ---
 

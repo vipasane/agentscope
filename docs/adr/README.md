@@ -1,26 +1,24 @@
 # Architecture Decision Records (ADRs)
 
-## v1.2 DevContainer Architecture (NEW)
+## DevContainer Architecture (REJECTED - OUT OF SCOPE)
 
-AgentScope v1.2 introduces comprehensive DevContainer scanning and documentation capabilities. **Start here** for the complete architecture overview:
+**Status**: These documents propose DevContainer scanning, which has been **rejected** as out of scope for AgentScope.
 
-📋 **[Summary: v1.2 DevContainer Architecture](./SUMMARY-v1.2-devcontainer-architecture.md)** ← **Read this first**
+**Rationale**: DevContainer configurations are infrastructure, not agent configurations. AgentScope focuses exclusively on agent architecture documentation. See [SCOPE.md](../../SCOPE.md) for details.
 
-### Core v1.2 Documents
+**Alternative**: DevContainer Scanner (separate project) for container configuration documentation.
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| [DDD-002: DevContainer Domain Model](./DDD-002-devcontainer-domain.md) | 5 bounded contexts, 4 aggregates, complete domain model | Architects, Developers |
-| [ADR-008: DevContainer Scanning System](./ADR-008-devcontainer-scanning.md) | 10 architectural decisions, implementation plan | Tech leads, Implementers |
-| [ADR-009: Lifecycle Hooks Integration](./ADR-009-devcontainer-lifecycle-hooks.md) | Event-driven lifecycle integration with agent system | Integration engineers |
-| [DevContainer Implementation Example](../../examples/devcontainer-implementation-example.md) | Practical code examples and usage patterns | Developers, Contributors |
+### Historical v1.2 Documents
 
-**Key Features:**
-- ✅ Parse and validate `.devcontainer/devcontainer.json`
-- ✅ Security scanning (credential exposure, vulnerabilities)
-- ✅ Feature dependency graph analysis
-- ✅ Automated documentation generation
-- ✅ Lifecycle hook integration with agent system
+These documents are preserved for reference and historical decision-making:
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [SUMMARY: v1.2 DevContainer Architecture](./SUMMARY-v1.2-devcontainer-architecture.md) | Architecture overview | REJECTED - Out of Scope |
+| [DDD-002: DevContainer Domain Model](./DDD-002-devcontainer-domain.md) | Domain model and bounded contexts | REJECTED - Out of Scope |
+| [ADR-008: DevContainer Scanning System](./ADR-008-devcontainer-scanning.md) | Architectural decisions | REJECTED - Out of Scope |
+| [ADR-009: Lifecycle Hooks Integration](./ADR-009-devcontainer-lifecycle-hooks.md) | Lifecycle integration design | REJECTED - Out of Scope |
+| [ADR-011: DevContainer Security Architecture](./ADR-011-devcontainer-security.md) | Security scanning design | REJECTED - Out of Scope |
 
 ---
 
@@ -35,8 +33,14 @@ AgentScope v1.2 introduces comprehensive DevContainer scanning and documentation
 | [ADR-005](./ADR-005-plugin-parser.md) | Plugin Parser | Proposed | 2026-01-22 | Extensibility |
 | [ADR-006](./ADR-006-hook-parser.md) | Hook Parser Enhancement | Proposed | 2026-01-22 | Lifecycle |
 | [ADR-007](./ADR-007-export-import.md) | Export/Import System | Proposed | 2026-01-22 | Portability |
-| **[ADR-008](./ADR-008-devcontainer-scanning.md)** | **DevContainer Scanning & Documentation** | **Proposed** | **2026-01-25** | **v1.2 Core** |
-| **[ADR-009](./ADR-009-devcontainer-lifecycle-hooks.md)** | **DevContainer Lifecycle Hooks Integration** | **Proposed** | **2026-01-25** | **v1.2 Core** |
+
+### Rejected ADRs (Out of Scope)
+
+| ID | Title | Status | Date | Reason |
+|----|-------|--------|------|--------|
+| [ADR-008](./ADR-008-devcontainer-scanning.md) | DevContainer Scanning & Documentation | REJECTED | 2026-01-25 | Infrastructure, not agent config |
+| [ADR-009](./ADR-009-devcontainer-lifecycle-hooks.md) | DevContainer Lifecycle Hooks Integration | REJECTED | 2026-01-25 | Infrastructure, not agent config |
+| [ADR-011](./ADR-011-devcontainer-security.md) | DevContainer Security Architecture | REJECTED | 2026-01-25 | Infrastructure, not agent config |
 
 ---
 
@@ -45,7 +49,12 @@ AgentScope v1.2 introduces comprehensive DevContainer scanning and documentation
 | ID | Title | Status | Date | Version |
 |----|-------|--------|------|---------|
 | [DDD-001](./DDD-001-generator-domains.md) | Generator Enhancement Domain Model | Proposed | 2026-01-22 | v1.1 |
-| **[DDD-002](./DDD-002-devcontainer-domain.md)** | **DevContainer Scanning & Documentation Domain Model** | **Proposed** | **2026-01-25** | **v1.2** |
+
+### Rejected DDD Documents (Out of Scope)
+
+| ID | Title | Status | Date | Version |
+|----|-------|--------|------|---------|
+| [DDD-002](./DDD-002-devcontainer-domain.md) | DevContainer Scanning & Documentation Domain Model | REJECTED | 2026-01-25 | v1.2 |
 
 ---
 
@@ -153,17 +162,17 @@ graph TB
 
 ## Quick Reference
 
-### v1.2 DevContainer
-- [Summary](./SUMMARY-v1.2-devcontainer-architecture.md) - Start here
-- [Domain Model](./DDD-002-devcontainer-domain.md) - Bounded contexts & aggregates
-- [Scanning ADR](./ADR-008-devcontainer-scanning.md) - Core decisions
-- [Lifecycle ADR](./ADR-009-devcontainer-lifecycle-hooks.md) - Integration
-- [Examples](../../examples/devcontainer-implementation-example.md) - Code samples
-
 ### v1.1 Theme System
 - [ADR-001](./ADR-001-mermaid-theme-system.md) - Theme system decisions
 - [DDD-001](./DDD-001-generator-domains.md) - Generator domain model
 - [Theme Examples](../../examples/theme-examples.md) - Visual examples
+
+### v1.2 DevContainer (REJECTED - Out of Scope)
+- [See SCOPE.md](../../SCOPE.md) - Why DevContainer scanning is out of scope
+- [Summary](./SUMMARY-v1.2-devcontainer-architecture.md) - Historical reference
+- [Domain Model](./DDD-002-devcontainer-domain.md) - Historical reference
+- [Scanning ADR](./ADR-008-devcontainer-scanning.md) - Historical reference
+- [Lifecycle ADR](./ADR-009-devcontainer-lifecycle-hooks.md) - Historical reference
 
 ---
 
