@@ -976,6 +976,106 @@ export function formatQuickStats(stats: QuickStatsInput): string {
 }
 
 // ============================================================================
+// Delegation Hierarchy Formatter
+// ============================================================================
+
+/**
+ * Generates a collapsible delegation hierarchy section with Mermaid diagram
+ *
+ * Shows only agents with delegations (not standalone agents)
+ *
+ * @example Output:
+ * <details>
+ * <summary>📊 Click to expand hierarchy</summary>
+ *
+ * ```mermaid
+ * graph TB
+ *   planner --> coder
+ *   planner --> tester
+ * ```
+ * </details>
+ */
+export function generateDelegationHierarchy(agents: Agent[]): string {
+  // Filter agents that have delegations or are delegated to
+  const agentNames = new Set(agents.map(a => a.name));
+  const delegatedToAgents = new Set<string>();
+
+  agents.forEach(agent => {
+    agent.delegatesTo?.forEach(target => {
+      if (agentNames.has(target)) {
+        delegatedToAgents.add(target);
+      }
+    });
+  });
+
+  const relevantAgents = agents.filter(
+    agent => (agent.delegatesTo && agent.delegatesTo.length > 0) || delegatedToAgents.has(agent.name)
+  );
+
+  if (relevantAgents.length === 0) {
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  lines.push('<details>');
+  lines.push('<summary>\u{1F4CA} Click to expand delegation hierarchy</summary>');
+  lines.push('');
+  lines.push('```mermaid');
+  lines.push('graph TB');
+
+  // Generate delegation arrows
+  const delegations: string[] = [];
+  for (const agent of agents) {
+    if (agent.delegatesTo && agent.delegatesTo.length > 0) {
+      for (const target of agent.delegatesTo) {
+        if (agentNames.has(target)) {
+          const fromId = sanitize(agent.name).replace(/[^a-zA-Z0-9]/g, '_');
+          const toId = sanitize(target).replace(/[^a-zA-Z0-9]/g, '_');
+          delegations.push(`    ${fromId}["${sanitize(agent.name)}"] --> ${toId}["${sanitize(target)}"]`);
+        }
+      }
+    }
+  }
+
+  lines.push(...delegations);
+  lines.push('');
+
+  // Add class definitions
+  lines.push('    %% Styling');
+  lines.push('    classDef coord fill:#e1f5fe,stroke:#01579b,color:#01579b,stroke-width:3px');
+  lines.push('    classDef worker fill:#f3e5f5,stroke:#4a148c,color:#4a148c,stroke-width:2px');
+  lines.push('    classDef specialist fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20,stroke-width:2px');
+  lines.push('    classDef reviewer fill:#fff3e0,stroke:#e65100,color:#e65100,stroke-width:2px');
+  lines.push('');
+
+  // Apply classes to agents
+  const coordAgents = agents.filter(a => a.type === 'coordinator').map(a => sanitize(a.name).replace(/[^a-zA-Z0-9]/g, '_'));
+  const workerAgents = agents.filter(a => a.type === 'worker').map(a => sanitize(a.name).replace(/[^a-zA-Z0-9]/g, '_'));
+  const specialistAgents = agents.filter(a => a.type === 'specialist').map(a => sanitize(a.name).replace(/[^a-zA-Z0-9]/g, '_'));
+  const reviewerAgents = agents.filter(a => a.type === 'reviewer').map(a => sanitize(a.name).replace(/[^a-zA-Z0-9]/g, '_'));
+
+  if (coordAgents.length > 0) {
+    lines.push(`    class ${coordAgents.join(',')} coord`);
+  }
+  if (workerAgents.length > 0) {
+    lines.push(`    class ${workerAgents.join(',')} worker`);
+  }
+  if (specialistAgents.length > 0) {
+    lines.push(`    class ${specialistAgents.join(',')} specialist`);
+  }
+  if (reviewerAgents.length > 0) {
+    lines.push(`    class ${reviewerAgents.join(',')} reviewer`);
+  }
+
+  lines.push('```');
+  lines.push('');
+  lines.push('</details>');
+
+  return lines.join('\n');
+}
+
+// ============================================================================
 // Exports
 // ============================================================================
 
