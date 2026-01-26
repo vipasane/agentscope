@@ -1,8 +1,76 @@
 /**
  * Security Validators
  *
- * Input validation functions for AgentScope security.
- * Part of DESIGN-001 security implementation.
+ * Input validation functions for AgentScope security, implementing defense-in-depth
+ * protection against injection attacks, XSS, and malicious input.
+ *
+ * ## Security Model
+ *
+ * This module implements the input validation layer of the DESIGN-001 security architecture:
+ * 1. **Allowlist-based validation** - Only permit known-safe values
+ * 2. **Pattern detection** - Identify injection attempts before sanitization
+ * 3. **Bounds checking** - Prevent resource exhaustion via input limits
+ * 4. **Type safety** - Validate data types and structure
+ *
+ * ## Threat Vectors Protected
+ *
+ * - **Mermaid Directive Injection**: Malicious `%%{init:...}%%` directives
+ * - **XSS via Diagram Labels**: HTML/JavaScript in node labels
+ * - **Path Traversal**: `../` sequences in file paths
+ * - **ReDoS**: Regular expression denial of service via complex patterns
+ * - **Resource Exhaustion**: Excessive agent counts or diagram complexity
+ *
+ * ## Usage Pattern
+ *
+ * Always validate input BEFORE sanitization for defense-in-depth:
+ * ```typescript
+ * // 1. Validate (detect attacks)
+ * const patterns = detectInjectionPatterns(userInput);
+ * if (patterns.length > 0) {
+ *   console.warn('Detected injection attempts:', patterns);
+ * }
+ *
+ * // 2. Sanitize (clean remaining input)
+ * const safe = sanitizeNodeLabel(userInput);
+ *
+ * // 3. Use in diagram
+ * diagram += `node["${safe}"]`;
+ * ```
+ *
+ * @module security/validators
+ * @see {@link module:security/sanitizers} for output sanitization
+ * @see DESIGN-001 security architecture document
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   validateThemeName,
+ *   validateColor,
+ *   validateAgentCount,
+ *   detectInjectionPatterns
+ * } from './security/validators.js';
+ *
+ * // Theme validation
+ * if (!validateThemeName(userTheme)) {
+ *   throw new Error('Invalid theme');
+ * }
+ *
+ * // Color validation
+ * if (!validateColor(userColor)) {
+ *   throw new Error('Invalid color');
+ * }
+ *
+ * // Agent count bounds checking
+ * if (!validateAgentCount(agents.length, 500)) {
+ *   throw new Error('Too many agents');
+ * }
+ *
+ * // Injection detection
+ * const attacks = detectInjectionPatterns(userInput);
+ * if (attacks.length > 0) {
+ *   console.warn('Security alert:', attacks);
+ * }
+ * ```
  */
 
 /**
