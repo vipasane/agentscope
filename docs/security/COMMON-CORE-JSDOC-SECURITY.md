@@ -483,6 +483,135 @@ Document what attacks are prevented:
  */
 ```
 
+### Pattern 4: ReDoS (Regular Expression Denial of Service) Prevention
+
+Document regex patterns that can cause exponential backtracking and CPU exhaustion:
+
+```typescript
+/**
+ * Validates username format (alphanumeric, 3-20 characters)
+ *
+ * @security INPUT_VALIDATION, DOS_PREVENTION
+ *
+ * **ReDoS Prevention**:
+ * This validator uses a safe regex pattern that CANNOT cause catastrophic backtracking.
+ * See "Dangerous Patterns to Avoid" below for anti-patterns.
+ *
+ * **Safe Pattern Used**: `/^[a-zA-Z0-9_]{3,20}$/`
+ * - No nested quantifiers (✅ Safe)
+ * - No overlapping groups (✅ Safe)
+ * - Bounded length (✅ DoS-resistant)
+ * - Linear time complexity: O(n) where n = input length
+ *
+ * **Dangerous Patterns to Avoid**:
+ *
+ * ❌ **AVOID: Nested Quantifiers**
+ * ```javascript
+ * // BAD: Nested quantifiers cause exponential backtracking
+ * const bad = /^(a+)+$/;
+ * // Input: "aaaaaaaaaaaaaaaaaaaaaaaX" (20 'a's + 'X')
+ * // Time: ~2^20 operations = 1,048,576 steps (CATASTROPHIC)
+ * ```
+ *
+ * ❌ **AVOID: Overlapping Alternation Groups**
+ * ```javascript
+ * // BAD: Overlapping alternatives cause exponential complexity
+ * const bad = /^(a|a)*$/;
+ * // Input: "aaaaaaaaaaaaaaaaaaa" (20 'a's)
+ * // Time: ~2^20 operations = 1,048,576 steps (CATASTROPHIC)
+ *
+ * // ALSO BAD: Similar pattern with different alternatives
+ * const bad2 = /^(a|ab)*$/;
+ * // Input: "ababababababababababX" (repeating "ab" + 'X')
+ * // Time: Exponential backtracking on failure
+ * ```
+ *
+ * ❌ **AVOID: Unanchored Greedy Quantifiers**
+ * ```javascript
+ * // BAD: Greedy match with complex suffix causes backtracking
+ * const bad = /^.*.*.*.*$/;
+ * // Input: Long string without match
+ * // Time: Tries every possible split point (SLOW)
+ *
+ * // ALSO BAD: Email regex with multiple .* patterns
+ * const bad2 = /^.*@.*\..*$/;
+ * // Better: Use specific character classes: /^[^@]+@[^.]+\..+$/
+ * ```
+ *
+ * **Safe Alternatives**:
+ *
+ * ✅ **GOOD: Specific Character Classes**
+ * ```javascript
+ * // Use specific character classes instead of nested quantifiers
+ * const good = /^[a-zA-Z0-9_]{3,20}$/;
+ * // Time: O(n) - linear complexity
+ * ```
+ *
+ * ✅ **GOOD: Possessive Quantifiers (where supported)**
+ * ```javascript
+ * // Possessive quantifiers don't backtrack
+ * const good = /^(?>a+)b$/; // Note: Not supported in JavaScript
+ * // JavaScript alternative: Use character classes or atomic groups
+ * ```
+ *
+ * ✅ **GOOD: Bounded Repetition**
+ * ```javascript
+ * // Always bound your quantifiers
+ * const good = /^a{0,100}$/; // Maximum 100 repetitions
+ * // Avoid: /^a*$/ (unbounded)
+ * ```
+ *
+ * **Testing for ReDoS Vulnerabilities**:
+ * ```typescript
+ * // Use timeout-based testing to detect ReDoS
+ * function testRegexSafety(pattern: RegExp, input: string, maxMs = 100): boolean {
+ *   const start = Date.now();
+ *   try {
+ *     pattern.test(input);
+ *     return (Date.now() - start) < maxMs;
+ *   } catch {
+ *     return false;
+ *   }
+ * }
+ *
+ * // Example: Test with pathological input
+ * const isSafe = testRegexSafety(
+ *   /^[a-zA-Z0-9_]{3,20}$/,
+ *   'a'.repeat(10000) + 'X'
+ * ); // Should return true (fast)
+ * ```
+ *
+ * **Real-World ReDoS Examples**:
+ * - CVE-2019-11358 (jQuery): `/<(\w+)\s*\/?>/` with nested tags
+ * - CVE-2020-7660 (validator.js): Email regex with nested groups
+ * - CVE-2022-25869 (nodejs): URL parsing regex with `.*` patterns
+ *
+ * **Best Practices**:
+ * 1. Use character classes `[a-z]` instead of `.` where possible
+ * 2. Bound all quantifiers: `{0,100}` instead of `*`
+ * 3. Avoid nested quantifiers: `(a+)+` or `(a*)*`
+ * 4. Avoid overlapping alternations: `(a|a)*` or `(a|ab)*`
+ * 5. Test regex with pathological inputs before deployment
+ * 6. Consider using dedicated parsers for complex formats (URLs, emails)
+ * 7. Set regex timeouts where supported (Node.js 16+: `RegExp.timeout`)
+ *
+ * @param username - Username to validate
+ * @returns ValidationResult with safe regex pattern
+ *
+ * @see {@link https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS | OWASP ReDoS}
+ * @see {@link https://www.regular-expressions.info/catastrophic.html | Catastrophic Backtracking}
+ */
+```
+
+**Summary: ReDoS Prevention Checklist**:
+- [ ] No nested quantifiers (e.g., `(a+)+`, `(a*)*`)
+- [ ] No overlapping alternations (e.g., `(a|ab)*`)
+- [ ] All quantifiers are bounded (e.g., `{0,100}` not `*`)
+- [ ] Character classes used instead of `.` where possible
+- [ ] Tested with pathological inputs (long strings, repetition + mismatch)
+- [ ] Regex timeout configured (if supported)
+- [ ] Complex formats use dedicated parsers, not regex
+
 ---
 
 ## Sanitization Documentation Patterns
