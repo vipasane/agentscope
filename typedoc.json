@@ -1,0 +1,67 @@
+{
+  "entryPoints": [
+    "packages/types/src/index.ts",
+    "packages/errors/src/index.ts",
+    "packages/security/src/index.ts",
+    "packages/performance/src/index.ts",
+    "packages/cli-framework/src/index.ts",
+    "packages/memory/src/index.ts",
+    "packages/learning/src/index.ts",
+    "packages/testing/src/index.ts"
+  ],
+  "out": "docs/api",
+  "theme": "default",
+  "includeVersion": true,
+  "readme": "none",
+  "name": "@vipasane/agentscope API Documentation",
+  "version": "0.1.0",
+  "gitRevision": "main",
+  "githubPages": false,
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/test/**",
+    "**/tests/**"
+  ],
+  "excludeExternals": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "sort": [
+    "source-order"
+  ],
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "excludeCategories": [],
+  "categoryOrder": [
+    "Agent Architecture",
+    "Memory System",
+    "Security",
+    "Learning",
+    "CLI Framework",
+    "Performance",
+    "Testing",
+    "Utilities",
+    "Other"
+  ],
+  "plugin": [
+    "typedoc-plugin-missing-exports"
+  ],
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": true
+  },
+  "jsDocCompatibility": {
+    "inheritDocTag": true
+  },
+  "validation": {
+    "notDocumented": false,
+    "invalidLink": true
+  },
+  "lightHighlightTheme": "github-light",
+  "darkHighlightTheme": "github-dark"
+}

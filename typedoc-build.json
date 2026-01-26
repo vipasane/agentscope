@@ -1,0 +1,29 @@
+{
+  "entryPoints": [
+    "./packages/types/src/index.ts",
+    "./packages/errors/src/index.ts",
+    "./packages/security/src/index.ts",
+    "./packages/performance/src/index.ts",
+    "./packages/memory/src/index.ts",
+    "./packages/learning/src/index.ts",
+    "./packages/testing/src/index.ts"
+  ],
+  "out": "./docs/api",
+  "theme": "default",
+  "includeVersion": true,
+  "name": "@vipasane/agentscope - API Documentation",
+  "readme": "none",
+  "tsconfig": "./tsconfig.typedoc.json",
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "excludeExternals": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "sort": ["source-order"],
+  "skipErrorChecking": true
+}

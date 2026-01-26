@@ -1,12 +1,67 @@
 /**
- * Custom assertions for Claude Flow testing
+ * Custom Assertion Helpers
+ *
+ * Provides fluent assertion helpers for testing specific Claude Flow components
+ * and patterns. Each helper returns an object with chainable assertion methods.
+ *
+ * **Assertion Patterns:**
+ * - `expectTestContext()` - Test execution context assertions
+ * - `expectAgent()` - Mock agent behavior assertions
+ * - `expectPerformance()` - Performance metrics assertions
+ * - `expectAsync()` - Async operation assertions
+ * - `expectStateChange()` - State mutation assertions
+ * - `expectCollection()` - Array/collection assertions
+ * - `expectError()` - Error handling assertions
+ * - `expectStructure()` - Data structure assertions
+ * - `expectObjectArray()` - Array of objects assertions
+ * - `expectSnapshot()` - Snapshot comparison assertions
+ *
+ * ## Usage Pattern
+ *
+ * ```typescript
+ * import { expectAgent, expectAsync, expectPerformance } from '@claude-flow/testing';
+ * import { expect, it } from 'vitest';
+ *
+ * it('should execute quickly', () => {
+ *   const agent = createMockAgent();
+ *   agent.call('execute', 'task');
+ *
+ *   expectAgent(agent).toHaveCalled('execute');
+ *   expectAgent(agent).toHaveCalledTimes(1);
+ *   expectPerformance(agent.performance).toBeWithinDuration(0, 100);
+ * });
+ * ```
+ *
+ * @module assertions
  */
 
 import { expect } from 'vitest';
 import { TestContext, MockAgent, PerformanceMetrics } from '../types';
 
 /**
- * Assertion for test context
+ * Assertions for test execution context
+ *
+ * Verify test status, timing, errors, and metadata through fluent API.
+ *
+ * @param context - TestContext to verify
+ * @returns Assertion builder with context-specific checks
+ *
+ * @example
+ * ```typescript
+ * const context: TestContext = {
+ *   id: 'test-1',
+ *   name: 'should work',
+ *   startTime: Date.now(),
+ *   status: 'passed',
+ *   metadata: { suite: 'integration' }
+ * };
+ *
+ * expectTestContext(context).toHavePassed();
+ * expectTestContext(context).toHaveDuration(0, 1000);
+ * expectTestContext(context).toHaveMetadata('suite', 'integration');
+ * ```
+ *
+ * @public
  */
 export function expectTestContext(context: TestContext) {
   return {
@@ -44,7 +99,39 @@ export function expectTestContext(context: TestContext) {
 }
 
 /**
- * Assertions for mock agents
+ * Assertions for mock agent behavior
+ *
+ * Verify agent method calls, error handling, inputs, and outputs.
+ *
+ * @param agent - MockAgent to verify
+ * @returns Assertion builder with agent-specific checks
+ *
+ * @example
+ * ```typescript
+ * const agent = createMockAgent();
+ * agent.call('execute', 'task-1');
+ * agent.call('execute', 'task-2');
+ * agent.call('report', { status: 'done' });
+ *
+ * expectAgent(agent).toHaveCalled('execute');
+ * expectAgent(agent).toHaveCalledTimes(3); // total calls
+ * expectAgent(agent).toHaveCalledTimes(2, 'execute'); // specific method
+ * expectAgent(agent).toHaveCalledWith('execute', ['task-1']);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Test error recording
+ * const agent = createMockAgent();
+ * const error = new Error('Task failed');
+ * agent.recordError(error);
+ *
+ * expectAgent(agent).toHaveError();
+ * expectAgent(agent).toHaveError('Task failed');
+ * expectAgent(agent).toHaveErrorCount(1);
+ * ```
+ *
+ * @public
  */
 export function expectAgent(agent: MockAgent) {
   return {

@@ -48,7 +48,9 @@
     "prepublishOnly": "npm run build",
     "benchmark": "npm run build && node --expose-gc dist/benchmarks/run-benchmarks.js",
     "benchmark:profile": "npm run build && node --expose-gc --prof dist/benchmarks/run-benchmarks.js",
-    "benchmark:inspect": "npm run build && node --expose-gc --inspect dist/benchmarks/run-benchmarks.js"
+    "benchmark:inspect": "npm run build && node --expose-gc --inspect dist/benchmarks/run-benchmarks.js",
+    "build:docs": "typedoc --options typedoc-build.json",
+    "docs": "npm run build:docs"
   },
   "dependencies": {
     "agentscope": "file:agentscope-0.1.0.tgz",
@@ -61,6 +63,8 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^3.0.0",
+    "typedoc": "^0.28.16",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.0",
     "vitest": "^3.0.0"
   },

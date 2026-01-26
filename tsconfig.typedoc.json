@@ -1,0 +1,38 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "module": "NodeNext",
+    "target": "ES2022",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "lib": ["ES2022"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "packages/types/src/**/*",
+    "packages/errors/src/**/*",
+    "packages/security/src/**/*",
+    "packages/performance/src/**/*",
+    "packages/cli-framework/src/**/*",
+    "packages/memory/src/**/*",
+    "packages/learning/src/**/*",
+    "packages/testing/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "benchmarks",
+    "tests",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}
