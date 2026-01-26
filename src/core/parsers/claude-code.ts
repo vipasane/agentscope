@@ -1,6 +1,38 @@
 /**
- * Parser for .claude/ directory and CLAUDE.md files
- * Extracts agent configurations, skills, hooks, and commands
+ * Claude Code Configuration Parser
+ *
+ * Parses Claude Code project configurations from:
+ * - `.claude/` directory (agents, skills, commands, settings)
+ * - `CLAUDE.md` file (inline agent definitions, tables, bullet lists)
+ *
+ * Features:
+ * - Multi-source agent parsing (files, markdown, tables)
+ * - YAML frontmatter extraction
+ * - Skill and command discovery
+ * - Hook configuration parsing (old and new formats)
+ * - Category inference and delegation tracking
+ * - Error collection without throwing
+ *
+ * @module parsers/claude-code
+ * @see {@link https://github.com/anthropics/claude-code | Claude Code Documentation}
+ *
+ * @example
+ * ```typescript
+ * import { parseClaudeCode } from './parsers/claude-code.js';
+ *
+ * const result = await parseClaudeCode('/path/to/project');
+ *
+ * console.log(`Found ${result.agents.length} agents`);
+ * console.log(`Found ${result.skills.length} skills`);
+ * console.log(`Found ${result.hooks.length} hooks`);
+ * console.log(`Found ${result.commands.length} commands`);
+ *
+ * // Group agents by type
+ * const byType = result.agents.reduce((acc, a) => {
+ *   (acc[a.type] = acc[a.type] || []).push(a);
+ *   return acc;
+ * }, {});
+ * ```
  */
 
 import { readFile, readdir, stat } from 'node:fs/promises';
@@ -18,6 +50,16 @@ import type {
 // Types
 // ============================================================================
 
+/**
+ * Result of Claude Code configuration parsing
+ *
+ * @interface ClaudeCodeParseResult
+ * @property {Agent[]} agents - Parsed agent definitions from all sources
+ * @property {Skill[]} skills - Parsed skill definitions from .claude/skills/
+ * @property {Hook[]} hooks - Parsed hook configurations from settings
+ * @property {Command[]} commands - Parsed custom commands from .claude/commands/
+ * @property {ScanError[]} errors - Any warnings or errors encountered
+ */
 export interface ClaudeCodeParseResult {
   agents: Agent[];
   skills: Skill[];
@@ -26,54 +68,109 @@ export interface ClaudeCodeParseResult {
   errors: ScanError[];
 }
 
+/**
+ * Heading context for agent type inference in CLAUDE.md
+ * @internal
+ */
 interface HeadingContext {
+  /** Inferred agent type from heading text */
   type: Agent['type'];
+  /** Heading level (2-4) */
   level: number;
+  /** Starting line number */
   startLine: number;
+  /** Ending line number (next heading of same/higher level) */
   endLine?: number;
 }
 
+/**
+ * Agent parsed from markdown bullet list
+ * @internal
+ */
 interface BulletAgent {
+  /** Agent name extracted from bullet */
   name: string;
+  /** Description text after colon/dash */
   description: string;
+  /** Line number in source file */
   lineNumber: number;
+  /** Indentation level (0 = root, 1 = nested, etc.) */
   indentLevel: number;
 }
 
+/**
+ * .claude/settings.json file structure
+ * @internal
+ */
 interface SettingsJson {
+  /** Hook configurations (old or new format) */
   hooks?: HookConfig[] | Record<string, HookEventConfig[]>;
+  /** Permission settings */
   permissions?: PermissionsConfig;
+  /** MCP server configurations */
   mcpServers?: Record<string, unknown>;
 }
 
-// Old format: array of configs with matcher
+/**
+ * Old format hook configuration (array with matcher)
+ * @internal
+ */
 interface HookConfig {
+  /** File pattern to match */
   matcher: string;
+  /** Hook definitions */
   hooks: HookDefinition[];
 }
 
-// New format: event-keyed object with array of hook configs
+/**
+ * New format hook configuration (event-keyed object)
+ * @internal
+ */
 interface HookEventConfig {
+  /** Optional file pattern to match */
   matcher?: string;
+  /** Hook definitions for this event */
   hooks: HookDefinition[];
 }
 
+/**
+ * Individual hook definition
+ * @internal
+ */
 interface HookDefinition {
+  /** Hook event type */
   type: string;
+  /** Command to execute */
   command?: string;
+  /** Working directory for command */
   workingDirectory?: string;
+  /** Timeout in milliseconds */
   timeout?: number;
+  /** Continue on error flag */
   continueOnError?: boolean;
 }
 
+/**
+ * Permission configuration
+ * @internal
+ */
 interface PermissionsConfig {
+  /** Allowed patterns */
   allow?: string[];
+  /** Denied patterns */
   deny?: string[];
 }
 
+/**
+ * Command configuration
+ * @internal
+ */
 interface CommandConfig {
+  /** Command description */
   description?: string;
+  /** Tools allowed for this command */
   allowed_tools?: string[];
+  /** Tools disallowed for this command */
   disallowed_tools?: string[];
 }
 
@@ -81,13 +178,82 @@ interface CommandConfig {
 // Main Parser Class
 // ============================================================================
 
+/**
+ * Claude Code Configuration Parser
+ *
+ * Parses Claude Code configurations from multiple sources:
+ * 1. `.claude/agents/` - Individual agent definition files
+ * 2. `CLAUDE.md` - Inline agent definitions (bullets, tables, headings)
+ * 3. `.claude/skills/` - Skill definition files
+ * 4. `.claude/settings.json` - Hook configurations
+ * 5. `.claude/commands/` - Custom command definitions
+ *
+ * Features:
+ * - Multiple agent parsing strategies (files, bullets, tables)
+ * - YAML frontmatter extraction from markdown
+ * - Agent type inference from headings and naming
+ * - Delegation and tool relationship extraction
+ * - Category extraction from frontmatter
+ * - Hook configuration parsing (old and new formats)
+ * - Error collection for debugging
+ *
+ * @class ClaudeCodeParser
+ *
+ * @example
+ * ```typescript
+ * import { ClaudeCodeParser } from './parsers/claude-code.js';
+ *
+ * const parser = new ClaudeCodeParser('/workspace');
+ * const result = await parser.parse();
+ *
+ * // Find coordinators
+ * const coordinators = result.agents.filter(a => a.type === 'coordinator');
+ *
+ * // Find agents that delegate to others
+ * const delegators = result.agents.filter(a => a.delegatesTo?.length > 0);
+ *
+ * // Check for parsing errors
+ * if (result.errors.length > 0) {
+ *   console.warn('Parsing warnings:', result.errors);
+ * }
+ * ```
+ */
 export class ClaudeCodeParser {
   private errors: ScanError[] = [];
 
+  /**
+   * Create a new Claude Code parser
+   *
+   * @param {string} rootPath - Absolute path to project root directory
+   */
   constructor(private rootPath: string) {}
 
   /**
-   * Parse the .claude/ directory and CLAUDE.md file
+   * Parse all Claude Code configurations from the project
+   *
+   * Searches for and parses:
+   * - Agent definitions from `.claude/agents/` and `CLAUDE.md`
+   * - Skills from `.claude/skills/`
+   * - Hooks from `.claude/settings.json`
+   * - Commands from `.claude/commands/`
+   *
+   * All parsing is done in parallel for performance.
+   *
+   * @returns {Promise<ClaudeCodeParseResult>} All parsed configurations and errors
+   * @throws Never throws - all errors are captured in result.errors
+   *
+   * @example
+   * ```typescript
+   * const parser = new ClaudeCodeParser('/workspace');
+   * const result = await parser.parse();
+   *
+   * console.log('Summary:');
+   * console.log(`- ${result.agents.length} agents`);
+   * console.log(`- ${result.skills.length} skills`);
+   * console.log(`- ${result.hooks.length} hooks`);
+   * console.log(`- ${result.commands.length} commands`);
+   * console.log(`- ${result.errors.length} errors`);
+   * ```
    */
   async parse(): Promise<ClaudeCodeParseResult> {
     this.errors = [];
@@ -109,7 +275,14 @@ export class ClaudeCodeParser {
   }
 
   /**
-   * Parse agent definitions from various sources
+   * Parse agent definitions from all sources
+   *
+   * Sources:
+   * 1. `.claude/agents/` directory - Individual agent files (.md, .yaml, .yml)
+   * 2. `CLAUDE.md` - Inline agent definitions (bullets, tables, headings)
+   *
+   * @returns {Promise<Agent[]>} All parsed agents
+   * @private
    */
   private async parseAgents(): Promise<Agent[]> {
     const agents: Agent[] = [];
@@ -138,6 +311,17 @@ export class ClaudeCodeParser {
 
   /**
    * Parse a single agent definition file
+   *
+   * Supports:
+   * - YAML frontmatter for metadata
+   * - Agent name from filename or frontmatter
+   * - Agent type from frontmatter or name inference
+   * - Category from frontmatter
+   * - Tools and delegatesTo from frontmatter
+   *
+   * @param {string} filePath - Absolute path to agent file
+   * @returns {Promise<Agent | null>} Parsed agent or null if invalid
+   * @private
    */
   private async parseAgentFile(filePath: string): Promise<Agent | null> {
     try {
@@ -176,7 +360,11 @@ export class ClaudeCodeParser {
   }
 
   /**
-   * Check if a value is a valid agent type
+   * Type guard to check if a value is a valid agent type
+   *
+   * @param {unknown} value - Value to check
+   * @returns {boolean} True if valid agent type
+   * @private
    */
   private isValidAgentType(value: unknown): value is Agent['type'] {
     return typeof value === 'string' && value.length > 0;
@@ -184,6 +372,17 @@ export class ClaudeCodeParser {
 
   /**
    * Parse agents defined inline in CLAUDE.md
+   *
+   * Parsing strategy:
+   * 1. Parse heading contexts to understand agent type sections
+   * 2. Extract global delegation relationships
+   * 3. Extract global tool associations
+   * 4. Parse bullet list agents with context awareness
+   * 5. Parse agent tables as fallback
+   *
+   * @param {string} filePath - Absolute path to CLAUDE.md file
+   * @returns {Promise<Agent[]>} All agents found in CLAUDE.md
+   * @private
    */
   private async parseAgentsFromClaudeMd(filePath: string): Promise<Agent[]> {
     const agents: Agent[] = [];
@@ -902,7 +1101,44 @@ export class ClaudeCodeParser {
 }
 
 /**
- * Convenience function for parsing Claude Code configuration
+ * Parse Claude Code configurations from a project directory
+ *
+ * Convenience function that creates a parser and returns all configurations.
+ * Searches for:
+ * - Agent definitions in `.claude/agents/` and `CLAUDE.md`
+ * - Skills in `.claude/skills/`
+ * - Hooks in `.claude/settings.json`
+ * - Commands in `.claude/commands/`
+ *
+ * @param {string} rootPath - Absolute path to project root directory
+ * @returns {Promise<ClaudeCodeParseResult>} All parsed configurations and errors
+ * @throws Never throws - all errors are captured in result.errors
+ *
+ * @example
+ * ```typescript
+ * // Parse all Claude Code configurations
+ * const result = await parseClaudeCode('/workspace');
+ *
+ * // Find specific agent types
+ * const coordinators = result.agents.filter(a => a.type === 'coordinator');
+ * const workers = result.agents.filter(a => a.type === 'worker');
+ *
+ * // Check delegation hierarchy
+ * const hasDelegate = (agent: Agent, target: string): boolean => {
+ *   return agent.delegatesTo?.includes(target) ?? false;
+ * };
+ *
+ * // Find enabled skills
+ * const enabledSkills = result.skills.filter(s => s.enabled !== false);
+ *
+ * // Group hooks by event
+ * const hooksByEvent = result.hooks.reduce((acc, h) => {
+ *   (acc[h.event] = acc[h.event] || []).push(h);
+ *   return acc;
+ * }, {} as Record<string, Hook[]>);
+ * ```
+ *
+ * @see {@link ClaudeCodeParser} for more control over parsing
  */
 export async function parseClaudeCode(rootPath: string): Promise<ClaudeCodeParseResult> {
   const parser = new ClaudeCodeParser(rootPath);
