@@ -185,7 +185,7 @@ export function generateContextMd(
   const mcpTypes = new Set(
     config.mcpServers
       .map(s => s.type)
-      .filter((type): type is string => type !== undefined)
+      .filter((type): type is string => typeof type === 'string' && type !== undefined)
   );
   for (const type of mcpTypes) {
     const description = getMcpTypeDescription(type);
