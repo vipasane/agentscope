@@ -72,7 +72,7 @@ docs/
 ## For Users
 
 ### Getting Started
-1. Install: `npm install -g agentscope`
+1. Install: `npm install -g @vipasane/agentscope`
 2. Run: `agentscope scan`
 3. Configure theme: `agentscope scan --theme dark`
 

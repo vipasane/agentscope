@@ -1,6 +1,23 @@
 /**
- * Parser for .mcp.json MCP server configurations
- * Extracts server definitions and tool information
+ * MCP (Model Context Protocol) Configuration Parser
+ *
+ * Parses MCP server configurations from .mcp.json and .claude/settings.json files.
+ * Extracts server definitions, transport types, environment variables, and tool permissions.
+ *
+ * @module parsers/mcp
+ * @see {@link https://modelcontextprotocol.io | MCP Specification}
+ *
+ * @example
+ * ```typescript
+ * import { parseMcp } from './parsers/mcp.js';
+ *
+ * const result = await parseMcp('/path/to/project');
+ * console.log(`Found ${result.servers.length} MCP servers`);
+ *
+ * for (const server of result.servers) {
+ *   console.log(`- ${server.name} (${server.type})`);
+ * }
+ * ```
  */
 
 import { readFile, stat } from 'node:fs/promises';
@@ -11,21 +28,44 @@ import type { McpServer, ScanError, McpServerType } from '../model/types.js';
 // Types
 // ============================================================================
 
+/**
+ * Result of MCP configuration parsing
+ *
+ * @interface McpParseResult
+ * @property {McpServer[]} servers - Successfully parsed MCP servers (duplicates removed)
+ * @property {ScanError[]} errors - Any warnings or errors encountered during parsing
+ */
 export interface McpParseResult {
   servers: McpServer[];
   errors: ScanError[];
 }
 
+/**
+ * .mcp.json file structure
+ *
+ * @internal
+ */
 interface McpConfigJson {
   mcpServers?: Record<string, McpServerConfig>;
 }
 
+/**
+ * Individual MCP server configuration
+ *
+ * @internal
+ */
 interface McpServerConfig {
+  /** Command to execute (npx, node, python, etc.) */
   command: string;
+  /** Command-line arguments */
   args?: string[];
+  /** Environment variables to set */
   env?: Record<string, string>;
+  /** Whether server is disabled */
   disabled?: boolean;
+  /** Tools that are always allowed without prompting */
   alwaysAllow?: string[];
+  /** Server transport type (stdio, sse, websocket) */
   type?: string;
 }
 
@@ -33,13 +73,67 @@ interface McpServerConfig {
 // Main Parser Class
 // ============================================================================
 
+/**
+ * MCP Configuration Parser
+ *
+ * Parses MCP server configurations from multiple sources:
+ * - Project root: .mcp.json
+ * - Claude settings: .claude/settings.json
+ *
+ * Features:
+ * - Automatic server type inference (stdio, sse, websocket)
+ * - Deduplication of servers by name
+ * - Error collection without throwing
+ * - Tool permission extraction
+ *
+ * @class McpParser
+ *
+ * @example
+ * ```typescript
+ * const parser = new McpParser('/path/to/project');
+ * const result = await parser.parse();
+ *
+ * // Check for errors
+ * if (result.errors.length > 0) {
+ *   console.warn('Parsing warnings:', result.errors);
+ * }
+ *
+ * // Use parsed servers
+ * for (const server of result.servers) {
+ *   console.log(`${server.name}: ${server.command} (${server.type})`);
+ * }
+ * ```
+ */
 export class McpParser {
   private errors: ScanError[] = [];
 
+  /**
+   * Create a new MCP parser
+   *
+   * @param {string} rootPath - Absolute path to project root directory
+   */
   constructor(private rootPath: string) {}
 
   /**
-   * Parse MCP configurations from .mcp.json files
+   * Parse MCP server configurations from all available sources
+   *
+   * Searches for:
+   * 1. `.mcp.json` in project root
+   * 2. `.claude/settings.json` with mcpServers key
+   *
+   * Servers are deduplicated by name, preferring enabled over disabled entries.
+   *
+   * @returns {Promise<McpParseResult>} Parsed servers and any errors encountered
+   * @throws Never throws - all errors are captured in result.errors
+   *
+   * @example
+   * ```typescript
+   * const parser = new McpParser('/workspace');
+   * const result = await parser.parse();
+   *
+   * console.log(`Found ${result.servers.length} servers`);
+   * console.log(`Encountered ${result.errors.length} errors`);
+   * ```
    */
   async parse(): Promise<McpParseResult> {
     this.errors = [];
@@ -71,6 +165,10 @@ export class McpParser {
 
   /**
    * Parse a .mcp.json configuration file
+   *
+   * @param {string} filePath - Absolute path to .mcp.json file
+   * @returns {Promise<McpServer[]>} Parsed servers from this file
+   * @private
    */
   private async parseConfigFile(filePath: string): Promise<McpServer[]> {
     const servers: McpServer[] = [];
@@ -100,6 +198,13 @@ export class McpParser {
 
   /**
    * Parse MCP servers from .claude/settings.json
+   *
+   * Settings files may contain MCP servers alongside other configuration.
+   * Missing or malformed MCP config is not an error.
+   *
+   * @param {string} filePath - Absolute path to settings.json file
+   * @returns {Promise<McpServer[]>} Parsed servers from settings
+   * @private
    */
   private async parseSettingsFile(filePath: string): Promise<McpServer[]> {
     const servers: McpServer[] = [];
@@ -129,7 +234,15 @@ export class McpParser {
   }
 
   /**
-   * Parse a single server configuration
+   * Parse a single MCP server configuration
+   *
+   * Validates required fields and infers server type from command/args.
+   *
+   * @param {string} name - Server name from config key
+   * @param {McpServerConfig} config - Server configuration object
+   * @param {string} sourcePath - Source file path (for error reporting)
+   * @returns {McpServer | null} Parsed server or null if invalid
+   * @private
    */
   private parseServerConfig(
     name: string,
@@ -158,7 +271,16 @@ export class McpParser {
   }
 
   /**
-   * Infer the server type from configuration
+   * Infer MCP server transport type from command and arguments
+   *
+   * Detection rules:
+   * - SSE: args contain "sse" or "--transport=sse"
+   * - WebSocket: args contain "websocket", "--transport=websocket", or "ws://"
+   * - Default: stdio (most common for MCP servers)
+   *
+   * @param {McpServerConfig} config - Server configuration
+   * @returns {McpServerType} Inferred transport type
+   * @private
    */
   private inferServerType(config: McpServerConfig): McpServerType {
     const command = config.command.toLowerCase();
@@ -179,7 +301,11 @@ export class McpParser {
   }
 
   /**
-   * Extract tools from alwaysAllow or infer from server name
+   * Extract tool names from alwaysAllow permission list
+   *
+   * @param {McpServerConfig} config - Server configuration
+   * @returns {string[]} List of tool names, empty if none specified
+   * @private
    */
   private extractToolsFromConfig(config: McpServerConfig): string[] {
     if (config.alwaysAllow && Array.isArray(config.alwaysAllow)) {
@@ -190,7 +316,15 @@ export class McpParser {
   }
 
   /**
-   * Deduplicate servers by name, preferring non-disabled entries
+   * Deduplicate servers by name, preferring enabled servers
+   *
+   * When multiple configs define the same server name:
+   * - Enabled servers take precedence over disabled ones
+   * - First occurrence wins if both have same disabled state
+   *
+   * @param {McpServer[]} servers - All parsed servers (may contain duplicates)
+   * @returns {McpServer[]} Deduplicated server list
+   * @private
    */
   private deduplicateServers(servers: McpServer[]): McpServer[] {
     const serverMap = new Map<string, McpServer>();
@@ -208,7 +342,11 @@ export class McpParser {
   }
 
   /**
-   * Check if a file exists
+   * Check if a file exists and is a regular file
+   *
+   * @param {string} path - Absolute path to check
+   * @returns {Promise<boolean>} True if file exists
+   * @private
    */
   private async fileExists(path: string): Promise<boolean> {
     try {
@@ -220,7 +358,15 @@ export class McpParser {
   }
 
   /**
-   * Add an error to the collection
+   * Add an error to the error collection
+   *
+   * Errors are collected rather than thrown to allow partial parsing.
+   *
+   * @param {ScanError['severity']} severity - Error severity (warning, fatal)
+   * @param {string} code - Machine-readable error code
+   * @param {string} message - Human-readable error message
+   * @param {string} [file] - File path where error occurred
+   * @private
    */
   private addError(
     severity: ScanError['severity'],
@@ -233,7 +379,34 @@ export class McpParser {
 }
 
 /**
- * Convenience function for parsing MCP configuration
+ * Parse MCP server configurations from a project directory
+ *
+ * Convenience function that creates a parser and returns results.
+ * Searches for .mcp.json and .claude/settings.json files.
+ *
+ * @param {string} rootPath - Absolute path to project root directory
+ * @returns {Promise<McpParseResult>} Parsed servers and any errors
+ * @throws Never throws - all errors are captured in result.errors
+ *
+ * @example
+ * ```typescript
+ * // Parse MCP servers
+ * const result = await parseMcp('/workspace');
+ *
+ * // Filter enabled servers
+ * const enabled = result.servers.filter(s => !s.disabled);
+ *
+ * // Group by transport type
+ * const byType = enabled.reduce((acc, s) => {
+ *   (acc[s.type] = acc[s.type] || []).push(s);
+ *   return acc;
+ * }, {} as Record<string, McpServer[]>);
+ *
+ * console.log('stdio:', byType.stdio?.length ?? 0);
+ * console.log('sse:', byType.sse?.length ?? 0);
+ * ```
+ *
+ * @see {@link McpParser} for more control over parsing
  */
 export async function parseMcp(rootPath: string): Promise<McpParseResult> {
   const parser = new McpParser(rootPath);

@@ -1,0 +1,8 @@
+{
+  "name": "performance-benchmarks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "tsx run-benchmarks.ts"
+  }
+}

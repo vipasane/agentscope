@@ -1,0 +1,49 @@
+{
+  "name": "@claude-flow/performance",
+  "version": "3.0.0-alpha.1",
+  "description": "Performance optimization utilities for claude-flow - monitoring, caching, batching, profiling",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "bench": "node --experimental-specifier-resolution=node dist/benchmarks/run-benchmarks.js",
+    "lint": "eslint src tests --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "performance",
+    "optimization",
+    "caching",
+    "monitoring",
+    "profiling",
+    "claude-flow"
+  ],
+  "author": "Claude Flow Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0"
+  },
+  "peerDependencies": {
+    "@claude-flow/memory": "^3.0.0-alpha.1"
+  },
+  "peerDependenciesMeta": {
+    "@claude-flow/memory": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

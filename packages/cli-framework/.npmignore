@@ -1,0 +1,18 @@
+# Source files
+src/
+tests/
+examples/
+
+# Config files
+tsconfig.json
+.gitignore
+.npmignore
+
+# Development
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
+
+# Documentation
+docs/

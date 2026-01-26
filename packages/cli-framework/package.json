@@ -1,0 +1,50 @@
+{
+  "name": "@claude-flow/cli-framework",
+  "version": "1.0.0",
+  "description": "Zero-dependency CLI framework for consistent command patterns and rapid CLI development",
+  "license": "MIT",
+  "author": "Claude Flow Contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruvnet/claude-flow.git",
+    "directory": "packages/cli-framework"
+  },
+  "bugs": {
+    "url": "https://github.com/ruvnet/claude-flow/issues"
+  },
+  "homepage": "https://github.com/ruvnet/claude-flow/tree/main/packages/cli-framework#readme",
+  "keywords": [
+    "cli",
+    "framework",
+    "command-line",
+    "argument-parser",
+    "interactive",
+    "terminal",
+    "console",
+    "zero-dependencies"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test tests/**/*.test.js",
+    "test:watch": "node --test --watch tests/**/*.test.js",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

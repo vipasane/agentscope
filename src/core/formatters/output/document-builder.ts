@@ -1,6 +1,63 @@
 /**
- * Output Formatter Domain - Document Builder
- * Fluent API for building markdown documents with sections, diagrams, and navigation
+ * Document Builder - Fluent API for Markdown Document Generation
+ *
+ * Provides a fluent builder pattern for creating structured, navigable markdown documents
+ * with sections, diagrams, tables, legends, and metadata.
+ *
+ * ## Features
+ *
+ * - **Fluent API**: Chainable methods for document construction
+ * - **Section Management**: Organize content with hierarchical sections
+ * - **Diagram Integration**: Embed Mermaid diagrams with titles
+ * - **Table Generation**: Create markdown tables with headers and rows
+ * - **Navigation**: Add prev/next links for multi-document navigation
+ * - **Legend Support**: Generate symbol legend tables by category
+ * - **Table of Contents**: Auto-generate TOC with anchors
+ * - **Timestamp Footers**: Optional generation timestamp
+ *
+ * ## Usage Pattern
+ *
+ * 1. Create builder instance with options
+ * 2. Chain add methods to build document structure
+ * 3. Call build() to generate final markdown
+ * 4. Optionally save or further process the output
+ *
+ * @module formatters/output/document-builder
+ * @see {@link DocumentSection} for section structure
+ * @see {@link DocumentBuilderOptions} for configuration options
+ *
+ * @example
+ * ```typescript
+ * import { DocumentBuilder } from './formatters/output/document-builder.js';
+ *
+ * // Create a comprehensive documentation page
+ * const markdown = new DocumentBuilder({
+ *   includeNavigation: true,
+ *   includeTimestamp: true
+ * })
+ *   .addNavigation('./overview.md', './implementation.md')
+ *   .addSection({
+ *     id: 'intro',
+ *     title: 'Introduction',
+ *     content: 'This document describes...',
+ *     level: 2
+ *   })
+ *   .addDiagram(componentMapDiagram, 'Component Architecture')
+ *   .addTable(
+ *     ['Component', 'Type', 'Status'],
+ *     [
+ *       ['Parser', 'Core', '✅ Complete'],
+ *       ['Generator', 'Core', '⏳ In Progress']
+ *     ],
+ *     'Component Status'
+ *   )
+ *   .addLegend([
+ *     { category: 'status', symbol: '✅', meaning: 'Complete' },
+ *     { category: 'status', symbol: '⏳', meaning: 'In Progress' }
+ *   ])
+ *   .addTimestamp()
+ *   .build();
+ * ```
  */
 
 import type { DocumentSection, NavigationItem, LegendEntry, RelationshipSummary, DocumentBuilderOptions } from '../types.js';
@@ -8,13 +65,43 @@ import type { DocumentSection, NavigationItem, LegendEntry, RelationshipSummary,
 /**
  * Fluent builder for creating structured markdown documents
  *
+ * Provides a chainable API for building markdown documents with:
+ * - Navigation headers (prev/next links)
+ * - Content sections with hierarchical titles
+ * - Embedded Mermaid diagrams
+ * - Markdown tables with formatted data
+ * - Legend tables grouped by category
+ * - Relationship summaries
+ * - Category navigation
+ * - Table of contents with nested items
+ * - Timestamp footers
+ *
+ * @class DocumentBuilder
+ *
  * @example
  * ```typescript
+ * // Basic document with section and diagram
  * const doc = new DocumentBuilder()
- *   .addNavigation('./overview.md', './hierarchy.md')
- *   .addSection({ id: 'intro', title: 'Introduction', content: '...' })
+ *   .addSection({ id: 'intro', title: 'Introduction', content: 'Welcome', level: 2 })
  *   .addDiagram(mermaidCode, 'System Architecture')
+ *   .build();
+ *
+ * // Document with navigation and timestamp
+ * const navDoc = new DocumentBuilder({ includeTimestamp: true })
+ *   .addNavigation('./prev.md', './next.md')
+ *   .addSection({ id: 'content', title: 'Content', content: '...', level: 2 })
  *   .addTimestamp()
+ *   .build();
+ *
+ * // Document with table of contents
+ * const tocDoc = new DocumentBuilder()
+ *   .addTableOfContents([
+ *     { label: 'Overview', anchor: 'overview' },
+ *     { label: 'Details', anchor: 'details', children: [
+ *       { label: 'Implementation', anchor: 'implementation' }
+ *     ]}
+ *   ])
+ *   .addSection({ id: 'overview', title: 'Overview', content: '...', level: 2 })
  *   .build();
  * ```
  */
@@ -24,6 +111,25 @@ export class DocumentBuilder {
   private timestamp = false;
   private options: DocumentBuilderOptions;
 
+  /**
+   * Create a new document builder
+   *
+   * @param {DocumentBuilderOptions} [options={}] - Builder configuration options
+   * @param {boolean} [options.includeNavigation=true] - Include navigation links
+   * @param {boolean} [options.includeTimestamp=true] - Include generation timestamp
+   *
+   * @example
+   * ```typescript
+   * // Default options (navigation and timestamp enabled)
+   * const builder1 = new DocumentBuilder();
+   *
+   * // Custom options
+   * const builder2 = new DocumentBuilder({
+   *   includeNavigation: false,
+   *   includeTimestamp: true
+   * });
+   * ```
+   */
   constructor(options: DocumentBuilderOptions = {}) {
     this.options = {
       includeNavigation: true,
@@ -34,6 +140,23 @@ export class DocumentBuilder {
 
   /**
    * Add navigation links (prev/next) to the document header
+   *
+   * Creates a header section with links to previous and next documents,
+   * useful for multi-page documentation navigation.
+   *
+   * @param {string} [prev] - Path to previous document
+   * @param {string} [next] - Path to next document
+   * @returns {this} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * builder
+   *   .addNavigation('./introduction.md', './implementation.md')
+   *   // Renders: [<- Introduction](./introduction.md) | [Implementation ->](./implementation.md)
+   *
+   * builder.addNavigation(undefined, './next.md')
+   *   // Renders: [Next ->](./next.md)
+   * ```
    */
   addNavigation(prev?: string, next?: string): this {
     if (this.options.includeNavigation !== false) {
@@ -44,6 +167,36 @@ export class DocumentBuilder {
 
   /**
    * Add a content section to the document
+   *
+   * Sections are the primary content building blocks. Each section has:
+   * - Unique ID for anchoring
+   * - Title for headings
+   * - Markdown content
+   * - Level for heading hierarchy (2-6)
+   *
+   * @param {DocumentSection} section - Section configuration
+   * @param {string} section.id - Unique section identifier (for anchors)
+   * @param {string} section.title - Section title (used for heading)
+   * @param {string} section.content - Markdown content
+   * @param {number} [section.level=2] - Heading level (2-6)
+   * @returns {this} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * builder
+   *   .addSection({
+   *     id: 'overview',
+   *     title: 'System Overview',
+   *     content: 'The system consists of three main components...',
+   *     level: 2
+   *   })
+   *   .addSection({
+   *     id: 'implementation',
+   *     title: 'Implementation Details',
+   *     content: '### Architecture\n\nThe architecture follows...',
+   *     level: 2
+   *   });
+   * ```
    */
   addSection(section: DocumentSection): this {
     this.sections.push(section);
@@ -52,6 +205,32 @@ export class DocumentBuilder {
 
   /**
    * Add a Mermaid diagram section
+   *
+   * Wraps Mermaid diagram code in a markdown code block with optional title.
+   * The diagram is automatically added as a section with appropriate formatting.
+   *
+   * @param {string} mermaid - Mermaid diagram code (without code fence)
+   * @param {string} [title] - Optional diagram title (appears as heading)
+   * @returns {this} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * // Diagram with title
+   * builder.addDiagram(`
+   *   graph TB
+   *     A[Parser] --> B[Generator]
+   *     B --> C[Formatter]
+   * `, 'Data Flow');
+   *
+   * // Diagram without title
+   * builder.addDiagram(`
+   *   classDiagram
+   *     class Agent {
+   *       +name: string
+   *       +type: AgentType
+   *     }
+   * `);
+   * ```
    */
   addDiagram(mermaid: string, title?: string): this {
     const content = [
@@ -73,6 +252,35 @@ export class DocumentBuilder {
 
   /**
    * Add a markdown table
+   *
+   * Creates a formatted markdown table with headers, separator row, and data rows.
+   * Automatically handles alignment and formatting.
+   *
+   * @param {string[]} headers - Table column headers
+   * @param {string[][]} rows - Table data rows (each row is an array of cell values)
+   * @param {string} [title] - Optional table title (appears as heading)
+   * @returns {this} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.addTable(
+   *   ['Component', 'Type', 'Status'],
+   *   [
+   *     ['Parser', 'Core', '✅ Complete'],
+   *     ['Generator', 'Core', '⏳ In Progress'],
+   *     ['Formatter', 'Core', '📋 Planned']
+   *   ],
+   *   'Implementation Status'
+   * );
+   * // Renders:
+   * // ### Implementation Status
+   * //
+   * // | Component | Type | Status |
+   * // |-----------|------|--------|
+   * // | Parser | Core | ✅ Complete |
+   * // | Generator | Core | ⏳ In Progress |
+   * // | Formatter | Core | 📋 Planned |
+   * ```
    */
   addTable(headers: string[], rows: string[][], title?: string): this {
     const lines: string[] = [];
@@ -221,6 +429,17 @@ export class DocumentBuilder {
 
   /**
    * Add timestamp footer
+   *
+   * Enables the generation timestamp footer. When enabled, the final document
+   * will include a footer with the generation date and time in ISO format.
+   *
+   * @returns {this} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.addTimestamp();
+   * // Adds footer: *Generated by AgentScope on 2026-01-26T12:00:00.000Z*
+   * ```
    */
   addTimestamp(): this {
     if (this.options.includeTimestamp !== false) {
@@ -231,6 +450,33 @@ export class DocumentBuilder {
 
   /**
    * Build the final markdown document
+   *
+   * Assembles all added sections, navigation, and metadata into a complete
+   * markdown document. Sections are joined with appropriate separators,
+   * navigation is added at the top, and timestamp is added at the bottom.
+   *
+   * @returns {string} Complete markdown document
+   *
+   * @example
+   * ```typescript
+   * const markdown = new DocumentBuilder()
+   *   .addNavigation('./prev.md', './next.md')
+   *   .addSection({
+   *     id: 'intro',
+   *     title: 'Introduction',
+   *     content: 'Welcome to the documentation',
+   *     level: 2
+   *   })
+   *   .addDiagram(mermaidCode, 'Architecture')
+   *   .addTimestamp()
+   *   .build();
+   *
+   * // Save to file
+   * await writeFile('docs/output.md', markdown);
+   *
+   * // Or use in further processing
+   * console.log(markdown);
+   * ```
    */
   build(): string {
     const parts: string[] = [];

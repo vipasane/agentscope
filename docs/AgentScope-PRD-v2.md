@@ -397,9 +397,9 @@ interface PermissionRule {
 ### Installation
 
 ```bash
-npm install -g agentscope
+npm install -g @vipasane/agentscope
 # or
-npx agentscope <command>
+npx @vipasane/agentscope <command>
 ```
 
 ### Commands

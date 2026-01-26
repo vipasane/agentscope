@@ -1,6 +1,38 @@
 /**
  * Component Map Diagram Generator
- * Generates a Mermaid diagram showing all components and their relationships
+ *
+ * Generates Mermaid diagrams showing agent architecture, relationships, and integrations.
+ * Supports three zoom levels:
+ * - **Summary**: Category overview with counts
+ * - **Category**: Grouped agents by category with names
+ * - **Detail**: Full view with descriptions and all relationships
+ *
+ * Features:
+ * - Agent categorization and filtering
+ * - MCP server and skill integration display
+ * - Delegation and tool relationship visualization
+ * - Theme customization (6 built-in themes)
+ * - Security hooks (pre/post-generate)
+ * - Caching and metrics tracking
+ *
+ * @module generators/diagrams/component-map
+ *
+ * @example
+ * ```typescript
+ * import { generateComponentMap } from './generators/diagrams/component-map.js';
+ *
+ * // Generate default category view
+ * const diagram = await generateComponentMap(config);
+ *
+ * // Generate summary view
+ * const summary = await generateComponentMap(config, { level: 'summary' });
+ *
+ * // Generate with filtering
+ * const coordinators = await generateComponentMap(config, {
+ *   types: ['coordinator'],
+ *   level: 'detail'
+ * });
+ * ```
  */
 
 import type { AgentScopeConfig, Agent, McpServer, Skill } from '../../model/types.js';
@@ -23,8 +55,44 @@ import {
   type ComponentMapOptions as HookComponentMapOptions,
 } from '../../hooks/index.js';
 
+/**
+ * Diagram zoom level
+ *
+ * - **summary**: Category overview with counts only
+ * - **category**: Grouped agents by category with names (default)
+ * - **detail**: Full view with descriptions and all connections
+ *
+ * @typedef {string} ZoomLevel
+ */
 export type ZoomLevel = 'summary' | 'category' | 'detail';
 
+/**
+ * Component map diagram generation options
+ *
+ * @interface ComponentMapOptions
+ * @property {boolean} [includeDisabled=false] - Include disabled MCP servers in diagram
+ * @property {boolean} [showTools=true] - Show tool connections between agents and MCP servers
+ * @property {string} [title='Agent Architecture Component Map'] - Custom diagram title
+ * @property {ZoomLevel} [level='category'] - Diagram zoom level
+ * @property {boolean} [compact=false] - Compact mode (names only, no descriptions)
+ * @property {AgentCategory[]} [categories] - Filter to specific categories
+ * @property {string[]} [types] - Filter to specific agent types
+ * @property {string} [pattern] - Filter by name pattern (glob-like)
+ * @property {number} [maxPerCategory=20] - Maximum agents per category before collapsing
+ * @property {ThemePalette | string} [theme] - Theme palette or name (light, dark, etc.)
+ * @property {string} [themePath] - Path to custom theme file
+ *
+ * @example
+ * ```typescript
+ * const options: ComponentMapOptions = {
+ *   level: 'detail',
+ *   categories: ['coordination', 'development'],
+ *   showTools: true,
+ *   theme: 'dark',
+ *   compact: false
+ * };
+ * ```
+ */
 export interface ComponentMapOptions {
   /** Include disabled servers */
   includeDisabled?: boolean;
@@ -51,7 +119,63 @@ export interface ComponentMapOptions {
 }
 
 /**
- * Generate a component map diagram showing all system components
+ * Generate a component map diagram showing the agent architecture
+ *
+ * Creates a Mermaid diagram with:
+ * - Agent nodes grouped by category
+ * - MCP server integrations
+ * - Skills and commands
+ * - Delegation relationships
+ * - Tool connections (optional)
+ *
+ * The diagram supports three zoom levels:
+ * 1. **summary** - Category overview with counts
+ * 2. **category** - Grouped agents with names (default)
+ * 3. **detail** - Full view with descriptions
+ *
+ * Security features:
+ * - Pre-generate validation hook
+ * - Input sanitization (IDs, labels, theme names)
+ * - Post-generate metrics collection
+ * - Caching support
+ *
+ * @param {AgentScopeConfig} config - Complete agent configuration
+ * @param {ComponentMapOptions} [options={}] - Diagram generation options
+ * @returns {Promise<string>} Mermaid diagram markdown with timestamp footer
+ * @throws {Error} If input validation fails or theme name is invalid
+ *
+ * @example
+ * ```typescript
+ * import { generateComponentMap } from './generators/diagrams/component-map.js';
+ *
+ * // Basic usage - category view
+ * const diagram = await generateComponentMap(config);
+ *
+ * // Summary view for quick overview
+ * const summary = await generateComponentMap(config, {
+ *   level: 'summary',
+ *   title: 'System Overview'
+ * });
+ *
+ * // Detail view with filtering
+ * const filtered = await generateComponentMap(config, {
+ *   level: 'detail',
+ *   categories: ['coordination', 'development'],
+ *   types: ['coordinator', 'worker'],
+ *   pattern: '*-agent',
+ *   showTools: true,
+ *   theme: 'dark'
+ * });
+ *
+ * // Compact view without descriptions
+ * const compact = await generateComponentMap(config, {
+ *   compact: true,
+ *   maxPerCategory: 10
+ * });
+ * ```
+ *
+ * @see {@link ComponentMapOptions} for all available options
+ * @see {@link ZoomLevel} for zoom level details
  */
 export async function generateComponentMap(
   config: AgentScopeConfig,
@@ -653,7 +777,38 @@ function countEdges(diagram: string): number {
 }
 
 /**
- * Generate separate diagrams for each category
+ * Generate separate component map diagrams for each agent category
+ *
+ * Creates individual diagrams for each category (coordination, development, etc.),
+ * useful for focused documentation or large systems where a single diagram is too complex.
+ *
+ * Each diagram uses detail level and includes only agents from that category.
+ *
+ * @param {AgentScopeConfig} config - Complete agent configuration
+ * @param {Omit<ComponentMapOptions, 'categories'>} [options={}] - Options (categories filter excluded)
+ * @returns {Promise<Map<AgentCategory, string>>} Map of category to diagram markdown
+ *
+ * @example
+ * ```typescript
+ * import { generateCategoryDiagrams } from './generators/diagrams/component-map.js';
+ *
+ * // Generate separate diagrams for each category
+ * const diagrams = await generateCategoryDiagrams(config, {
+ *   level: 'detail',
+ *   showTools: true,
+ *   theme: 'light'
+ * });
+ *
+ * // Save each diagram to a file
+ * for (const [category, diagram] of diagrams.entries()) {
+ *   await writeFile(`docs/diagrams/${category}.md`, diagram);
+ * }
+ *
+ * // Get specific category diagram
+ * const coordDiagram = diagrams.get('coordination');
+ * ```
+ *
+ * @see {@link generateComponentMap} for single diagram generation
  */
 export async function generateCategoryDiagrams(
   config: AgentScopeConfig,

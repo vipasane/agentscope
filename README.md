@@ -113,7 +113,10 @@ npx @vipasane/agentscope scan
 | Embed Mermaid diagrams | v1.0 | ✅ |
 | Summary statistics | v1.0 | ✅ |
 | Configuration snippets | v1.0 | ✅ |
-| Improved readability and clarity | v1.2 | |
+| Security summary section | v1.2 | |
+| Agent capability matrix | v1.2 | |
+| Cross-reference links | v1.2 | |
+| Improved visual hierarchy | v1.2 | |
 | Generate llms.txt (AI discovery) | v1.3 | |
 | Generate CONTEXT.md (arc42) | v1.3 | |
 | ADR template generation (MADR) | v1.3 | |
@@ -129,6 +132,46 @@ npx @vipasane/agentscope scan
 | ReDoS prevention (input length) | v1.1 | ✅ |
 | Path traversal prevention | v1.0 | ✅ |
 | HTML entity sanitization | v1.0 | ✅ |
+| Claude Code settings validation | v1.2 | |
+| CLAUDE.md prompt injection detection | v1.2 | |
+| Agent configuration security checks | v1.2 | |
+| MCP endpoint validation | v1.2 | |
+| Secret detection in agent configs | v1.2 | |
+
+### Agent Analysis
+
+| Feature | Version | Implemented |
+|---------|---------|-------------|
+| Delegation chain analysis | v1.2 | |
+| Circular delegation detection | v1.2 | |
+| Tool access matrix generation | v1.2 | |
+| Skill coverage analysis | v1.2 | |
+| Hook security validation | v1.2 | |
+| Delegation depth calculation | v1.2 | |
+
+### Multi-Platform Support
+
+| Feature | Version | Implemented |
+|---------|---------|-------------|
+| Claude Code scanner | v1.0 | ✅ |
+| Cursor agent configurations | v1.2 | |
+| Gemini CLI configurations | v1.2 | |
+| Platform auto-detection | v1.2 | |
+| Unified agent model | v1.2 | |
+| GitHub Copilot configs | v2.0 | |
+| Windsurf configurations | v2.0 | |
+
+### Template Generation
+
+| Feature | Version | Implemented |
+|---------|---------|-------------|
+| ADR templates (MADR) | v1.1 | ✅ |
+| CONTEXT.md template | v1.1 | ✅ |
+| Agent definition templates | v1.2 | |
+| Skill templates | v1.2 | |
+| Hook templates | v1.2 | |
+| MCP server templates | v1.2 | |
+| Permission templates | v1.2 | |
 
 ### CLI & Integration
 
@@ -138,11 +181,12 @@ npx @vipasane/agentscope scan
 | CLI `validate` command | v1.0 | ✅ |
 | CLI `export` command | v1.1 | ✅ |
 | CLI `import` command | v1.1 | ✅ |
+| CLI `template` command | v1.2 | |
 | JSON output format | v1.0 | ✅ |
 | Custom output directory | v1.0 | ✅ |
 | Programmatic API | v1.0 | ✅ |
-| Watch mode (real-time updates) | v1.2 | |
-| GitHub Action | v1.2 | |
+| Watch mode (real-time updates) | v1.3 | |
+| GitHub Action | v1.3 | |
 | VS Code extension | v2.0 | |
 | Interactive web viewer | v2.0 | |
 | Plugin system | v2.0 | |
@@ -191,6 +235,12 @@ agentscope scan --format json
 
 # Validate only (no doc generation)
 agentscope validate
+
+# Generate templates (v1.2)
+agentscope template agent    # Agent definition with secure defaults
+agentscope template skill    # Skill template
+agentscope template hook     # Hook template
+agentscope template mcp      # MCP server template
 ```
 
 ## Example Output
@@ -198,8 +248,9 @@ agentscope validate
 ```
 $ agentscope scan
 
-AgentScope v1.1.0-alpha
+AgentScope v1.2.0-alpha
 Scanning: /Users/dev/my-project
+Platform detected: Claude Code
 
 Found:
   - 3 agents (2 project, 1 user)
@@ -211,16 +262,28 @@ Found:
   - 4 MCP servers
 
 Generated:
-  ✓ docs/agent-architecture/README.md
+  ✓ docs/agent-architecture/README.md (with security summary)
+  ✓ docs/agent-architecture/AGENTS.md (with capability matrix)
   ✓ docs/agent-architecture/hierarchy.md
   ✓ docs/agent-architecture/component-map.md
   ✓ docs/agent-architecture/dataflow.md
+  ✓ docs/agent-architecture/delegation-chain.md (NEW)
+  ✓ docs/agent-architecture/tool-access-matrix.md (NEW)
   ✓ docs/agent-architecture/config.json
 
-Security Analysis:
+Security Analysis (v1.2):
   ✓ All entities validated (DREAD score: Low risk)
-  ✓ No injection patterns detected
+  ✓ No prompt injection patterns detected
+  ✓ No secrets found in agent configs
+  ✓ MCP endpoints use secure protocols
   ✓ Permissions follow least-privilege principle
+  ⚠ Warning: Circular delegation detected (coder → reviewer → coder)
+
+Agent Analysis (v1.2):
+  ✓ Delegation depth: 3 levels (max)
+  ✓ Tool coverage: 85% (17/20 tools used)
+  ✓ Skill coverage: 90% (9/10 skills assigned)
+  ℹ 2 agents share identical tool permissions (consider consolidation)
 ```
 
 ## Theme System
@@ -257,7 +320,7 @@ See [Theme Documentation](docs/themes.md) for full details and custom theme crea
 ## Programmatic API
 
 ```typescript
-import { scan, generateHierarchy, generateComponentMap } from 'agentscope';
+import { scan, generateHierarchy, generateComponentMap } from '@vipasane/agentscope';
 
 // Scan a directory
 const config = await scan('/path/to/project');
@@ -267,19 +330,20 @@ const hierarchy = generateHierarchy(config, { theme: 'dark' });
 const componentMap = generateComponentMap(config, { theme: 'colorblind-light' });
 
 // Export configuration
-import { exportConfig } from 'agentscope/export';
+import { exportConfig } from '@vipasane/agentscope/export';
 const exported = await exportConfig(config, {
   sanitizeSecrets: true,
   transformPaths: true
 });
 
 // Import configuration
-import { importConfig } from 'agentscope/import';
+import { importConfig } from '@vipasane/agentscope/import';
 await importConfig(exported, '/path/to/target');
 ```
 
 ## Documentation
 
+- [Scope Definition](docs/SCOPE.md) - What AgentScope scans and what it doesn't
 - [Theme System](docs/themes.md) - Customizing diagram appearance
 - [Theme Examples](docs/agent-architecture/examples/theme-examples.md) - Visual examples of all themes
 - [API Documentation](docs/architecture/interfaces.md) - TypeScript interfaces
@@ -308,26 +372,49 @@ await importConfig(exported, '/path/to/target');
 - ✅ DREAD security validation
 - ✅ 496+ unit tests
 
-### v1.2 (Next)
-- Recursive `CLAUDE.md` discovery
-- `AGENTS.md` file support
-- Referenced file parsing
-- Watch mode
-- GitHub Action
-- Improved documentation clarity
+### v1.2 (Next - Agent-Focused)
+**Enhanced Documentation Output**
+- Security summary section
+- Agent capability matrix
+- Cross-reference links between entities
+- Improved visual hierarchy
+
+**Agent Security Scanning**
+- Claude Code settings validation
+- CLAUDE.md prompt injection detection
+- Agent configuration security checks
+- MCP endpoint validation
+- Secret detection in configs
+
+**Advanced Agent Analysis**
+- Delegation chain analysis (circular detection)
+- Tool access matrix generation
+- Skill coverage analysis
+- Hook security validation
+
+**Multi-Platform Support**
+- Cursor agent configurations
+- Gemini CLI configurations
+
+**Template Generation**
+- Agent definition templates
+- Skill/hook/MCP templates with secure defaults
 
 ### v1.3 (Planned)
+- Recursive `CLAUDE.md` discovery
+- Referenced file parsing
 - Read from GitHub directly
 - Export to GitHub
 - llms.txt generation
-- ADR template generation
 - BMad Method scanner
+- Watch mode
+- GitHub Action
 
 ### v2.0 (Future)
 - VS Code extension
 - Interactive web viewer
 - Plugin system
-- Gemini CLI scanner
+- Advanced agent analytics
 
 ---
 

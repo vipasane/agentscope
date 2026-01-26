@@ -155,7 +155,7 @@ import {
   createThemeGenerator,
   generateMermaidInit,
   generateClassDefs
-} from 'agentscope';
+} from '@vipasane/agentscope';
 
 // Create generator with theme name
 const generator = createThemeGenerator('dark');
@@ -184,7 +184,7 @@ import {
   getThemeOrDefault,
   getThemeRegistry,
   isBuiltinTheme
-} from 'agentscope';
+} from '@vipasane/agentscope';
 
 // Get a theme by name (returns undefined if not found)
 const dark = getTheme('dark');
@@ -214,7 +214,7 @@ const themes = registry.list(); // ['light', 'dark', 'high-contrast-light', ...]
 ### Using the Theme Loader
 
 ```typescript
-import { ThemeLoader, resolveTheme } from 'agentscope';
+import { ThemeLoader, resolveTheme } from '@vipasane/agentscope';
 
 // Resolve theme based on options and configuration
 const result = resolveTheme({

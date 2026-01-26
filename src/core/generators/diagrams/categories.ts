@@ -218,15 +218,45 @@ const CATEGORY_PATTERNS: Array<{
 
 /**
  * Detect the category for a single agent
+ * Task 2.2: Auto-Categorization with Explicit Category Support
+ *
+ * Priority:
+ * 1. Explicit category from frontmatter (always respected)
+ * 2. Auto-detection from name/description keywords
+ * 3. Default to 'development' category
  */
 export function detectCategory(agent: Agent): AgentCategory {
+  // Priority 1: Explicit category from frontmatter always takes precedence
+  if (agent.category && typeof agent.category === 'string') {
+    const explicitCategory = agent.category.toLowerCase() as AgentCategory;
+
+    // Validate it's a known category
+    const knownCategory = CATEGORY_PATTERNS.find(p => p.category === explicitCategory);
+    if (knownCategory || explicitCategory === 'other') {
+      return explicitCategory;
+    }
+
+    // If explicit category is not canonical, still use it as-is
+    // This allows for custom categories while respecting explicit choice
+    return explicitCategory;
+  }
+
+  // Priority 2: Auto-detect from name and description
   const name = agent.name.toLowerCase();
+  const desc = (agent.description || '').toLowerCase();
   const type = agent.type?.toLowerCase() ?? '';
 
   for (const def of CATEGORY_PATTERNS) {
     // Check name patterns
     for (const pattern of def.patterns) {
       if (pattern.test(name)) {
+        return def.category;
+      }
+    }
+
+    // Check description patterns (NEW: Task 2.2)
+    for (const pattern of def.patterns) {
+      if (pattern.test(desc)) {
         return def.category;
       }
     }
@@ -241,7 +271,9 @@ export function detectCategory(agent: Agent): AgentCategory {
     }
   }
 
-  return 'other';
+  // Priority 3: Default to 'development' instead of 'other'
+  // This provides better organization for uncategorized agents
+  return 'development';
 }
 
 /**

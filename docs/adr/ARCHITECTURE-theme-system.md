@@ -380,7 +380,7 @@ export function generateDataflow(
 Users can register custom themes programmatically:
 
 ```typescript
-import { ThemeRegistry } from 'agentscope';
+import { ThemeRegistry } from '@vipasane/agentscope';
 
 // Register a custom theme
 ThemeRegistry.register({
@@ -452,7 +452,7 @@ Plugin discovery in `package.json`:
 For interactive environments:
 
 ```typescript
-import { ThemeLoader, ThemeRegistry } from 'agentscope';
+import { ThemeLoader, ThemeRegistry } from '@vipasane/agentscope';
 
 // Switch theme at runtime
 const newTheme = ThemeRegistry.get('dark');

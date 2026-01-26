@@ -1,8 +1,85 @@
 /**
  * Security Sanitizers
  *
- * Output sanitization functions for AgentScope security.
- * Part of DESIGN-001 security implementation.
+ * Output sanitization functions for AgentScope security, providing the final layer
+ * of defense-in-depth protection by ensuring all output is safe for rendering.
+ *
+ * ## Security Model
+ *
+ * This module implements the output sanitization layer of DESIGN-001:
+ * 1. **Escape special characters** - Prevent Mermaid syntax injection
+ * 2. **Remove dangerous patterns** - Strip HTML, JavaScript, directives
+ * 3. **Length limiting** - Prevent diagram rendering issues
+ * 4. **Allowlist enforcement** - Only permit safe characters/patterns
+ *
+ * ## Sanitization Guarantees
+ *
+ * Each sanitizer provides specific safety guarantees:
+ * - `sanitizeId`: Safe Mermaid node IDs (alphanumeric + underscore only)
+ * - `sanitizeNodeLabel`: Safe node labels (escaped special chars, no HTML/JS)
+ * - `sanitizePath`: Safe file paths (no traversal, within allowed dirs)
+ * - `sanitizeMarkdown`: Safe markdown (no XSS via links/HTML)
+ * - `sanitizeConfig`: Safe configuration objects (no functions, sanitized strings)
+ *
+ * ## Usage Pattern - Defense in Depth
+ *
+ * Always use with validation for complete protection:
+ * ```typescript
+ * // 1. Validate input
+ * const patterns = detectInjectionPatterns(input);
+ * if (patterns.length > 0) {
+ *   logger.warn('Injection attempt detected', { patterns });
+ * }
+ *
+ * // 2. Sanitize output
+ * const safeId = sanitizeId(input);
+ * const safeLabel = sanitizeNodeLabel(input);
+ *
+ * // 3. Use in diagram (now safe)
+ * return `${safeId}["${safeLabel}"]`;
+ * ```
+ *
+ * ## Performance Considerations
+ *
+ * - Sanitizers use non-backtracking regex to prevent ReDoS
+ * - Length limits prevent excessive processing time
+ * - Simple string operations (no complex parsing) for speed
+ *
+ * @module security/sanitizers
+ * @see {@link module:security/validators} for input validation
+ * @see DESIGN-001 security architecture document
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   sanitizeId,
+ *   sanitizeNodeLabel,
+ *   sanitizePath,
+ *   sanitizeMarkdown,
+ *   sanitizeConfig
+ * } from './security/sanitizers.js';
+ *
+ * // Safe Mermaid node IDs
+ * const id = sanitizeId('my-agent-123'); // 'my_agent_123'
+ *
+ * // Safe node labels with escaped special chars
+ * const label = sanitizeNodeLabel('Agent [1]'); // 'Agent \\[1\\]'
+ *
+ * // Safe file paths (prevent traversal)
+ * const path = sanitizePath('../../../etc/passwd', ['/workspace']);
+ * // Returns: null (blocked traversal attempt)
+ *
+ * // Safe markdown content
+ * const md = sanitizeMarkdown('[link](javascript:alert(1))');
+ * // Returns: '[link](#)' (JavaScript removed)
+ *
+ * // Safe configuration objects
+ * const config = sanitizeConfig({
+ *   theme: 'dark',
+ *   exec: () => {},  // Removed (functions blocked)
+ *   nested: { value: '<script>alert(1)</script>' }  // Sanitized
+ * }, ['theme', 'nested']);
+ * ```
  */
 
 import { MERMAID_RESERVED, DIRECTIVE_PATTERNS, validateThemeName, detectInjectionPatterns as detectInjectionPatternsArray } from './validators.js';
