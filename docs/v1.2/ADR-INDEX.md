@@ -3,6 +3,17 @@
 > **Project**: AgentScope v1.2
 > **Format**: MADR (Markdown Any Decision Records) 3.0
 > **Last Updated**: 2026-01-25
+> **Scope**: Agent Scanning Only (DevContainer features moved to separate project)
+
+---
+
+## ⚠️ SCOPE CHANGE NOTICE
+
+**AgentScope v1.2 now focuses exclusively on agent scanning and security.**
+
+DevContainer scanning has been moved to a separate project (`devcontainer-scanner`).
+
+See **ADR-015** for details.
 
 ---
 
@@ -14,6 +25,46 @@
 | [ADR-012](./ADR-012-category-detection.md) | Category Detection and Auto-Categorization | Proposed | 2026-01-25 | Medium |
 | [ADR-013](./ADR-013-dataflow-visualization.md) | Data Flow Visualization Approach | Proposed | 2026-01-25 | Low |
 | [ADR-014](./ADR-014-template-generation.md) | ADR and CONTEXT.md Template Generation | Proposed | 2026-01-25 | Low |
+| **[ADR-015](./ADR-015-scope-correction-agent-scanning-only.md)** | **Scope Correction - Focus on Agent Scanning Only** | **Accepted** | 2026-01-25 | **Critical** |
+| **[ADR-016](./ADR-016-claude-code-security-validation.md)** | **Claude Code Security Validation Strategy** | **Proposed** | 2026-01-25 | **Critical** |
+| **[ADR-017](./ADR-017-claude-md-prompt-injection-detection.md)** | **CLAUDE.md Prompt Injection Detection** | **Proposed** | 2026-01-25 | **Critical** |
+| **[ADR-018](./ADR-018-mcp-server-security-scanning.md)** | **MCP Server Security Scanning** | **Proposed** | 2026-01-25 | **High** |
+| **[ADR-019](../adr/ADR-019-comprehensive-claude-flow-integration.md)** | **Comprehensive Claude-Flow V3 Integration** | **Proposed** | 2026-01-25 | **Critical** |
+| **[ADR-020](./ADR-020-neural-enhanced-performance.md)** | **Neural-Enhanced Performance Optimization** | **Proposed** | 2026-01-25 | **High** |
+| **[ADR-021](../adr/ADR-021-system-integration-architecture.md)** | **Overall System Integration Architecture** | **Proposed** | 2026-01-25 | **Critical** |
+
+---
+
+## Domain-Driven Design
+
+| DDD | Title | Status | Date | Impact |
+|-----|-------|--------|------|--------|
+| **[DDD-003](../adr/DDD-003-learning-enhanced-domain-model.md)** | **Learning-Enhanced Domain Model for v1.2** | **Proposed** | 2026-01-25 | **Critical** |
+
+**Supporting Documentation:**
+- [DDD v1.2 Context Map](../architecture/ddd-v12-context-map.md) - Visual diagrams
+- [DDD v1.2 Quick Reference](../architecture/ddd-v12-quick-reference.md) - Implementation guide
+
+---
+
+## Superseded ADRs (Moved to DevContainer Scanner Project)
+
+| ADR | Title | Original Status | Superseded By | New Home |
+|-----|-------|-----------------|---------------|----------|
+| [ADR-008](../adr/ADR-008-devcontainer-scanning.md) | DevContainer Scanning & Documentation | Proposed | ADR-015 | devcontainer-scanner project |
+| [ADR-009](../adr/ADR-009-devcontainer-lifecycle-hooks.md) | DevContainer Lifecycle Hooks | Proposed | ADR-015 | devcontainer-scanner project |
+
+**Note**: ADR-008 and ADR-009 content will be archived and development will continue in the separate `devcontainer-scanner` repository.
+
+---
+
+## Updated ADRs (Security Focus)
+
+| ADR | Title | Status | Changes |
+|-----|-------|--------|---------|
+| [ADR-010](../adr/ADR-010-security-model-v12.md) | Security Model v1.2 | Proposed | Updated to focus on agent config security only (removed DevContainer portions) |
+
+---
 
 ---
 

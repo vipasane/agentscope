@@ -248,8 +248,9 @@ agentscope template mcp      # MCP server template
 ```
 $ agentscope scan
 
-AgentScope v1.1.0-alpha
+AgentScope v1.2.0-alpha
 Scanning: /Users/dev/my-project
+Platform detected: Claude Code
 
 Found:
   - 3 agents (2 project, 1 user)
@@ -261,16 +262,28 @@ Found:
   - 4 MCP servers
 
 Generated:
-  ✓ docs/agent-architecture/README.md
+  ✓ docs/agent-architecture/README.md (with security summary)
+  ✓ docs/agent-architecture/AGENTS.md (with capability matrix)
   ✓ docs/agent-architecture/hierarchy.md
   ✓ docs/agent-architecture/component-map.md
   ✓ docs/agent-architecture/dataflow.md
+  ✓ docs/agent-architecture/delegation-chain.md (NEW)
+  ✓ docs/agent-architecture/tool-access-matrix.md (NEW)
   ✓ docs/agent-architecture/config.json
 
-Security Analysis:
+Security Analysis (v1.2):
   ✓ All entities validated (DREAD score: Low risk)
-  ✓ No injection patterns detected
+  ✓ No prompt injection patterns detected
+  ✓ No secrets found in agent configs
+  ✓ MCP endpoints use secure protocols
   ✓ Permissions follow least-privilege principle
+  ⚠ Warning: Circular delegation detected (coder → reviewer → coder)
+
+Agent Analysis (v1.2):
+  ✓ Delegation depth: 3 levels (max)
+  ✓ Tool coverage: 85% (17/20 tools used)
+  ✓ Skill coverage: 90% (9/10 skills assigned)
+  ℹ 2 agents share identical tool permissions (consider consolidation)
 ```
 
 ## Theme System
