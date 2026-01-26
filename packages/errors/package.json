@@ -1,0 +1,82 @@
+{
+  "name": "@claude-flow/errors",
+  "version": "1.0.0",
+  "description": "Comprehensive error handling utilities for Claude Flow V3 - Type-safe error management with recovery strategies",
+  "license": "MIT",
+  "author": "Claude Flow Contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruvnet/claude-flow.git",
+    "directory": "packages/errors"
+  },
+  "homepage": "https://github.com/ruvnet/claude-flow/tree/main/packages/errors",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./base": {
+      "import": "./dist/base/index.js",
+      "types": "./dist/base/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./handler": {
+      "import": "./dist/handler/index.js",
+      "types": "./dist/handler/index.d.ts"
+    },
+    "./recovery": {
+      "import": "./dist/recovery/index.js",
+      "types": "./dist/recovery/index.d.ts"
+    },
+    "./serializer": {
+      "import": "./dist/serializer/index.js",
+      "types": "./dist/serializer/index.d.ts"
+    },
+    "./reporter": {
+      "import": "./dist/reporter/index.js",
+      "types": "./dist/reporter/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run --config ./vitest.config.ts",
+    "test:watch": "vitest --config ./vitest.config.ts",
+    "test:coverage": "vitest run --config ./vitest.config.ts --coverage",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
+  },
+  "keywords": [
+    "claude-flow",
+    "error-handling",
+    "errors",
+    "exception-handling",
+    "error-codes",
+    "error-recovery",
+    "retry-logic",
+    "error-reporting",
+    "logging",
+    "monitoring",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

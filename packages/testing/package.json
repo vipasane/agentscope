@@ -1,0 +1,88 @@
+{
+  "name": "@claude-flow/testing",
+  "version": "1.0.0",
+  "description": "Comprehensive test utilities for Claude Flow V3 - Shared test helpers, mocks, fixtures, and assertions",
+  "license": "MIT",
+  "author": "Claude Flow Contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruvnet/claude-flow.git",
+    "directory": "packages/testing"
+  },
+  "homepage": "https://github.com/ruvnet/claude-flow/tree/main/packages/testing",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./helpers": {
+      "import": "./dist/helpers/index.js",
+      "types": "./dist/helpers/index.d.ts"
+    },
+    "./mocks": {
+      "import": "./dist/mocks/index.js",
+      "types": "./dist/mocks/index.d.ts"
+    },
+    "./fixtures": {
+      "import": "./dist/fixtures/index.js",
+      "types": "./dist/fixtures/index.d.ts"
+    },
+    "./assertions": {
+      "import": "./dist/assertions/index.js",
+      "types": "./dist/assertions/index.d.ts"
+    },
+    "./performance": {
+      "import": "./dist/performance/index.js",
+      "types": "./dist/performance/index.d.ts"
+    },
+    "./integration": {
+      "import": "./dist/integration/index.js",
+      "types": "./dist/integration/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist coverage"
+  },
+  "dependencies": {
+    "@vitest/spy": "^2.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/uuid": "^9.0.7",
+    "@vitest/coverage-v8": "^3.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
+  },
+  "keywords": [
+    "claude-flow",
+    "testing",
+    "test-utilities",
+    "mocks",
+    "fixtures",
+    "assertions",
+    "performance-testing",
+    "integration-testing",
+    "vitest",
+    "agents",
+    "memory",
+    "benchmarking"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

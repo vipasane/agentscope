@@ -1,0 +1,81 @@
+{
+  "name": "@claude-flow/types",
+  "version": "1.0.0",
+  "description": "Comprehensive TypeScript type definitions for Claude Flow V3 - Shared types for agents, memory, security, learning, and CLI",
+  "license": "MIT",
+  "author": "Claude Flow Contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruvnet/claude-flow.git",
+    "directory": "packages/types"
+  },
+  "homepage": "https://github.com/ruvnet/claude-flow/tree/main/packages/types",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./agent": {
+      "import": "./dist/agent/index.js",
+      "types": "./dist/agent/index.d.ts"
+    },
+    "./memory": {
+      "import": "./dist/memory/index.js",
+      "types": "./dist/memory/index.d.ts"
+    },
+    "./security": {
+      "import": "./dist/security/index.js",
+      "types": "./dist/security/index.d.ts"
+    },
+    "./learning": {
+      "import": "./dist/learning/index.js",
+      "types": "./dist/learning/index.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli/index.js",
+      "types": "./dist/cli/index.d.ts"
+    },
+    "./common": {
+      "import": "./dist/common/index.js",
+      "types": "./dist/common/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit --strict"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "claude-flow",
+    "agents",
+    "memory",
+    "learning",
+    "security",
+    "cli",
+    "definitions",
+    "strict",
+    "zero-dependencies"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
