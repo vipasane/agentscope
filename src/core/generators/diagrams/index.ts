@@ -17,6 +17,12 @@ export {
 
 // Existing Generators
 export * from './dataflow.js';
-export * from './component-map.js';
 export * from './hierarchy.js';
 export * from './categories.js';
+
+// Component Map - explicit exports to avoid ZoomLevel ambiguity
+export {
+  generateComponentMap,
+  type ComponentMapOptions,
+  type ZoomLevel,
+} from './component-map.js';
