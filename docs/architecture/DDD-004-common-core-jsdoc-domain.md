@@ -2129,6 +2129,553 @@ All security-sensitive functions must document contracts:
 function sanitizeNodeLabel(label: string, maxLength?: number): string { ... }
 ```
 
+### 9.6 Error Handling Documentation
+
+All error-prone operations must document error handling patterns with executable try-catch examples.
+
+#### 9.6.1 Required Error Documentation
+
+Every function that can throw errors must document:
+1. `@throws` tag with error types
+2. Error recovery strategies
+3. At least one try-catch example
+4. Cleanup requirements (if any)
+
+#### 9.6.2 Error Handling Patterns with Try-Catch Examples
+
+**Pattern 1: Validation Errors (Security Context)**
+
+```typescript
+/**
+ * Validate file path for safe access
+ *
+ * @param path - File path to validate
+ * @param options - Validation options
+ * @returns Validated absolute path
+ *
+ * @throws {Error} If path is empty or undefined
+ * @throws {Error} If path contains traversal patterns (`..`, `~/`)
+ * @throws {Error} If path contains invalid characters (null bytes, wildcards)
+ * @throws {Error} If path is outside allowed directories
+ *
+ * @example
+ * **Basic usage with error handling:**
+ * ```typescript
+ * import { PathValidator } from '@claude-flow/security';
+ *
+ * try {
+ *   const safePath = PathValidator.validate(userInput, {
+ *     allowTraversal: false,
+ *     allowedDirectories: ['/workspace/src']
+ *   });
+ *   // Proceed with file operation
+ *   await fs.readFile(safePath);
+ * } catch (error) {
+ *   if (error.message.includes('traversal')) {
+ *     console.error('Path traversal attempt detected');
+ *     // Log security incident
+ *     logger.security('Path traversal blocked', { path: userInput });
+ *   } else if (error.message.includes('invalid characters')) {
+ *     console.error('Invalid path characters');
+ *     // Sanitize and retry, or reject
+ *   } else {
+ *     console.error('Path validation failed:', error.message);
+ *   }
+ *   // Return safe default or propagate
+ *   return null;
+ * }
+ * ```
+ *
+ * @example
+ * **Validation with fallback:**
+ * ```typescript
+ * function getConfigPath(userPath?: string): string {
+ *   try {
+ *     return PathValidator.validate(userPath || './config.json');
+ *   } catch (error) {
+ *     // Fall back to default config location
+ *     console.warn('Invalid config path, using default:', error.message);
+ *     return PathValidator.validate('./default-config.json');
+ *   }
+ * }
+ * ```
+ */
+function validatePath(path: string, options?: ValidationOptions): string { ... }
+```
+
+**Pattern 2: Resource Cleanup (Memory Context)**
+
+```typescript
+/**
+ * Initialize vector database with HNSW indexing
+ *
+ * @param config - Database configuration
+ * @returns Initialized database instance
+ *
+ * @throws {Error} If database file is corrupted
+ * @throws {Error} If memory allocation fails
+ * @throws {Error} If HNSW index cannot be built
+ *
+ * @example
+ * **Proper resource cleanup on error:**
+ * ```typescript
+ * import { VectorDatabase } from '@claude-flow/memory';
+ *
+ * let db: VectorDatabase | null = null;
+ * try {
+ *   db = await VectorDatabase.init({
+ *     path: './data/vectors.db',
+ *     dimension: 1536,
+ *     indexType: 'hnsw'
+ *   });
+ *
+ *   // Use database
+ *   await db.insert(vector);
+ *   await db.search(query);
+ *
+ * } catch (error) {
+ *   console.error('Database initialization failed:', error);
+ *
+ *   // Clean up partially initialized resources
+ *   if (db) {
+ *     try {
+ *       await db.close();
+ *     } catch (cleanupError) {
+ *       console.error('Cleanup failed:', cleanupError);
+ *     }
+ *   }
+ *
+ *   // Rethrow or return error state
+ *   throw new Error(`Failed to initialize database: ${error.message}`);
+ *
+ * } finally {
+ *   // Always ensure cleanup
+ *   console.log('Database initialization attempt completed');
+ * }
+ * ```
+ *
+ * @example
+ * **Retry with exponential backoff:**
+ * ```typescript
+ * async function initDatabaseWithRetry(
+ *   config: DatabaseConfig,
+ *   maxRetries = 3
+ * ): Promise<VectorDatabase> {
+ *   let lastError: Error;
+ *
+ *   for (let attempt = 1; attempt <= maxRetries; attempt++) {
+ *     try {
+ *       return await VectorDatabase.init(config);
+ *     } catch (error) {
+ *       lastError = error;
+ *       console.warn(`Attempt ${attempt}/${maxRetries} failed:`, error.message);
+ *
+ *       if (attempt < maxRetries) {
+ *         // Exponential backoff: 1s, 2s, 4s
+ *         const delay = Math.pow(2, attempt - 1) * 1000;
+ *         await new Promise(resolve => setTimeout(resolve, delay));
+ *       }
+ *     }
+ *   }
+ *
+ *   throw new Error(`Database init failed after ${maxRetries} attempts: ${lastError.message}`);
+ * }
+ * ```
+ */
+async function initDatabase(config: DatabaseConfig): Promise<VectorDatabase> { ... }
+```
+
+**Pattern 3: Error Propagation (Errors Context)**
+
+```typescript
+/**
+ * Parse and validate hook configuration
+ *
+ * @param rawConfig - Raw configuration object
+ * @returns Validated hook configuration
+ *
+ * @throws {ValidationError} If configuration format is invalid
+ * @throws {SecurityError} If command contains unsafe patterns
+ * @throws {ConfigurationError} If required fields are missing
+ *
+ * @example
+ * **Error propagation with context:**
+ * ```typescript
+ * import { HookParser } from '@claude-flow/hooks';
+ * import { ValidationError, SecurityError } from '@claude-flow/errors';
+ *
+ * try {
+ *   const hook = HookParser.parse(userConfig);
+ *   await hook.execute();
+ *
+ * } catch (error) {
+ *   if (error instanceof ValidationError) {
+ *     // Schema validation failed
+ *     console.error('Invalid hook config:', error.details);
+ *     return {
+ *       success: false,
+ *       error: 'INVALID_CONFIG',
+ *       message: error.message,
+ *       fields: error.details.map(d => d.field)
+ *     };
+ *
+ *   } else if (error instanceof SecurityError) {
+ *     // Security threat detected
+ *     console.error('Security threat in hook:', error.threatLevel);
+ *     logger.security('Hook security violation', {
+ *       command: error.context.command,
+ *       threat: error.threatType
+ *     });
+ *     return {
+ *       success: false,
+ *       error: 'SECURITY_VIOLATION',
+ *       message: 'Hook command contains unsafe patterns'
+ *     };
+ *
+ *   } else {
+ *     // Unknown error, log and propagate
+ *     console.error('Unexpected error:', error);
+ *     throw error; // Propagate to higher-level handler
+ *   }
+ * }
+ * ```
+ *
+ * @example
+ * **Nested try-catch for granular error handling:**
+ * ```typescript
+ * function loadHookConfig(path: string): HookConfig {
+ *   let rawConfig: any;
+ *
+ *   try {
+ *     // Step 1: Read file
+ *     try {
+ *       rawConfig = JSON.parse(fs.readFileSync(path, 'utf-8'));
+ *     } catch (error) {
+ *       throw new ConfigurationError(
+ *         `Failed to read config file: ${error.message}`,
+ *         { path, cause: error }
+ *       );
+ *     }
+ *
+ *     // Step 2: Validate schema
+ *     try {
+ *       return HookParser.parse(rawConfig);
+ *     } catch (error) {
+ *       throw new ValidationError(
+ *         `Invalid hook configuration: ${error.message}`,
+ *         { config: rawConfig, cause: error }
+ *       );
+ *     }
+ *
+ *   } catch (error) {
+ *     // Log detailed error with context
+ *     logger.error('Hook config loading failed', {
+ *       path,
+ *       error: error.message,
+ *       stack: error.stack
+ *     });
+ *     throw error;
+ *   }
+ * }
+ * ```
+ */
+function parseHookConfig(rawConfig: unknown): HookConfig { ... }
+```
+
+**Pattern 4: Async Error Handling (Learning Context)**
+
+```typescript
+/**
+ * Train neural pattern with EWC++ consolidation
+ *
+ * @param pattern - Training pattern data
+ * @param config - Training configuration
+ * @returns Training result with metrics
+ *
+ * @throws {Error} If pattern data is invalid
+ * @throws {Error} If training fails after max retries
+ * @throws {Error} If GPU memory allocation fails
+ *
+ * @example
+ * **Async error handling with Promise.allSettled:**
+ * ```typescript
+ * import { NeuralTrainer } from '@claude-flow/learning';
+ *
+ * async function trainMultiplePatterns(
+ *   patterns: Pattern[]
+ * ): Promise<TrainingResult[]> {
+ *   // Train all patterns concurrently
+ *   const results = await Promise.allSettled(
+ *     patterns.map(async (pattern) => {
+ *       try {
+ *         return await NeuralTrainer.train(pattern, {
+ *           epochs: 10,
+ *           batchSize: 32
+ *         });
+ *       } catch (error) {
+ *         console.error(`Training failed for pattern ${pattern.id}:`, error);
+ *         // Return partial result instead of failing entire batch
+ *         return {
+ *           success: false,
+ *           patternId: pattern.id,
+ *           error: error.message
+ *         };
+ *       }
+ *     })
+ *   );
+ *
+ *   // Process results
+ *   const successful = results.filter(r => r.status === 'fulfilled');
+ *   const failed = results.filter(r => r.status === 'rejected');
+ *
+ *   console.log(`Training complete: ${successful.length}/${patterns.length} succeeded`);
+ *
+ *   if (failed.length > 0) {
+ *     console.warn('Some patterns failed:', failed.map(f => f.reason));
+ *   }
+ *
+ *   return successful.map(r => r.value);
+ * }
+ * ```
+ *
+ * @example
+ * **Timeout with AbortController:**
+ * ```typescript
+ * async function trainWithTimeout(
+ *   pattern: Pattern,
+ *   timeoutMs = 60000
+ * ): Promise<TrainingResult> {
+ *   const controller = new AbortController();
+ *   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+ *
+ *   try {
+ *     const result = await NeuralTrainer.train(pattern, {
+ *       signal: controller.signal
+ *     });
+ *     clearTimeout(timeoutId);
+ *     return result;
+ *
+ *   } catch (error) {
+ *     clearTimeout(timeoutId);
+ *
+ *     if (error.name === 'AbortError') {
+ *       throw new Error(`Training timed out after ${timeoutMs}ms`);
+ *     }
+ *     throw error;
+ *   }
+ * }
+ * ```
+ */
+async function train(pattern: Pattern, config: TrainingConfig): Promise<TrainingResult> { ... }
+```
+
+**Pattern 5: Error Recovery Strategies (Performance Context)**
+
+```typescript
+/**
+ * Execute tasks in parallel with worker pool
+ *
+ * @param tasks - Array of tasks to execute
+ * @param poolSize - Number of worker threads
+ * @returns Execution results
+ *
+ * @throws {Error} If worker pool initialization fails
+ * @throws {Error} If all workers crash
+ *
+ * @example
+ * **Graceful degradation on partial failure:**
+ * ```typescript
+ * import { ParallelExecutor } from '@claude-flow/performance';
+ *
+ * async function executeWithFallback(
+ *   tasks: Task[]
+ * ): Promise<ExecutionResult[]> {
+ *   try {
+ *     // Try parallel execution first
+ *     return await ParallelExecutor.run(tasks, { poolSize: 4 });
+ *
+ *   } catch (error) {
+ *     console.warn('Parallel execution failed, falling back to sequential:', error);
+ *
+ *     // Fallback: Execute sequentially
+ *     const results: ExecutionResult[] = [];
+ *     for (const task of tasks) {
+ *       try {
+ *         const result = await task.execute();
+ *         results.push({ success: true, data: result });
+ *       } catch (taskError) {
+ *         console.error(`Task ${task.id} failed:`, taskError);
+ *         results.push({
+ *           success: false,
+ *           error: taskError.message,
+ *           taskId: task.id
+ *         });
+ *       }
+ *     }
+ *     return results;
+ *   }
+ * }
+ * ```
+ *
+ * @example
+ * **Error aggregation for batch operations:**
+ * ```typescript
+ * async function executeBatch(tasks: Task[]): Promise<BatchResult> {
+ *   const errors: Error[] = [];
+ *   const results: any[] = [];
+ *
+ *   for (const task of tasks) {
+ *     try {
+ *       results.push(await task.execute());
+ *     } catch (error) {
+ *       errors.push(error);
+ *       // Continue processing remaining tasks
+ *     }
+ *   }
+ *
+ *   if (errors.length > 0) {
+ *     console.warn(`Batch completed with ${errors.length} errors`);
+ *     // Decide whether to throw or return partial results
+ *     if (errors.length > tasks.length / 2) {
+ *       // More than 50% failed - treat as failure
+ *       throw new Error(
+ *         `Batch execution mostly failed: ${errors.length}/${tasks.length} errors`,
+ *         { cause: errors }
+ *       );
+ *     }
+ *   }
+ *
+ *   return {
+ *     success: true,
+ *     results,
+ *     errors,
+ *     successRate: results.length / tasks.length
+ *   };
+ * }
+ * ```
+ */
+async function executeParallel(tasks: Task[], options: ExecutionOptions): Promise<ExecutionResult[]> { ... }
+```
+
+**Pattern 6: Error Context Enrichment (Types Context)**
+
+```typescript
+/**
+ * Create branded ID from string
+ *
+ * @param value - String value to brand
+ * @returns Branded ID type
+ *
+ * @throws {TypeError} If value is not a string
+ * @throws {ValidationError} If value format is invalid
+ *
+ * @example
+ * **Error enrichment with stack trace:**
+ * ```typescript
+ * import { brand, AgentId } from '@claude-flow/types';
+ *
+ * function createAgentId(value: unknown): AgentId {
+ *   try {
+ *     if (typeof value !== 'string') {
+ *       throw new TypeError(`Expected string, got ${typeof value}`);
+ *     }
+ *
+ *     if (!/^[a-z0-9-]+$/.test(value)) {
+ *       throw new ValidationError(
+ *         'Agent ID must contain only lowercase letters, numbers, and hyphens'
+ *       );
+ *     }
+ *
+ *     return brand<AgentId>(value);
+ *
+ *   } catch (error) {
+ *     // Enrich error with context
+ *     const enrichedError = new Error(
+ *       `Failed to create AgentId: ${error.message}`,
+ *       { cause: error }
+ *     );
+ *
+ *     // Add context properties
+ *     enrichedError.context = {
+ *       input: value,
+ *       inputType: typeof value,
+ *       timestamp: new Date().toISOString(),
+ *       stackTrace: error.stack
+ *     };
+ *
+ *     throw enrichedError;
+ *   }
+ * }
+ * ```
+ */
+function brand<T>(value: string): T { ... }
+```
+
+**Pattern 7: Testing Error Handling (Testing Context)**
+
+```typescript
+/**
+ * Build mock fixture with error simulation
+ *
+ * @param type - Fixture type to build
+ * @param overrides - Property overrides
+ * @returns Mock fixture instance
+ *
+ * @throws {Error} If fixture type is unknown
+ *
+ * @example
+ * **Testing error scenarios:**
+ * ```typescript
+ * import { FixtureBuilder } from '@claude-flow/testing';
+ * import { expect, describe, it } from 'vitest';
+ *
+ * describe('Error handling', () => {
+ *   it('should handle invalid input', () => {
+ *     const invalidInput = FixtureBuilder.build('agent', {
+ *       id: null, // Invalid: null ID
+ *       name: ''  // Invalid: empty name
+ *     });
+ *
+ *     expect(() => {
+ *       validateAgent(invalidInput);
+ *     }).toThrow(ValidationError);
+ *   });
+ *
+ *   it('should recover from validation errors', async () => {
+ *     const partiallyValidInput = FixtureBuilder.build('agent', {
+ *       id: 'test-agent',
+ *       name: '', // Missing required field
+ *       tools: ['invalid-tool'] // Invalid tool
+ *     });
+ *
+ *     try {
+ *       await processAgent(partiallyValidInput);
+ *       // Should not reach here
+ *       expect.fail('Should have thrown ValidationError');
+ *     } catch (error) {
+ *       expect(error).toBeInstanceOf(ValidationError);
+ *       expect(error.details).toHaveLength(2); // Two validation errors
+ *       expect(error.details[0].field).toBe('name');
+ *       expect(error.details[1].field).toBe('tools');
+ *     }
+ *   });
+ * });
+ * ```
+ */
+function buildFixture<T>(type: string, overrides?: Partial<T>): T { ... }
+```
+
+#### 9.6.3 Error Documentation Checklist
+
+For every function that can throw errors:
+- [ ] Document all possible error types with `@throws`
+- [ ] Provide at least one try-catch example
+- [ ] Show error recovery strategy (retry, fallback, or propagate)
+- [ ] Document cleanup requirements (close connections, free resources)
+- [ ] Include error context (what was being attempted)
+- [ ] Show how to distinguish error types
+- [ ] Demonstrate graceful degradation when applicable
+
 ---
 
 ## 10. Implementation Guidelines
