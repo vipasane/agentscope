@@ -857,6 +857,269 @@ docs/api/[package-name]/
 - Validate examples with vitest
 - Check links with markdown-link-check
 
+### 9.4 Versioning and Breaking Change Strategy
+
+All common core packages follow [Semantic Versioning 2.0.0](https://semver.org/) (MAJOR.MINOR.PATCH) with strict guidelines for API changes.
+
+#### 9.4.1 Semantic Versioning Rules
+
+**MAJOR version (X.0.0)** - Breaking changes that require user code updates:
+- Removing public APIs (functions, classes, types)
+- Changing function signatures (parameters, return types)
+- Changing behavior that breaks existing use cases
+- Renaming exported symbols
+- Removing or changing error types
+
+**MINOR version (0.X.0)** - Backward-compatible additions:
+- Adding new public APIs
+- Adding optional parameters with defaults
+- Adding new properties to interfaces (with optional modifier)
+- Enhancing functionality without breaking existing code
+- Deprecating APIs (with compatibility maintained)
+
+**PATCH version (0.0.X)** - Bug fixes and non-code changes:
+- Fixing bugs without changing API surface
+- Updating documentation
+- Performance improvements (no API changes)
+- Internal refactoring (no visible changes)
+
+#### 9.4.2 API Stability Matrix
+
+Each package has a stability level that determines how strictly versioning is enforced:
+
+| Package | Stability | Breaking Changes Allowed | Current Version | Next Major |
+|---------|-----------|--------------------------|-----------------|------------|
+| **@claude-flow/types** | **Stable** | Only with 6-month notice | 1.4.2 | 2.0.0 (2026 Q3) |
+| **@claude-flow/errors** | **Stable** | Only with 6-month notice | 1.3.0 | 2.0.0 (2026 Q3) |
+| **@claude-flow/security** | **Stable** | Only with 6-month notice | 1.2.1 | 2.0.0 (2026 Q3) |
+| **@claude-flow/memory** | **Beta** | With 3-month notice | 0.9.4 | 1.0.0 (2026 Q2) |
+| **@claude-flow/learning** | **Beta** | With 3-month notice | 0.8.2 | 1.0.0 (2026 Q2) |
+| **@claude-flow/performance** | **Beta** | With 3-month notice | 0.7.1 | 1.0.0 (2026 Q2) |
+| **@claude-flow/cli-framework** | **Alpha** | With 1-month notice | 0.5.0 | 1.0.0 (2026 Q3) |
+| **@claude-flow/testing** | **Beta** | With 3-month notice | 0.6.3 | 1.0.0 (2026 Q2) |
+
+**Stability Definitions:**
+- **Stable (1.x.x)**: API locked, breaking changes require major version bump and extended deprecation
+- **Beta (0.x.x)**: API mostly stable, minor breaking changes allowed with clear migration path
+- **Alpha (0.0.x)**: API experimental, breaking changes expected, use at own risk
+
+#### 9.4.3 Deprecation Policy
+
+All API deprecations must follow this process:
+
+**Phase 1: Announcement (Release N)**
+```typescript
+/**
+ * @deprecated Use {@link newFunction} instead. Will be removed in v2.0.0.
+ *
+ * Migration guide: https://docs.example.com/migration/v2
+ *
+ * @example
+ * ```typescript
+ * // Old (deprecated):
+ * const result = oldFunction(data);
+ *
+ * // New (recommended):
+ * const result = newFunction(data);
+ * ```
+ */
+export function oldFunction(data: string): Result {
+  console.warn('oldFunction is deprecated. Use newFunction instead.');
+  return newFunction(data); // Redirect to new implementation
+}
+```
+
+**Phase 2: Runtime Warnings (Release N+1 to N+X)**
+- Log deprecation warnings to console (development mode only)
+- Track deprecation usage in telemetry (opt-in)
+- Provide clear migration path in docs
+
+**Phase 3: Removal (Release N+X+1, Next Major)**
+- Remove deprecated API completely
+- Update all documentation
+- Publish migration guide
+- Release as new major version
+
+**Minimum Deprecation Periods:**
+| Stability | Minimum Period | Releases |
+|-----------|----------------|----------|
+| **Stable** | 6 months | 6+ minor releases |
+| **Beta** | 3 months | 3+ minor releases |
+| **Alpha** | 1 month | 1+ minor releases |
+
+#### 9.4.4 Breaking Change Documentation Requirements
+
+Every breaking change MUST be documented with:
+
+**1. BREAKING.md File per Release**
+```markdown
+# Breaking Changes in v2.0.0
+
+## @claude-flow/types
+
+### Removed: `Agent` interface → `AgentConfig` type
+
+**Reason:** Type safety improvement, eliminated runtime overhead
+
+**Migration:**
+\`\`\`typescript
+// Before (v1.x):
+const agent: Agent = { id: '123', name: 'test' };
+
+// After (v2.x):
+const agent: AgentConfig = { id: brand<AgentId>('123'), name: 'test' };
+\`\`\`
+
+**Automated Migration:**
+\`\`\`bash
+npx @claude-flow/codemod v1-to-v2
+\`\`\`
+
+**Affected Users:** ~85% of users (common API)
+**Estimated Migration Time:** 5-10 minutes
+```
+
+**2. Changelog Entry**
+```markdown
+## [2.0.0] - 2026-04-15
+
+### 🚨 BREAKING CHANGES
+
+- **types**: Removed `Agent` interface, use `AgentConfig` type (#234)
+  - Migration guide: docs/migration/v1-to-v2.md
+  - Codemod available: `npx @claude-flow/codemod v1-to-v2`
+
+### Added
+- **types**: Added branded ID types for type safety (#235)
+
+### Fixed
+- **types**: Fixed Result type inference with generics (#236)
+```
+
+**3. Migration Guide**
+- Step-by-step instructions
+- Before/after code examples
+- Automated migration tools (codemods) when possible
+- Estimated migration time
+- Rollback instructions
+
+**4. JSDoc Documentation**
+```typescript
+/**
+ * @since 2.0.0
+ * @replaces Agent (removed in v2.0.0)
+ *
+ * @see {@link https://docs.example.com/migration/v1-to-v2 | Migration Guide}
+ */
+export type AgentConfig = {
+  // ...
+};
+```
+
+#### 9.4.5 Pre-Release Versions
+
+Use pre-release tags for testing breaking changes before final release:
+
+**Alpha releases (X.Y.Z-alpha.N):**
+- Very unstable, breaking changes expected
+- Internal testing only
+- Not published to npm by default
+
+**Beta releases (X.Y.Z-beta.N):**
+- Mostly stable, final breaking changes possible
+- Early adopter testing
+- Published with `@beta` tag on npm
+
+**Release Candidate (X.Y.Z-rc.N):**
+- Final API locked, only bug fixes
+- Production-ready testing
+- Published with `@rc` tag on npm
+
+**Example release sequence:**
+```
+1.9.0 → 2.0.0-alpha.1 → 2.0.0-alpha.2 → 2.0.0-beta.1 → 2.0.0-rc.1 → 2.0.0
+```
+
+#### 9.4.6 Version Coordination Across Packages
+
+**Synchronized Major Versions:**
+When breaking changes affect multiple packages, coordinate major version bumps:
+
+| Release | Types | Errors | Security | Memory | Learning | Performance | CLI | Testing |
+|---------|-------|--------|----------|--------|----------|-------------|-----|---------|
+| **2026 Q2** | 1.5.0 | 1.4.0 | 1.3.0 | **1.0.0** ✨ | **1.0.0** ✨ | **1.0.0** ✨ | 0.7.0 | **1.0.0** ✨ |
+| **2026 Q3** | **2.0.0** 🚨 | **2.0.0** 🚨 | **2.0.0** 🚨 | 1.1.0 | 1.1.0 | 1.1.0 | **1.0.0** ✨ | 1.1.0 |
+
+✨ = First stable release (1.0.0)
+🚨 = Breaking changes
+
+**Dependencies:**
+- Core packages (types, errors) set the baseline version
+- Dependent packages can be on different major versions
+- Use peer dependencies with range: `"@claude-flow/types": "^1.0.0 || ^2.0.0"`
+
+#### 9.4.7 Version Testing Strategy
+
+Before every major version release:
+
+**1. Breaking Change Analysis**
+```bash
+# Run automated API compatibility checker
+npm run check:api-compat -- --since v1.0.0
+
+# Output:
+# 🚨 3 breaking changes detected:
+# - types: Removed Agent interface
+# - errors: Changed ErrorCode enum values
+# - security: Removed deprecated SecretScanner class
+```
+
+**2. Migration Testing**
+- Test codemods against real-world codebases
+- Measure migration time for typical projects
+- Document edge cases that require manual intervention
+
+**3. Beta Period**
+- Minimum 4 weeks beta testing for stable packages
+- Minimum 2 weeks for beta packages
+- Collect feedback from early adopters
+
+**4. Release Checklist**
+- [ ] All breaking changes documented in BREAKING.md
+- [ ] Migration guide published
+- [ ] Codemods tested and working
+- [ ] Changelog updated
+- [ ] Version numbers bumped across all affected packages
+- [ ] Beta period completed (minimum duration met)
+- [ ] No P0 bugs in release candidate
+- [ ] Documentation site updated
+- [ ] npm publish with correct tags
+
+#### 9.4.8 Emergency Breaking Changes
+
+In rare cases (security vulnerabilities, critical bugs), expedited breaking changes are allowed:
+
+**Criteria:**
+- CVE with CVSS score ≥7.0 (High/Critical)
+- Data corruption or data loss bugs
+- Severe performance regression (>50% slower)
+
+**Process:**
+1. Document security issue privately
+2. Develop fix as patch on current major version
+3. If fix requires breaking change:
+   - Skip deprecation period
+   - Release as emergency major version
+   - Publish security advisory
+   - Provide immediate migration path
+4. Backport fix to previous major version (if feasible)
+
+**Example:**
+```
+v1.4.2 → v1.4.3 (patch fix, no breaking change)
+       → v2.0.0 (emergency major with breaking fix)
+```
+
 ---
 
 ## 10. Conclusion
