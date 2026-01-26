@@ -2,7 +2,7 @@
 
 > **Project**: AgentScope v1.2
 > **Format**: MADR (Markdown Any Decision Records) 3.0
-> **Last Updated**: 2026-01-25
+> **Last Updated**: 2026-01-26
 > **Scope**: Agent Scanning Only (DevContainer features moved to separate project)
 
 ---
@@ -32,6 +32,7 @@ See **ADR-015** for details.
 | **[ADR-019](../adr/ADR-019-comprehensive-claude-flow-integration.md)** | **Comprehensive Claude-Flow V3 Integration** | **Proposed** | 2026-01-25 | **Critical** |
 | **[ADR-020](./ADR-020-neural-enhanced-performance.md)** | **Neural-Enhanced Performance Optimization** | **Proposed** | 2026-01-25 | **High** |
 | **[ADR-021](../adr/ADR-021-system-integration-architecture.md)** | **Overall System Integration Architecture** | **Proposed** | 2026-01-25 | **Critical** |
+| **[ADR-022](../adr/ADR-022-common-core-jsdoc-architecture.md)** | **Common Core JSDoc Architecture** | **Proposed** | 2026-01-26 | **High** |
 
 ---
 
