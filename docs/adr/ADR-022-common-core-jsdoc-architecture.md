@@ -795,6 +795,177 @@ fi
 - @internal - Internal API (not for public use)
 ```
 
+### Merge Conflict Resolution
+
+When multiple developers edit JSDoc simultaneously, conflicts can occur. Here's how to handle them effectively:
+
+**Best Practices for Multi-Author Documentation**:
+
+1. **Coordinate Large Changes**: Communicate when documenting entire packages
+2. **Atomic Commits**: Commit JSDoc changes frequently (per class/function)
+3. **Pull Before Push**: Always pull latest changes before starting JSDoc work
+4. **Review Conflicts Carefully**: JSDoc conflicts can hide semantic issues
+
+**Resolving JSDoc Conflicts**:
+
+**Scenario 1: Non-Overlapping Changes (Safe to Merge)**
+```typescript
+// Base version
+/**
+ * Validates user input
+ * @param input - User input string
+ */
+
+// Developer A adds @returns
+/**
+ * Validates user input
+ * @param input - User input string
+ * @returns Validation result
+ */
+
+// Developer B adds @example
+/**
+ * Validates user input
+ * @param input - User input string
+ * @example
+ * validate("hello@example.com")
+ */
+
+// Resolution: Merge both additions
+/**
+ * Validates user input
+ * @param input - User input string
+ * @returns Validation result
+ * @example
+ * validate("hello@example.com")
+ */
+```
+
+**Scenario 2: Conflicting Descriptions (Requires Human Review)**
+```typescript
+// Developer A: Technical focus
+/**
+ * Validates input using regex patterns and length checks
+ */
+
+// Developer B: Usage focus
+/**
+ * Checks if user input meets security requirements
+ */
+
+// Resolution: Combine both perspectives
+/**
+ * Validates input using regex patterns and length checks to ensure
+ * user input meets security requirements
+ */
+```
+
+**Scenario 3: Conflicting Examples (Choose Best or Keep Both)**
+```typescript
+// Developer A: Basic example
+/** @example validate("test") */
+
+// Developer B: Advanced example
+/** @example validate("test@example.com", { strict: true }) */
+
+// Resolution: Keep both examples
+/**
+ * @example
+ * // Basic usage
+ * validate("test")
+ *
+ * @example
+ * // Advanced usage with options
+ * validate("test@example.com", { strict: true })
+ */
+```
+
+**Tools for Conflict Detection and Prevention**:
+
+**1. Pre-Commit Conflict Detection**
+```bash
+#!/bin/bash
+# .githooks/pre-commit-jsdoc-check
+
+# Check if JSDoc files were modified by others since your branch
+git fetch origin
+JSDOC_FILES=$(git diff --name-only HEAD origin/main | grep -E '\.(ts|js)$')
+
+if [ -n "$JSDOC_FILES" ]; then
+  echo "⚠️  JSDoc files modified on main. Consider rebasing:"
+  echo "$JSDOC_FILES"
+  echo ""
+  echo "Run: git pull --rebase origin main"
+fi
+```
+
+**2. Conflict Markers in JSDoc**
+```typescript
+// Git will mark conflicts like this:
+/**
+<<<<<<< HEAD
+ * Validates input with strict mode enabled
+=======
+ * Validates input using security-first approach
+>>>>>>> feature/add-docs
+ * @param input - User input
+ */
+
+// Resolution strategy:
+// 1. Read both versions
+// 2. Identify what each author intended
+// 3. Merge insights (don't just pick one)
+// 4. Test the combined documentation makes sense
+```
+
+**3. Documentation Lock File (Optional)**
+```json
+// .docs-lock.json - Track who's documenting what
+{
+  "locks": {
+    "packages/security/src/validators.ts": {
+      "author": "developer-a",
+      "locked_at": "2026-01-26T10:00:00Z",
+      "expires_at": "2026-01-26T12:00:00Z"
+    }
+  }
+}
+```
+
+**4. Automated Merge Conflict Detector**
+```typescript
+// scripts/detect-jsdoc-conflicts.ts
+import { execSync } from 'child_process';
+
+function detectConflicts() {
+  const conflictedFiles = execSync('git diff --name-only --diff-filter=U')
+    .toString()
+    .split('\n')
+    .filter(f => f.endsWith('.ts') || f.endsWith('.js'));
+
+  if (conflictedFiles.length > 0) {
+    console.log('⚠️  JSDoc conflicts detected in:');
+    conflictedFiles.forEach(f => console.log(`  - ${f}`));
+    console.log('\nReview conflicts carefully - semantic differences matter!');
+  }
+}
+```
+
+**When to Favor One Version Over Another**:
+
+- **Favor existing docs** if new version is vague or incomplete
+- **Favor new docs** if they add security warnings, performance notes, or examples
+- **Merge both** if they cover different aspects (technical vs. usage)
+- **Ask for clarification** if both versions seem contradictory
+
+**Preventing Conflicts in the First Place**:
+
+1. **Document in small PRs**: One package or class at a time
+2. **Update main branch frequently**: Reduces divergence
+3. **Use feature flags**: Document new features alongside code changes
+4. **Communicate in team chat**: "I'm documenting `@claude-flow/security` today"
+5. **Review PRs quickly**: Reduce time window for conflicts
+
 ### Phased Rollout
 
 **Phase 1: Critical Packages (Weeks 1-2)**
