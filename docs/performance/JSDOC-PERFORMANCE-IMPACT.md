@@ -1043,7 +1043,262 @@ async function checkPerformanceRegression() {
 
 ---
 
-## 8. Conclusion
+## 8. Documentation Approach Comparison
+
+### Inline JSDoc vs. Separate Documentation Sites
+
+This section compares our chosen approach (inline JSDoc) against popular alternatives (Docusaurus, VuePress, GitBook, etc.).
+
+#### Comparison Matrix
+
+| Factor | Inline JSDoc + TypeDoc | Separate Docs Site (Docusaurus, VuePress) | Winner |
+|--------|------------------------|-------------------------------------------|--------|
+| **IDE Integration** | ✅ Instant (0ms) | ❌ Requires browser switch (~5-10s) | **JSDoc** |
+| **Developer Experience** | ✅ Inline autocomplete | ⚠️ Must leave IDE | **JSDoc** |
+| **Maintenance Burden** | ⚠️ Must sync with code | ✅ Can update independently | **Docs Site** |
+| **Search & Discoverability** | ⚠️ IDE search only | ✅ Full-text search, SEO | **Docs Site** |
+| **Tutorials & Guides** | ❌ Limited formatting | ✅ Rich MDX, components | **Docs Site** |
+| **Version Control** | ✅ Same as code | ⚠️ Separate or monorepo | **JSDoc** |
+| **API Coverage** | ✅ 100% auto-generated | ⚠️ Manual maintenance | **JSDoc** |
+| **Staleness Risk** | ⚠️ Medium (requires discipline) | ❌ High (separate update) | **JSDoc** |
+| **Onboarding Speed** | ✅ Immediate in IDE | ⚠️ Must discover docs URL | **JSDoc** |
+| **Performance** | ✅ Zero runtime cost | ✅ Zero runtime cost | **Tie** |
+| **Build Time** | ✅ +2.6s TypeDoc | ⚠️ +30-60s Docusaurus | **JSDoc** |
+| **Deployment** | ⚠️ Separate step | ✅ CI/CD integrated | **Docs Site** |
+
+#### Detailed Analysis
+
+**1. Developer Experience**
+
+**JSDoc Advantages:**
+- Instant feedback in IDE (no context switch)
+- Autocomplete shows documentation inline
+- Parameter hints visible while typing
+- No need to remember docs URL
+- Works offline by default
+
+**Docs Site Advantages:**
+- Better for conceptual documentation
+- Rich formatting (tables, diagrams, videos)
+- Interactive examples with live code editors
+- Better for non-code documentation (architecture, guides)
+
+**Verdict:** JSDoc wins for **API reference**, docs sites win for **conceptual guides**. Best approach: Use both.
+
+---
+
+**2. Maintenance Overhead**
+
+**JSDoc Challenges:**
+- Documentation must stay in sync with code changes
+- Requires developer discipline
+- Code reviews must include docs updates
+- Risk of stale examples
+
+**JSDoc Advantages:**
+- Changes happen in same PR as code
+- TypeScript compiler enforces parameter documentation
+- ESLint can enforce JSDoc presence
+- Version control tracks both together
+
+**Docs Site Challenges:**
+- Separate update process
+- Can fall out of sync more easily
+- Requires dedicated documentation team for large projects
+- Multiple sources of truth
+
+**Docs Site Advantages:**
+- Non-code documentation easier to maintain
+- Can update without code changes
+- Better for coordinating large documentation efforts
+
+**Verdict:** JSDoc reduces maintenance burden for API docs, but increases it for conceptual docs. **Hybrid approach recommended.**
+
+---
+
+**3. Search and Discoverability**
+
+**JSDoc Limitations:**
+- Search limited to IDE capabilities
+- No cross-reference search across projects
+- Limited SEO (unless TypeDoc deployed)
+- No external linking
+
+**JSDoc Advantages:**
+- Instant IDE search (Ctrl+Click, Go to Definition)
+- Context-aware (shows related types)
+- No internet required
+
+**Docs Site Advantages:**
+- Full-text search across all documentation
+- SEO-friendly (Google indexing)
+- Can aggregate multiple projects
+- External linking and sharing
+- Algolia search integration
+
+**Verdict:** Docs sites win for **discoverability**, JSDoc wins for **in-IDE navigation**. Use TypeDoc to get best of both worlds.
+
+---
+
+**4. Cost Analysis**
+
+**JSDoc Costs:**
+| Item | Cost |
+|------|------|
+| Initial documentation | 40 hours (1 week) |
+| Monthly maintenance | 2 hours/month |
+| TypeDoc generation | 2.6s per build (negligible) |
+| CI/CD integration | 2 hours (one-time) |
+| **Total first year** | **66 hours** |
+
+**Docs Site Costs (Docusaurus):**
+| Item | Cost |
+|------|------|
+| Initial setup | 8 hours |
+| Content migration | 20 hours (from JSDoc) |
+| Custom theme | 8 hours |
+| Monthly maintenance | 4 hours/month (2x JSDoc) |
+| Build time | 30-60s per build |
+| Hosting | $0-20/month (Netlify/Vercel) |
+| **Total first year** | **84 hours + $0-240** |
+
+**Combined Approach Costs:**
+| Item | Cost |
+|------|------|
+| JSDoc (as above) | 66 hours |
+| Docs site (guides only) | 40 hours |
+| Sync overhead | 8 hours/year |
+| **Total first year** | **114 hours** |
+
+**ROI Comparison (5 developers, $75/hour):**
+- JSDoc only: 732% ROI ($46,875 benefit / $4,950 cost)
+- Docs site only: 627% ROI ($46,875 benefit / $6,300 cost)
+- Combined approach: 548% ROI ($46,875 benefit / $8,550 cost)
+
+**Verdict:** Pure JSDoc has highest ROI, but combined approach provides best developer experience.
+
+---
+
+**5. Real-World Usage Patterns**
+
+**When JSDoc Alone is Sufficient:**
+- Internal APIs (company/team use only)
+- Small to medium projects (<50k LOC)
+- Strong IDE culture (VS Code, IntelliJ)
+- Developers primarily use one language/ecosystem
+
+**When Docs Site is Needed:**
+- Public open-source projects (external users)
+- Large projects (>100k LOC)
+- Multi-language projects (TypeScript + Python + Go)
+- Non-developer audience (DevOps, product managers)
+- Marketing/showcase needs
+
+**Successful Hybrid Examples:**
+- **TypeScript**: JSDoc in code + typescriptlang.org for guides
+- **React**: JSDoc in code + react.dev for tutorials
+- **Node.js**: JSDoc in code + nodejs.org for API reference
+- **Vue**: JSDoc in code + vuejs.org for guides
+
+---
+
+**6. Our Recommendation: Hybrid Approach**
+
+**Phase 1: JSDoc Only (Current)**
+- Document all public APIs with comprehensive JSDoc
+- Generate TypeDoc for HTML reference
+- Deploy TypeDoc to GitHub Pages (zero cost)
+- Focus: 100% API coverage
+
+**Phase 2: Add Docs Site for Guides (Future)**
+- Keep JSDoc for API reference
+- Add Docusaurus site for:
+  - Getting started guide
+  - Architecture overview
+  - Best practices
+  - Security guidelines
+  - Performance optimization guide
+- Embed TypeDoc in docs site via iframe or link
+
+**Why This Order:**
+1. JSDoc provides immediate value (IDE integration)
+2. TypeDoc gives us HTML for free
+3. Docs site can be added later without disrupting JSDoc
+4. API reference stays single-source-of-truth (code)
+
+---
+
+**7. Migration Paths**
+
+**From JSDoc to Docs Site:**
+```bash
+# Extract JSDoc to markdown
+npm install -g jsdoc-to-markdown
+jsdoc2md packages/*/src/**/*.ts > docs/api.md
+
+# Import to Docusaurus
+docusaurus docs:import ./docs/api.md
+```
+
+**From Docs Site to JSDoc:**
+```bash
+# Manual process (no automated tools)
+# Copy examples from docs back to JSDoc @example blocks
+```
+
+**Verdict:** JSDoc → Docs Site is easy, reverse is manual. **Start with JSDoc.**
+
+---
+
+**8. Best Practices for Both Approaches**
+
+**If Using JSDoc:**
+- ✅ Use ESLint to enforce JSDoc presence
+- ✅ Generate TypeDoc for HTML reference
+- ✅ Deploy TypeDoc to GitHub Pages
+- ✅ Include @example blocks for all public APIs
+- ✅ Link to related types with @see
+- ❌ Don't write novels in JSDoc (keep it concise)
+
+**If Using Docs Site:**
+- ✅ Embed TypeDoc for API reference
+- ✅ Keep examples in JSDoc, link from docs
+- ✅ Use CI/CD to auto-update docs
+- ✅ Version docs alongside releases
+- ✅ Include search (Algolia or built-in)
+- ❌ Don't duplicate JSDoc in docs site
+
+**If Using Both (Hybrid):**
+- ✅ JSDoc = API reference (single source of truth)
+- ✅ Docs site = guides, tutorials, conceptual docs
+- ✅ Link from docs site to TypeDoc
+- ✅ Keep examples in JSDoc only (avoid duplication)
+- ✅ Auto-generate changelog from commits
+- ❌ Don't maintain API reference in both places
+
+---
+
+### Summary: Decision Matrix
+
+Use this decision tree to choose your approach:
+
+```
+Are you documenting APIs?
+├─ Yes → Use JSDoc (always)
+│   └─ Need tutorials/guides too?
+│       ├─ Yes → Add docs site (hybrid)
+│       └─ No → JSDoc + TypeDoc is sufficient
+└─ No (only guides/tutorials)
+    └─ Use docs site only (Docusaurus/VuePress)
+```
+
+**Our Project:** API-focused with some guides → **Hybrid approach**
+- **Now:** JSDoc + TypeDoc (Phase 1 complete ✅)
+- **Later:** Add Docusaurus for guides (Phase 2, future)
+
+---
+
+## 9. Conclusion
 
 ### Final Verdict
 
