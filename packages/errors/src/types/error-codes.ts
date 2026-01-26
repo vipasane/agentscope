@@ -1,9 +1,28 @@
 /**
  * Comprehensive error code definitions for Claude Flow
- * Follows pattern: DOMAIN_SEQUENCE
- * Example: MEMORY_001, SECURITY_002, AGENT_003
+ *
+ * Error codes follow pattern: `DOMAIN_SEQUENCE` (e.g., VALIDATION_001, SECURITY_002)
+ *
+ * **Domain Categories**:
+ * - **VALIDATION_XXX**: User input validation failures
+ * - **SECURITY_XXX**: Security violations and injection attempts
+ * - **MEMORY_XXX**: Storage and memory failures
+ * - **AGENT_XXX**: Agent execution and state failures
+ * - **CONFIG_XXX**: Configuration errors
+ * - **NETWORK_XXX**: Network connection and communication failures
+ * - **FS_XXX**: File system access errors
+ * - **DB_XXX**: Database connection and query failures
+ * - **INTERNAL_XXX**: Internal logic errors
+ *
+ * Each domain uses zero-padded sequence numbers (001, 002, etc.) for easy reference
+ * and logging.
+ *
+ * @see {@link ErrorSeverity} for severity levels
+ * @see {@link ErrorCategory} for category classification
+ * @see {@link ErrorFactory} for error creation
+ *
+ * @public
  */
-
 export const ERROR_CODES = {
   // Validation Errors (VAL_XXX)
   VALIDATION_001: 'VALIDATION_001',
@@ -84,29 +103,116 @@ export const ERROR_CODES = {
   INTERNAL_NOT_IMPLEMENTED: 'INTERNAL_002',
 } as const;
 
+/**
+ * Type for all valid error codes
+ *
+ * Ensures type safety when creating errors with specific codes.
+ *
+ * @example
+ * ```typescript
+ * const code: ErrorCode = 'NETWORK_001';
+ * const error = ErrorFactory.fromCode(code, 'Connection failed');
+ * ```
+ *
+ * @public
+ */
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 /**
  * Error severity levels
+ *
+ * Indicates urgency and impact of an error:
+ * - **LOW**: Minor issue, informational
+ * - **MEDIUM**: User action required, recoverable
+ * - **HIGH**: Operation failed, may be recoverable with retry
+ * - **CRITICAL**: System failure, immediate attention required
+ *
+ * Used for prioritization in logging and monitoring.
+ *
+ * @example
+ * ```typescript
+ * import { ErrorSeverity } from '@claude-flow/errors';
+ *
+ * const severity = ErrorSeverity.CRITICAL;
+ * if (severity === ErrorSeverity.CRITICAL) {
+ *   // Escalate immediately
+ * }
+ * ```
+ *
+ * @public
  */
 export enum ErrorSeverity {
+  /** Minor issue, informational */
   LOW = 'low',
+
+  /** User action required, recoverable */
   MEDIUM = 'medium',
+
+  /** Operation failed, may be recoverable */
   HIGH = 'high',
+
+  /** System failure, immediate attention */
   CRITICAL = 'critical',
 }
 
 /**
- * Error categories for classification
+ * Error categories for classification and routing
+ *
+ * Classifies errors by domain for:
+ * - Error handling strategies (retry, fallback, etc.)
+ * - Monitoring and alerting
+ * - Error cause analysis
+ *
+ * **Category Descriptions**:
+ * - **VALIDATION**: User input validation failures
+ * - **SECURITY**: Security violations (injection, unauthorized)
+ * - **MEMORY**: Storage and memory failures
+ * - **AGENT**: Agent execution failures
+ * - **CONFIG**: Configuration errors
+ * - **NETWORK**: Connection and communication failures
+ * - **FILE_SYSTEM**: File access errors
+ * - **DATABASE**: Database operation failures
+ * - **INTERNAL**: Logic errors and unrecoverable states
+ *
+ * @example
+ * ```typescript
+ * import { ErrorCategory } from '@claude-flow/errors';
+ *
+ * const error = ErrorFactory.create(
+ *   'Invalid input',
+ *   'VALIDATION_001',
+ *   ErrorCategory.VALIDATION,
+ *   ErrorSeverity.MEDIUM
+ * );
+ * ```
+ *
+ * @public
  */
 export enum ErrorCategory {
+  /** User input validation failures */
   VALIDATION = 'validation',
+
+  /** Security violations and attacks */
   SECURITY = 'security',
+
+  /** Storage and memory failures */
   MEMORY = 'memory',
+
+  /** Agent execution and state failures */
   AGENT = 'agent',
+
+  /** Configuration errors */
   CONFIG = 'config',
+
+  /** Connection and communication failures */
   NETWORK = 'network',
+
+  /** File system access errors */
   FILE_SYSTEM = 'file_system',
+
+  /** Database operation failures */
   DATABASE = 'database',
+
+  /** Logic errors and unrecoverable states */
   INTERNAL = 'internal',
 }
