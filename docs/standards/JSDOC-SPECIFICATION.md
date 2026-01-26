@@ -1362,6 +1362,368 @@ Add to package.json:
 
 ---
 
+## TypeScript 5.x Compatibility
+
+### Overview
+
+The JSDoc specification and validation scripts must remain compatible across TypeScript versions (4.9+, 5.0+, 5.5+). Instead of version checking, use **feature detection** to ensure forward compatibility.
+
+### Key TypeScript 5.x API Changes
+
+TypeScript 5.x introduced several API changes that affect JSDoc validation scripts:
+
+| Feature | TS 4.x API | TS 5.x API | Status |
+|---------|-----------|-----------|--------|
+| **JSDoc parsing** | `ts.getJSDocTags()` | `ts.getJSDocTags()` | ✅ Compatible |
+| **Node factories** | `ts.createXxx()` | `ts.factory.createXxx()` | ⚠️ Breaking |
+| **Type checker** | `typeChecker.getXxx()` | `typeChecker.getXxx()` | ✅ Compatible |
+| **Symbol flags** | `ts.SymbolFlags.xxx` | `ts.SymbolFlags.xxx` | ✅ Compatible |
+| **AST visitor** | `ts.forEachChild()` | `ts.forEachChild()` | ✅ Compatible |
+
+### Feature Detection Pattern
+
+**❌ AVOID: Version checking**
+```typescript
+// BAD: Fragile, requires maintenance for every TS version
+import * as ts from 'typescript';
+
+const version = ts.version.split('.').map(Number);
+if (version[0] >= 5) {
+  // Use TS 5.x API
+} else {
+  // Use TS 4.x API
+}
+```
+
+**✅ GOOD: Feature detection**
+```typescript
+// GOOD: Works across versions, self-documenting
+import * as ts from 'typescript';
+
+/**
+ * Check if TypeScript factory API is available (TS 4.0+)
+ * @returns True if factory API exists
+ */
+function hasFactoryAPI(): boolean {
+  return typeof (ts as any).factory !== 'undefined';
+}
+
+/**
+ * Create node with version-agnostic API
+ * @param kind - Node kind
+ * @returns Created node
+ */
+function createNode(kind: ts.SyntaxKind): ts.Node {
+  if (hasFactoryAPI()) {
+    // TS 5.x: Use factory API
+    return (ts as any).factory.createToken(kind);
+  } else {
+    // TS 4.x: Use legacy API
+    return (ts as any).createToken(kind);
+  }
+}
+```
+
+### Compatible JSDoc Validation Script
+
+Update the validation script (validate-docs.ts) to use feature detection:
+
+```typescript
+import * as ts from 'typescript';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Compatibility layer for TypeScript AST operations
+ * Uses feature detection instead of version checking
+ */
+const TSCompat = {
+  /**
+   * Get JSDoc tags from a node
+   * Compatible with TS 4.9+ and 5.x
+   */
+  getJSDocTags(node: ts.Node): readonly ts.JSDocTag[] {
+    // Try modern API first (TS 5.x)
+    if (typeof (ts as any).getJSDocTags === 'function') {
+      return (ts as any).getJSDocTags(node) || [];
+    }
+
+    // Fallback to node method (TS 4.x)
+    if ('jsDoc' in node && Array.isArray((node as any).jsDoc)) {
+      const jsDoc = (node as any).jsDoc as ts.JSDoc[];
+      return jsDoc.flatMap(doc => doc.tags || []);
+    }
+
+    return [];
+  },
+
+  /**
+   * Get JSDoc comment text from a node
+   * Compatible with TS 4.9+ and 5.x
+   */
+  getJSDocCommentText(node: ts.Node): string {
+    // Try modern API (TS 5.x)
+    if (typeof (ts as any).getTextOfJSDocComment === 'function') {
+      return (ts as any).getTextOfJSDocComment(node) || '';
+    }
+
+    // Fallback to manual parsing (TS 4.x)
+    if ('jsDoc' in node && Array.isArray((node as any).jsDoc)) {
+      const jsDoc = (node as any).jsDoc as ts.JSDoc[];
+      if (jsDoc.length > 0 && jsDoc[0].comment) {
+        return typeof jsDoc[0].comment === 'string'
+          ? jsDoc[0].comment
+          : jsDoc[0].comment.map((part: any) => part.text).join('');
+      }
+    }
+
+    return '';
+  },
+
+  /**
+   * Check if node has JSDoc
+   * Works across all TS versions
+   */
+  hasJSDoc(node: ts.Node): boolean {
+    return this.getJSDocTags(node).length > 0 ||
+           this.getJSDocCommentText(node).length > 0;
+  }
+};
+
+/**
+ * Validate JSDoc for a source file
+ * @param filePath - Path to TypeScript source file
+ * @returns Validation metrics
+ */
+function validateFile(filePath: string): ValidationMetrics {
+  const sourceCode = fs.readFileSync(filePath, 'utf-8');
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    sourceCode,
+    ts.ScriptTarget.Latest,
+    true // setParentNodes
+  );
+
+  const metrics: ValidationMetrics = {
+    file: path.basename(filePath),
+    total: 0,
+    documented: 0,
+    missing: [],
+    score: 0
+  };
+
+  function visit(node: ts.Node) {
+    // Check functions
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      metrics.total++;
+
+      if (TSCompat.hasJSDoc(node)) {
+        metrics.documented++;
+      } else {
+        metrics.missing.push(`Function: ${node.name.text}`);
+      }
+    }
+
+    // Check classes
+    if (ts.isClassDeclaration(node) && node.name) {
+      metrics.total++;
+
+      if (TSCompat.hasJSDoc(node)) {
+        metrics.documented++;
+      } else {
+        metrics.missing.push(`Class: ${node.name.text}`);
+      }
+    }
+
+    // Check interfaces
+    if (ts.isInterfaceDeclaration(node)) {
+      metrics.total++;
+
+      if (TSCompat.hasJSDoc(node)) {
+        metrics.documented++;
+      } else {
+        metrics.missing.push(`Interface: ${node.name.text}`);
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+
+  if (metrics.total > 0) {
+    metrics.score = (metrics.documented / metrics.total) * 100;
+  }
+
+  return metrics;
+}
+
+interface ValidationMetrics {
+  file: string;
+  total: number;
+  documented: number;
+  missing: string[];
+  score: number;
+}
+```
+
+### Testing Across TypeScript Versions
+
+Add matrix testing to your CI/CD pipeline:
+
+```yaml
+# .github/workflows/typescript-compat.yml
+name: TypeScript Compatibility
+
+on: [push, pull_request]
+
+jobs:
+  test-ts-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        typescript-version: ['4.9', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TypeScript ${{ matrix.typescript-version }}
+        run: npm install --no-save typescript@${{ matrix.typescript-version }}
+
+      - name: Run JSDoc validation
+        run: npm run docs:validate
+
+      - name: Generate TypeDoc
+        run: npm run docs:generate
+```
+
+### Best Practices for TS Compatibility
+
+**1. Use TypeScript's Public API**
+```typescript
+// ✅ GOOD: Public API (stable)
+import * as ts from 'typescript';
+const tags = ts.getJSDocTags(node);
+
+// ❌ AVOID: Internal API (unstable)
+import * as ts from 'typescript';
+const tags = (ts as any).__internal__.getJSDocTags(node);
+```
+
+**2. Graceful Degradation**
+```typescript
+/**
+ * Get JSDoc with fallback
+ * @param node - AST node
+ * @returns JSDoc text or default message
+ */
+function getJSDocOrDefault(node: ts.Node): string {
+  try {
+    return TSCompat.getJSDocCommentText(node);
+  } catch (error) {
+    console.warn(`JSDoc extraction failed for node: ${error.message}`);
+    return '[Documentation unavailable]';
+  }
+}
+```
+
+**3. Feature Detection Utilities**
+```typescript
+/**
+ * Check TypeScript capabilities
+ * Use for conditional feature enablement
+ */
+const TSFeatures = {
+  /** TS 4.5+: Support for JSDoc @satisfies */
+  hasSatisfies: (() => {
+    try {
+      const node = ts.factory.createSatisfiesExpression(
+        ts.factory.createIdentifier('x'),
+        ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  })(),
+
+  /** TS 5.0+: Decorator metadata */
+  hasDecoratorMetadata: typeof (ts as any).factory?.createDecorator === 'function',
+
+  /** TS 5.4+: NoInfer utility type */
+  hasNoInfer: ts.SyntaxKind.NoInferKeyword !== undefined
+};
+
+console.log('TypeScript features:', TSFeatures);
+```
+
+**4. Type Safety with Conditional Types**
+```typescript
+/**
+ * Type-safe wrapper for version-specific APIs
+ */
+type TSVersion = '4.9' | '5.0' | '5.1' | '5.2' | '5.3' | '5.4' | '5.5';
+
+interface TSAPICompat<V extends TSVersion = TSVersion> {
+  getJSDocTags(node: ts.Node): readonly ts.JSDocTag[];
+  getJSDocCommentText(node: ts.Node): string;
+  // Add more methods as needed
+}
+
+function createTSCompat(): TSAPICompat {
+  return TSCompat;
+}
+```
+
+### Validation Script Checklist
+
+When updating JSDoc validation scripts:
+
+- [ ] Use feature detection, not version checking
+- [ ] Provide fallbacks for all TS-version-specific APIs
+- [ ] Test with TypeScript 4.9, 5.0, 5.3, and latest
+- [ ] Document which TS versions are supported
+- [ ] Use only public TypeScript APIs
+- [ ] Handle API errors gracefully (try-catch)
+- [ ] Log warnings for unsupported features
+- [ ] Provide degraded functionality, don't fail hard
+
+### Minimum Supported Versions
+
+Based on compatibility testing:
+
+| Tool | Minimum Version | Recommended | Notes |
+|------|----------------|-------------|-------|
+| **TypeScript** | 4.9.0 | 5.5+ | JSDoc support stable since 4.9 |
+| **Node.js** | 18.0.0 | 20+ | ESM support, modern APIs |
+| **npm** | 9.0.0 | 10+ | Workspace support |
+| **TypeDoc** | 0.25.0 | 0.28+ | TS 5.x compatibility |
+| **ESLint** | 8.0.0 | 9+ | Flat config support |
+
+### Upgrade Strategy
+
+**When to upgrade TypeScript:**
+1. **Major version (4.x → 5.x)**: Test thoroughly, check breaking changes
+2. **Minor version (5.0 → 5.1)**: Test validation scripts, usually safe
+3. **Patch version (5.3.0 → 5.3.1)**: Safe to upgrade immediately
+
+**Migration checklist:**
+- [ ] Update TypeScript in package.json
+- [ ] Run validation script: `npm run docs:validate`
+- [ ] Generate TypeDoc: `npm run docs:generate`
+- [ ] Check for deprecation warnings in console
+- [ ] Update feature detection if new APIs available
+- [ ] Test CI/CD pipeline with new version
+- [ ] Document any workarounds needed
+
+---
+
 ## Adoption Strategy
 
 ### Phase 1: Core Packages (Week 1-2)
