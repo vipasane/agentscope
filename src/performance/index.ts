@@ -10,12 +10,12 @@
  * 6. Memory Optimization (50-75% reduction)
  */
 
-export * from './hnsw-engine';
-export * from './wasm-accelerator';
-export * from './neural-optimizer';
-export * from './intelligent-cache';
-export * from './batch-processor';
-export * from './quantization';
-export * from './memory-pool';
-export * from './dashboard';
-export * from './types';
+export * from './hnsw-engine.js';
+export * from './wasm-accelerator.js';
+export * from './neural-optimizer.js';
+export * from './intelligent-cache.js';
+export * from './batch-processor.js';
+export * from './quantization.js';
+export * from './memory-pool.js';
+export * from './dashboard.js';
+export * from './types.js';
