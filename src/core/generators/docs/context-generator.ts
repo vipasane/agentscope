@@ -182,11 +182,12 @@ export function generateContextMd(
   lines.push('');
 
   // List MCP communication types
-  const mcpTypes = new Set(
-    config.mcpServers
-      .map(s => s.type)
-      .filter((type): type is string => typeof type === 'string' && type !== undefined)
-  );
+  const mcpTypes = new Set<string>();
+  for (const server of config.mcpServers) {
+    if (server.type) {
+      mcpTypes.add(server.type);
+    }
+  }
   for (const type of mcpTypes) {
     const description = getMcpTypeDescription(type);
     lines.push(`* **${type}**: ${description}`);
