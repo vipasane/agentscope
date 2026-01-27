@@ -130,6 +130,11 @@ export { OutputFormatter } from './output/OutputFormatter.js';
 export { ProgressBar, Spinner, MultiProgress } from './interactive/ProgressIndicator.js';
 export { InteractivePrompt } from './interactive/InteractivePrompt.js';
 
+// Security
+export { CommandSecurityMiddleware } from './security/SecurityMiddleware.js';
+export { SecurityError } from './security/types.js';
+export { DEFAULT_SECURITY_CONFIG } from './security/SecurityConfig.js';
+
 // Utilities
 export { c, color, stripColors, displayWidth } from './utils/colors.js';
 export {
@@ -165,3 +170,12 @@ export type {
   ErrorContext,
   ColorMap,
 } from './types.js';
+
+export type { SecurityConfig } from './security/SecurityConfig.js';
+export type {
+  SecurityMiddleware,
+  ValidationResult,
+  ValidationError as SecurityValidationError,
+  ValidationWarning,
+  ThreatDetection,
+} from './security/types.js';

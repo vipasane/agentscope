@@ -5,10 +5,14 @@
 import type { CommandConfig, CommandContext } from '../types.js';
 import { ArgumentParser } from '../parser/ArgumentParser.js';
 import { c } from '../utils/colors.js';
+import type { SecurityConfig } from '../security/SecurityConfig.js';
+import { CommandSecurityMiddleware } from '../security/SecurityMiddleware.js';
+import { SecurityError } from '../security/types.js';
 
 export class CommandRegistry {
   private commands: Map<string, CommandConfig> = new Map();
   private aliases: Map<string, string> = new Map();
+  private securityMiddleware?: CommandSecurityMiddleware;
 
   /**
    * Register a command
@@ -39,6 +43,36 @@ export class CommandRegistry {
    */
   getAll(): CommandConfig[] {
     return Array.from(this.commands.values());
+  }
+
+  /**
+   * Enable security middleware
+   *
+   * Activates security validation for all command executions.
+   * Following review Q1: Global application (security-by-default).
+   *
+   * @param config - Security configuration (optional, uses defaults)
+   *
+   * @example
+   * ```typescript
+   * const registry = new CommandRegistry();
+   * registry.enableSecurity({
+   *   pathValidation: { enabled: true, allowedPaths: [process.cwd()] },
+   *   secretDetection: { enabled: true, entropyThreshold: 4.5 }
+   * });
+   * ```
+   */
+  enableSecurity(config?: Partial<SecurityConfig>): void {
+    this.securityMiddleware = new CommandSecurityMiddleware(config);
+  }
+
+  /**
+   * Disable security middleware
+   *
+   * WARNING: Only disable for testing or when security is handled externally.
+   */
+  disableSecurity(): void {
+    this.securityMiddleware = undefined;
   }
 
   /**
@@ -102,6 +136,48 @@ export class CommandRegistry {
     args: string[],
     context: CommandContext
   ): Promise<void> {
+    // Run security validation first (review Q5: Security → Performance → Learning)
+    if (this.securityMiddleware) {
+      try {
+        const validationResult = await this.securityMiddleware.validate(context);
+
+        if (!validationResult.valid) {
+          // Log security event
+          console.error(c.error('Security validation failed:'));
+          for (const error of validationResult.errors) {
+            console.error(c.error(`  - [${error.type}] ${error.message}`));
+          }
+
+          // Show warnings if any
+          if (validationResult.warnings.length > 0) {
+            console.warn(c.yellow('Warnings:'));
+            for (const warning of validationResult.warnings) {
+              console.warn(c.yellow(`  - [${warning.type}] ${warning.message}`));
+            }
+          }
+
+          throw new SecurityError(
+            'Command blocked by security validation',
+            validationResult.errors,
+            context
+          );
+        }
+
+        // Log warnings (non-blocking)
+        if (validationResult.warnings.length > 0) {
+          for (const warning of validationResult.warnings) {
+            console.warn(c.yellow(`[SECURITY WARNING] ${warning.message}`));
+          }
+        }
+      } catch (error) {
+        if (error instanceof SecurityError) {
+          throw error;
+        }
+        // Re-throw unexpected errors
+        throw error;
+      }
+    }
+
     // Check for help flag
     if (args.includes('--help') || args.includes('-h')) {
       this.showCommandHelp(command, context);
