@@ -2,8 +2,7 @@
  * Tests for OutputFormatter
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, expect } from 'vitest';
 import { OutputFormatter } from '../../src/output/OutputFormatter.js';
 
 describe('OutputFormatter', () => {
@@ -12,14 +11,14 @@ describe('OutputFormatter', () => {
       const formatter = new OutputFormatter();
       const data = { name: 'Alice', age: 30 };
       const result = formatter.json(data);
-      assert.equal(result, JSON.stringify(data, null, 2));
+      expect(result).toBe(JSON.stringify(data, null, 2));
     });
 
     it('should format as compact JSON', () => {
       const formatter = new OutputFormatter();
       const data = { name: 'Alice', age: 30 };
       const result = formatter.json(data, false);
-      assert.equal(result, JSON.stringify(data));
+      expect(result).toBe(JSON.stringify(data));
     });
   });
 
@@ -28,16 +27,16 @@ describe('OutputFormatter', () => {
       const formatter = new OutputFormatter();
       const data = { name: 'Alice', age: 30 };
       const result = formatter.yaml(data);
-      assert.match(result, /name: Alice/);
-      assert.match(result, /age: 30/);
+      expect(result).toMatch(/name: Alice/);
+      expect(result).toMatch(/age: 30/);
     });
 
     it('should format array as YAML', () => {
       const formatter = new OutputFormatter();
       const data = ['Alice', 'Bob', 'Charlie'];
       const result = formatter.yaml(data);
-      assert.match(result, /- Alice/);
-      assert.match(result, /- Bob/);
+      expect(result).toMatch(/- Alice/);
+      expect(result).toMatch(/- Bob/);
     });
 
     it('should format nested object as YAML', () => {
@@ -49,8 +48,8 @@ describe('OutputFormatter', () => {
         },
       };
       const result = formatter.yaml(data);
-      assert.match(result, /user:/);
-      assert.match(result, /name: Alice/);
+      expect(result).toMatch(/user:/);
+      expect(result).toMatch(/name: Alice/);
     });
   });
 
@@ -67,16 +66,16 @@ describe('OutputFormatter', () => {
       ];
 
       const result = formatter.table(data, columns);
-      assert.match(result, /ID/);
-      assert.match(result, /Name/);
-      assert.match(result, /Alice/);
-      assert.match(result, /Bob/);
+      expect(result).toMatch(/ID/);
+      expect(result).toMatch(/Name/);
+      expect(result).toMatch(/Alice/);
+      expect(result).toMatch(/Bob/);
     });
 
     it('should handle empty data', () => {
       const formatter = new OutputFormatter({ color: false, quiet: false });
       const result = formatter.table([], []);
-      assert.match(result, /No data/);
+      expect(result).toMatch(/No data/);
     });
   });
 
@@ -84,16 +83,16 @@ describe('OutputFormatter', () => {
     it('should create a box around text', () => {
       const formatter = new OutputFormatter({ color: false });
       const result = formatter.box('Hello');
-      assert.match(result, /┌/);
-      assert.match(result, /└/);
-      assert.match(result, /Hello/);
+      expect(result).toMatch(/┌/);
+      expect(result).toMatch(/└/);
+      expect(result).toMatch(/Hello/);
     });
 
     it('should create a box with title', () => {
       const formatter = new OutputFormatter({ color: false });
       const result = formatter.box('Hello', 'Title');
-      assert.match(result, /Title/);
-      assert.match(result, /Hello/);
+      expect(result).toMatch(/Title/);
+      expect(result).toMatch(/Hello/);
     });
   });
 
@@ -101,9 +100,9 @@ describe('OutputFormatter', () => {
     it('should format a list', () => {
       const formatter = new OutputFormatter({ color: false });
       const result = formatter.list(['Item 1', 'Item 2', 'Item 3']);
-      assert.match(result, /Item 1/);
-      assert.match(result, /Item 2/);
-      assert.match(result, /Item 3/);
+      expect(result).toMatch(/Item 1/);
+      expect(result).toMatch(/Item 2/);
+      expect(result).toMatch(/Item 3/);
     });
   });
 
@@ -121,9 +120,9 @@ describe('OutputFormatter', () => {
       ];
 
       const result = formatter.tree(data);
-      assert.match(result, /Parent/);
-      assert.match(result, /Child 1/);
-      assert.match(result, /Child 2/);
+      expect(result).toMatch(/Parent/);
+      expect(result).toMatch(/Child 1/);
+      expect(result).toMatch(/Child 2/);
     });
   });
 });

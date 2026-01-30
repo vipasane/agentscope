@@ -235,11 +235,13 @@ export class PerformanceOptimizer {
 
     // Initialize batch processor if enabled
     if (this.config.enableBatch) {
-      this.batch = new BatchProcessor({
-        maxSize: this.config.batchSize || 100,
-        maxDelay: this.config.batchDelay || 50,
-        processor: async (items) => items // Default passthrough
-      });
+      this.batch = new BatchProcessor<unknown, unknown>(
+        {
+          maxSize: this.config.batchSize || 100,
+          maxDelay: this.config.batchDelay || 50
+        },
+        async (items: unknown[]) => items // Default passthrough
+      );
     }
 
     this.initialized = true;

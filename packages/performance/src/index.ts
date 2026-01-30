@@ -167,7 +167,7 @@ export {
 
 export {
   IntelligentCache,
-  type CacheStrategy,
+  type CacheStrategy as IntelligentCacheStrategy,
   type PredictivePattern,
   type CacheStatistics
 } from './cache/IntelligentCache';

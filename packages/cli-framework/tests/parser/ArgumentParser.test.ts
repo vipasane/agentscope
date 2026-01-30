@@ -2,8 +2,7 @@
  * Tests for ArgumentParser
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, expect } from 'vitest';
 import { ArgumentParser } from '../../src/parser/ArgumentParser.js';
 import { ValidationError } from '../../src/utils/validators.js';
 
@@ -20,7 +19,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--verbose']);
-      assert.equal(args.verbose, true);
+      expect(args.verbose).toBe(true);
     });
 
     it('should parse string options', () => {
@@ -34,7 +33,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--name', 'Alice']);
-      assert.equal(args.name, 'Alice');
+      expect(args.name).toBe('Alice');
     });
 
     it('should parse number options', () => {
@@ -48,7 +47,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--port', '3000']);
-      assert.equal(args.port, 3000);
+      expect(args.port).toBe(3000);
     });
 
     it('should parse short options', () => {
@@ -62,7 +61,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['-v']);
-      assert.equal(args.verbose, true);
+      expect(args.verbose).toBe(true);
     });
 
     it('should parse options with equals sign', () => {
@@ -75,7 +74,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--name=Alice']);
-      assert.equal(args.name, 'Alice');
+      expect(args.name).toBe('Alice');
     });
 
     it('should apply default values', () => {
@@ -89,7 +88,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse([]);
-      assert.equal(args.port, 3000);
+      expect(args.port).toBe(3000);
     });
 
     it('should validate required options', () => {
@@ -102,7 +101,7 @@ describe('ArgumentParser', () => {
         required: true,
       });
 
-      assert.throws(() => parser.parse([]), ValidationError);
+      expect(() => parser.parse([])).toThrow(ValidationError);
     });
 
     it('should validate choices', () => {
@@ -115,9 +114,9 @@ describe('ArgumentParser', () => {
         choices: ['json', 'yaml'],
       });
 
-      assert.throws(() => parser.parse(['--format', 'xml']), ValidationError);
+      expect(() => parser.parse(['--format', 'xml'])).toThrow(ValidationError);
       const args = parser.parse(['--format', 'json']);
-      assert.equal(args.format, 'json');
+      expect(args.format).toBe('json');
     });
 
     it('should validate custom validation', () => {
@@ -133,9 +132,9 @@ describe('ArgumentParser', () => {
         },
       });
 
-      assert.throws(() => parser.parse(['--email', 'invalid']), ValidationError);
+      expect(() => parser.parse(['--email', 'invalid'])).toThrow(ValidationError);
       const args = parser.parse(['--email', 'test@example.com']);
-      assert.equal(args.email, 'test@example.com');
+      expect(args.email).toBe('test@example.com');
     });
   });
 
@@ -149,7 +148,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['test.txt']);
-      assert.equal(args.file, 'test.txt');
+      expect(args.file).toBe('test.txt');
     });
 
     it('should parse optional positional arguments', () => {
@@ -162,7 +161,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse([]);
-      assert.equal(args.file, 'default.txt');
+      expect(args.file).toBe('default.txt');
     });
 
     it('should parse multiple positional arguments', () => {
@@ -174,7 +173,7 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['a.txt', 'b.txt', 'c.txt']);
-      assert.deepEqual(args.files, ['a.txt', 'b.txt', 'c.txt']);
+      expect(args.files).toEqual(['a.txt', 'b.txt', 'c.txt']);
     });
 
     it('should validate required arguments', () => {
@@ -185,7 +184,7 @@ describe('ArgumentParser', () => {
         required: true,
       });
 
-      assert.throws(() => parser.parse([]), ValidationError);
+      expect(() => parser.parse([])).toThrow(ValidationError);
     });
   });
 
@@ -206,8 +205,8 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--verbose', 'test.txt']);
-      assert.equal(args.verbose, true);
-      assert.equal(args.file, 'test.txt');
+      expect(args.verbose).toBe(true);
+      expect(args.file).toBe('test.txt');
     });
 
     it('should collect unknown positional args in _', () => {
@@ -221,15 +220,15 @@ describe('ArgumentParser', () => {
       });
 
       const args = parser.parse(['--verbose', 'extra', 'args']);
-      assert.equal(args.verbose, true);
-      assert.deepEqual(args._, ['extra', 'args']);
+      expect(args.verbose).toBe(true);
+      expect(args._).toEqual(['extra', 'args']);
     });
   });
 
   describe('Error Handling', () => {
     it('should throw on unknown option', () => {
       const parser = new ArgumentParser();
-      assert.throws(() => parser.parse(['--unknown']), ValidationError);
+      expect(() => parser.parse(['--unknown'])).toThrow(ValidationError);
     });
 
     it('should throw on invalid number', () => {
@@ -241,7 +240,7 @@ describe('ArgumentParser', () => {
         description: 'Port',
       });
 
-      assert.throws(() => parser.parse(['--port', 'invalid']), ValidationError);
+      expect(() => parser.parse(['--port', 'invalid'])).toThrow(ValidationError);
     });
 
     it('should throw on missing required option value', () => {
@@ -253,7 +252,7 @@ describe('ArgumentParser', () => {
         description: 'Name',
       });
 
-      assert.throws(() => parser.parse(['--name']), ValidationError);
+      expect(() => parser.parse(['--name'])).toThrow(ValidationError);
     });
   });
 });

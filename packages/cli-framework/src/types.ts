@@ -46,12 +46,12 @@
  *     {
  *       name: 'migrate',
  *       description: 'Run migrations',
- *       action: async () => { /* ... */ }
+ *       action: async () => { }
  *     },
  *     {
  *       name: 'seed',
  *       description: 'Seed database',
- *       action: async () => { /* ... */ }
+ *       action: async () => { }
  *     }
  *   ]
  * };

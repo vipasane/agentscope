@@ -244,12 +244,13 @@ export class VerdictJudge {
   }
 
   private generatePatternBasedCritique(
-    trajectory: Trajectory,
+    _trajectory: Trajectory,
     patterns: Pattern[],
     successRate: number
   ): string {
     const successful = patterns.filter(p => p.success);
-    const failed = patterns.filter(p => !p.success);
+    // Could track failed patterns for analysis
+    patterns.filter(p => !p.success);
 
     const parts: string[] = [];
 
