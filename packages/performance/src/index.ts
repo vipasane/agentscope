@@ -166,6 +166,13 @@ export {
 } from './cache/lru-cache';
 
 export {
+  IntelligentCache,
+  type CacheStrategy,
+  type PredictivePattern,
+  type CacheStatistics
+} from './cache/IntelligentCache';
+
+export {
   BatchProcessor
 } from './cache/batch-processor';
 
@@ -197,6 +204,26 @@ export {
   type QuantizationStats,
   type Precision
 } from './optimization/QuantizationEngine';
+
+export {
+  PerformanceOptimizer,
+  type PerformanceOptimizerConfig,
+  type OptimizationSummary
+} from './optimization/PerformanceOptimizer';
+
+export {
+  OptimizationStrategies,
+  HNSWSearchStrategy,
+  QuantizationStrategy,
+  CacheStrategy,
+  BatchOperationStrategy,
+  type OptimizationStrategy,
+  type OptimizationImpact,
+  type OptimizationContext,
+  type OptimizationResult,
+  type OptimizationRecommendation,
+  type StrategyScope
+} from './optimization/OptimizationStrategies';
 
 // Types
 export * from './types';

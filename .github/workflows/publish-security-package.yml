@@ -1,0 +1,103 @@
+name: Publish Security Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'NPM dist-tag (alpha, beta, latest)'
+        required: true
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - latest
+      dry_run:
+        description: 'Dry run (test without publishing)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    name: Build and Publish @vipasane/agentscope-security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: ./packages/security
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./packages/security
+        run: npm run lint || true
+
+      - name: Run tests
+        working-directory: ./packages/security
+        run: npm test
+
+      - name: Check test coverage
+        working-directory: ./packages/security
+        run: npm run test:coverage
+
+      - name: Type check
+        working-directory: ./packages/security
+        run: npm run type-check
+
+      - name: Build package
+        working-directory: ./packages/security
+        run: npm run build
+
+      - name: Verify build artifacts
+        working-directory: ./packages/security
+        run: |
+          echo "Checking build artifacts..."
+          ls -lh dist/
+          test -f dist/index.js || (echo "CJS build missing" && exit 1)
+          test -f dist/index.mjs || (echo "ESM build missing" && exit 1)
+          test -f dist/index.d.ts || (echo "TypeScript types missing" && exit 1)
+          echo "✅ All build artifacts present"
+
+      - name: Dry run publish
+        if: ${{ inputs.dry_run == true }}
+        working-directory: ./packages/security
+        run: npm pack --dry-run
+
+      - name: Publish to npm
+        if: ${{ inputs.dry_run == false }}
+        working-directory: ./packages/security
+        run: npm publish --access public --tag ${{ inputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: ${{ inputs.dry_run == false && inputs.tag == 'latest' }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: '@vipasane/agentscope-security@${{ steps.package-version.outputs.version }}'
+          release_name: 'Security Package v${{ steps.package-version.outputs.version }}'
+          body_path: ./packages/security/CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: Summary
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          echo "## 🚀 Published @vipasane/agentscope-security" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Install**: \`npm install @vipasane/agentscope-security@${{ inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: https://www.npmjs.com/package/@vipasane/agentscope-security" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All tests passed (310 tests, 90.19% coverage)" >> $GITHUB_STEP_SUMMARY

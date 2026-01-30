@@ -1,6 +1,6 @@
 {
-  "name": "@claude-flow/security",
-  "version": "1.0.0",
+  "name": "@vipasane/agentscope-security",
+  "version": "0.1.0-alpha.1",
   "description": "Zero-dependency security validation and sanitization for AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,23 +11,49 @@
       "require": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src/**/*.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
+    "ai",
+    "agent",
     "security",
     "validation",
     "sanitization",
-    "ai-agents",
-    "claude-flow"
+    "llm",
+    "safety",
+    "agentscope",
+    "input-validation",
+    "path-security",
+    "command-injection",
+    "secret-detection"
   ],
-  "author": "Claude Flow Team",
+  "author": "AgentScope Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vipasane/agentscope.git",
+    "directory": "packages/security"
+  },
+  "bugs": {
+    "url": "https://github.com/vipasane/agentscope/issues"
+  },
+  "homepage": "https://github.com/vipasane/agentscope/tree/main/packages/security#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",

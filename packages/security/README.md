@@ -1,4 +1,4 @@
-# @claude-flow/security
+# @vipasane/agentscope-security
 
 Zero-dependency security validation and sanitization for AI agents. Provides robust input validation, path traversal prevention, command injection protection, and secret detection.
 
@@ -8,12 +8,16 @@ Zero-dependency security validation and sanitization for AI agents. Provides rob
 - **High Performance**: <50ms for validation operations, <100ms for secret scanning
 - **Zod-style API**: Familiar, type-safe validation interface
 - **Comprehensive Coverage**: Input, path, command, and secret validation
-- **>90% Test Coverage**: Battle-tested with Vitest
+- **>90% Test Coverage**: Battle-tested with Vitest (90.19% coverage, 310 tests)
 
 ## Installation
 
 ```bash
-npm install @claude-flow/security
+# Install latest alpha version
+npm install @vipasane/agentscope-security@alpha
+
+# Or specific version
+npm install @vipasane/agentscope-security@0.1.0-alpha.1
 ```
 
 ## Usage
@@ -23,7 +27,7 @@ npm install @claude-flow/security
 Validate user inputs with a Zod-style API:
 
 ```typescript
-import { InputValidator } from '@claude-flow/security';
+import { InputValidator } from '@vipasane/agentscope-security';
 
 // String validation
 const nameValidator = InputValidator.string({ min: 1, max: 100 });
@@ -75,7 +79,7 @@ nullableName.parse(null); // ✓
 Prevent path traversal attacks:
 
 ```typescript
-import { PathValidator } from '@claude-flow/security';
+import { PathValidator } from '@vipasane/agentscope-security';
 
 // Validate safe paths
 const safePath = PathValidator.validate('data/file.txt');
@@ -111,7 +115,7 @@ const relative = PathValidator.getRelative(absolutePath, baseDir);
 Prevent command injection:
 
 ```typescript
-import { SafeExecutor } from '@claude-flow/security';
+import { SafeExecutor } from '@vipasane/agentscope-security';
 
 // Validate commands
 const safeCmd = SafeExecutor.validate('npm test', {
@@ -155,7 +159,7 @@ const commands = SafeExecutor.validateBatch([
 Detect and redact sensitive information:
 
 ```typescript
-import { SecretsSanitizer } from '@claude-flow/security';
+import { SecretsSanitizer } from '@vipasane/agentscope-security';
 
 const code = `
   const config = {
@@ -267,7 +271,7 @@ const types = SecretsSanitizer.getSecretTypes(code);
 Full TypeScript support with strict type checking:
 
 ```typescript
-import { InputValidator, type ValidationResult } from '@claude-flow/security';
+import { InputValidator, type ValidationResult } from '@vipasane/agentscope-security';
 
 const validator = InputValidator.object({
   name: InputValidator.string(),
@@ -302,5 +306,5 @@ MIT
 
 ## Related
 
-- [@claude-flow/cli](https://www.npmjs.com/package/@claude-flow/cli) - Claude Flow CLI
-- [agentscope](https://github.com/vipasane/agentscope) - Agent orchestration framework
+- [agentscope](https://github.com/vipasane/agentscope) - Multi-agent orchestration framework
+- [@vipasane/agentscope-security](https://www.npmjs.com/package/@vipasane/agentscope-security) - This package

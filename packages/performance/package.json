@@ -1,6 +1,6 @@
 {
   "name": "@claude-flow/performance",
-  "version": "3.0.0-alpha.1",
+  "version": "0.1.0-alpha.1",
   "description": "Performance optimization utilities for claude-flow - monitoring, caching, batching, profiling",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "bench": "node --experimental-specifier-resolution=node dist/benchmarks/run-benchmarks.js",
+    "bench": "npm run bench:all",
+    "bench:all": "node --experimental-specifier-resolution=node dist/benchmarks/run-benchmarks.js",
+    "bench:quantization": "vitest run benchmarks/quantization.test.ts",
+    "bench:hnsw": "vitest run benchmarks/optimization/hnsw.bench.ts",
+    "bench:stress": "vitest run benchmarks/stress/stress-test.bench.ts",
+    "bench:integration": "vitest run tests/integration/multi-layer-integration.test.ts",
+    "validate-targets": "node dist/scripts/validate-performance-targets.js",
     "lint": "eslint src tests --ext .ts",
     "typecheck": "tsc --noEmit"
   },
@@ -23,6 +29,18 @@
   ],
   "author": "Claude Flow Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vipasane/agentscope.git",
+    "directory": "packages/performance"
+  },
+  "bugs": {
+    "url": "https://github.com/vipasane/agentscope/issues"
+  },
+  "homepage": "https://github.com/vipasane/agentscope/tree/main/packages/performance#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",

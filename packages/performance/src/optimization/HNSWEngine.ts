@@ -223,19 +223,17 @@ export interface HNSWStatistics {
  */
 export class HNSWEngine {
   private config: HNSWConfig;
-  private indexPath: string;
   private fallbackToLinear: boolean = false;
   private linearIndex: Map<string, { vector: number[], metadata?: any }> = new Map();
 
   constructor(config: HNSWConfig) {
     this.config = {
-      M: 16,
-      efConstruction: 200,
-      efSearch: 50,
-      quantization: 'none',
-      ...config
+      ...config,
+      M: config.M ?? 16,
+      efConstruction: config.efConstruction ?? 200,
+      efSearch: config.efSearch ?? 50,
+      quantization: config.quantization ?? 'none'
     };
-    this.indexPath = `/tmp/hnsw-${Date.now()}.index`;
   }
 
   /**
@@ -258,7 +256,8 @@ export class HNSWEngine {
     try {
       const cmd = `npx @claude-flow/cli@latest memory init --hnsw --M ${this.config.M} --ef-construction ${this.config.efConstruction} --dimension ${this.config.dimension} --max-elements ${this.config.maxElements}`;
 
-      const { stdout, stderr } = await execAsync(cmd, { timeout: 30000 });
+      const { stderr } = await execAsync(cmd, { timeout: 30000 });
+      void stderr;
 
       if (stderr && !stderr.includes('warning')) {
         throw new Error(`HNSW init error: ${stderr}`);
@@ -309,7 +308,7 @@ export class HNSWEngine {
     try {
       const cmd = `npx @claude-flow/cli@latest embeddings generate --vector "${JSON.stringify(vector)}" --metadata "${JSON.stringify({ ...metadata, id })}"`;
 
-      const { stdout, stderr } = await execAsync(cmd, { timeout: 10000 });
+      const { stderr } = await execAsync(cmd, { timeout: 10000 });
 
       if (stderr && !stderr.includes('warning')) {
         throw new Error(`HNSW insert error: ${stderr}`);
@@ -407,7 +406,7 @@ export class HNSWEngine {
         metadata: r.metadata || r.value
       }));
 
-      return results.sort((a, b) => a.distance - b.distance).slice(0, limit);
+      return results.sort((a: SearchResult, b: SearchResult) => a.distance - b.distance).slice(0, limit);
     } catch (error) {
       console.warn('⚠️  HNSW search failed, falling back to linear', error);
       this.fallbackToLinear = true;
