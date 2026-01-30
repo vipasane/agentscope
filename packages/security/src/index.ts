@@ -208,6 +208,39 @@ export { SafeExecutor } from './validators/SafeExecutor.js';
 // Sanitizers
 export { SecretsSanitizer } from './sanitizers/SecretsSanitizer.js';
 
+// Scoring
+export {
+  DREADScorer,
+  DREADScoreFactory,
+  type DREADScore,
+  type DREADBreakdown,
+  type AgentConfig,
+  type Hook,
+  type PermissionSummary,
+  type McpServer,
+  type RiskOptimization as DREADRiskOptimization
+} from './scoring/DREADScorer.js';
+
+// Detectors
+export { detectPromptInjection } from './detectors/PromptInjectionDetector.js';
+export type {
+  PromptInjectionResult,
+  DetectionOptions
+} from './detectors/PromptInjectionDetector.js';
+
+// Learning
+export {
+  SecurityLearningCoordinator,
+  createSecurityLearningCoordinator
+} from './learning/SecurityLearningCoordinator.js';
+export type {
+  ThreatPattern,
+  RiskOptimization,
+  SecurityAssessment,
+  SecurityFeedback,
+  ThreatCategory
+} from './learning/SecurityLearningCoordinator.js';
+
 // Types
 export type {
   Severity,
