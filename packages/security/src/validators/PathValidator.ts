@@ -256,8 +256,12 @@ export class PathValidator {
       throw new Error('Absolute paths not allowed');
     }
 
-    // Check depth
-    const depth = absolutePath.split(sep).length;
+    // Check depth (count relative segments from cwd, not absolute path segments)
+    const cwd = process.cwd();
+    const relativePath = absolutePath.startsWith(cwd)
+      ? absolutePath.slice(cwd.length + 1)
+      : absolutePath;
+    const depth = relativePath.split(sep).filter(s => s.length > 0).length;
     if (depth > maxDepth) {
       throw new Error(`Path depth exceeds maximum (${maxDepth})`);
     }
