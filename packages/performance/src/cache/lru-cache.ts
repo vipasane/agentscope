@@ -245,7 +245,6 @@ export class LRUCache<T> {
    */
   prune(): number {
     let pruned = 0;
-    const now = Date.now();
 
     for (const [key, node] of this.cache) {
       if (node.isExpired()) {
