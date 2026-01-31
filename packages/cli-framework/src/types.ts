@@ -14,49 +14,6 @@
  * subcommands, and execution logic. Commands can be nested to create hierarchical
  * CLI structures.
  *
- * @example
- * ```typescript
- * const deployCommand: CommandConfig = {
- *   name: 'deploy',
- *   description: 'Deploy application to environment',
- *   aliases: ['d'],
- *   arguments: [
- *     { name: 'target', description: 'Deployment target', required: true }
- *   ],
- *   options: [
- *     { name: 'force', long: 'force', short: 'f', type: 'boolean', description: 'Force deployment' }
- *   ],
- *   action: async (args, context) => {
- *     console.log(`Deploying to ${args.target}...`);
- *   },
- *   examples: [
- *     'deploy production',
- *     'deploy staging --force'
- *   ]
- * };
- * ```
- *
- * @example
- * ```typescript
- * // Command with subcommands
- * const dbCommand: CommandConfig = {
- *   name: 'db',
- *   description: 'Database operations',
- *   subcommands: [
- *     {
- *       name: 'migrate',
- *       description: 'Run migrations',
- *       action: async () => { /* ... */ }
- *     },
- *     {
- *       name: 'seed',
- *       description: 'Seed database',
- *       action: async () => { /* ... */ }
- *     }
- *   ]
- * };
- * ```
- *
  * @see {@link OptionConfig} for option definitions
  * @see {@link ArgumentConfig} for argument definitions
  * @see {@link CommandAction} for action handler type
