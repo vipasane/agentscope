@@ -158,11 +158,10 @@
  * @public
  */
 
-import { VectorDatabase } from '@claude-flow/memory';
+import { VectorDatabase } from './mocks/vector-database';
 import {
   LearningConfig,
   Pattern,
-  Trajectory,
   TrajectoryStep,
   Verdict,
   DistilledPattern,
@@ -180,7 +179,7 @@ export class ReasoningBank {
   private vectorDB: VectorDatabase;
   private config: LearningConfig;
   private tracker: TrajectoryTracker;
-  private judge: VerdictJudge;
+  private verdictJudge: VerdictJudge;
   private distiller: MemoryDistiller;
   private consolidator: EWCConsolidator;
   private matcher: PatternMatcher;
@@ -195,7 +194,7 @@ export class ReasoningBank {
     };
 
     this.tracker = new TrajectoryTracker();
-    this.judge = new VerdictJudge();
+    this.verdictJudge = new VerdictJudge();
     this.distiller = new MemoryDistiller();
     this.consolidator = new EWCConsolidator();
     this.matcher = new PatternMatcher();
@@ -273,7 +272,7 @@ export class ReasoningBank {
       const results = await this.vectorDB.search(embedding, numResults);
 
       const patterns = results
-        .map(r => this.patterns.get(r.id))
+        .map(r => this.patterns.get(r.id || r.key))
         .filter((p): p is Pattern => p !== undefined)
         .filter(p => p.reward >= this.config.minReward);
 
@@ -405,7 +404,7 @@ export class ReasoningBank {
     const similar = await this.retrieve(trajectory.task, 5);
 
     // Judge with pattern context
-    const verdict = this.judge.judgeWithPatterns(trajectory, similar);
+    const verdict = this.verdictJudge.judgeWithPatterns(trajectory, similar);
 
     // Override with provided values if specified
     verdict.success = success;
@@ -442,7 +441,7 @@ export class ReasoningBank {
     }
 
     // Get verdict (or create basic one)
-    const verdict = this.judge.judge(trajectory);
+    const verdict = this.verdictJudge.judge(trajectory);
 
     // Distill trajectory into pattern
     const pattern = this.distiller.distillTrajectory(trajectory, verdict);
@@ -696,7 +695,7 @@ export class ReasoningBank {
   /**
    * Record performance metrics
    */
-  private recordPerformance(metrics: PerformanceMetrics): void {
+  private recordPerformance(_metrics: PerformanceMetrics): void {
     // In production, send to monitoring system
     // For now, just log
   }

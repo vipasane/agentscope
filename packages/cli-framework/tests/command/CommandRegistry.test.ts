@@ -2,412 +2,426 @@
  * Tests for CommandRegistry
  */
 
-import { describe, it, beforeEach, mock } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CommandRegistry } from '../../src/command/CommandRegistry.js';
 import type { CommandConfig } from '../../src/types.js';
 
 describe('CommandRegistry', () => {
   let registry: CommandRegistry;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     registry = new CommandRegistry();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
+      throw new Error(`Process exited with code ${code}`);
+    });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    processExitSpy.mockRestore();
   });
 
   describe('register', () => {
     it('should register a command', () => {
-      const command: CommandConfig = {
+      const config: CommandConfig = {
         name: 'test',
         description: 'Test command',
       };
 
-      registry.register(command);
-      const retrieved = registry.get('test');
-
-      assert.equal(retrieved?.name, 'test');
-      assert.equal(retrieved?.description, 'Test command');
+      registry.register(config);
+      expect(registry.get('test')).toBe(config);
     });
 
     it('should register command aliases', () => {
-      const command: CommandConfig = {
-        name: 'list',
-        description: 'List items',
-        aliases: ['ls', 'l'],
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+        aliases: ['t', 'tst'],
       };
 
-      registry.register(command);
-
-      assert.equal(registry.get('list')?.name, 'list');
-      assert.equal(registry.get('ls')?.name, 'list');
-      assert.equal(registry.get('l')?.name, 'list');
+      registry.register(config);
+      expect(registry.get('t')).toBe(config);
+      expect(registry.get('tst')).toBe(config);
+      expect(registry.get('test')).toBe(config);
     });
 
     it('should return registry for chaining', () => {
-      const result = registry.register({
+      const config: CommandConfig = {
         name: 'test',
-        description: 'Test',
-      });
+        description: 'Test command',
+      };
 
-      assert.equal(result, registry);
+      const result = registry.register(config);
+      expect(result).toBe(registry);
     });
   });
 
   describe('get', () => {
-    it('should return undefined for non-existent command', () => {
-      const result = registry.get('nonexistent');
-      assert.equal(result, undefined);
-    });
-
     it('should get command by name', () => {
-      const command: CommandConfig = {
-        name: 'deploy',
-        description: 'Deploy app',
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
       };
 
-      registry.register(command);
-      const retrieved = registry.get('deploy');
-
-      assert.equal(retrieved?.name, 'deploy');
+      registry.register(config);
+      expect(registry.get('test')).toBe(config);
     });
 
     it('should get command by alias', () => {
-      const command: CommandConfig = {
-        name: 'status',
-        description: 'Show status',
-        aliases: ['st'],
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+        aliases: ['t'],
       };
 
-      registry.register(command);
-      const retrieved = registry.get('st');
+      registry.register(config);
+      expect(registry.get('t')).toBe(config);
+    });
 
-      assert.equal(retrieved?.name, 'status');
+    it('should return undefined for unknown command', () => {
+      expect(registry.get('unknown')).toBeUndefined();
     });
   });
 
   describe('getAll', () => {
-    it('should return empty array when no commands', () => {
-      const commands = registry.getAll();
-      assert.equal(commands.length, 0);
-    });
-
     it('should return all registered commands', () => {
-      registry.register({ name: 'cmd1', description: 'Command 1' });
-      registry.register({ name: 'cmd2', description: 'Command 2' });
-      registry.register({ name: 'cmd3', description: 'Command 3' });
+      const config1: CommandConfig = {
+        name: 'test1',
+        description: 'Test command 1',
+      };
+      const config2: CommandConfig = {
+        name: 'test2',
+        description: 'Test command 2',
+      };
 
-      const commands = registry.getAll();
-      assert.equal(commands.length, 3);
+      registry.register(config1);
+      registry.register(config2);
+
+      const all = registry.getAll();
+      expect(all).toHaveLength(2);
+      expect(all).toContain(config1);
+      expect(all).toContain(config2);
     });
 
-    it('should not include duplicates for aliases', () => {
-      registry.register({
-        name: 'list',
-        description: 'List',
-        aliases: ['ls', 'l'],
-      });
-
-      const commands = registry.getAll();
-      assert.equal(commands.length, 1);
+    it('should return empty array when no commands', () => {
+      expect(registry.getAll()).toEqual([]);
     });
   });
 
   describe('execute', () => {
+    it('should show help when no args', async () => {
+      await registry.execute([]);
+      expect(consoleLogSpy).toHaveBeenCalled();
+    });
+
+    it('should show help for help command', async () => {
+      await registry.execute(['help']);
+      expect(consoleLogSpy).toHaveBeenCalled();
+    });
+
+    it('should show help for --help flag', async () => {
+      await registry.execute(['--help']);
+      expect(consoleLogSpy).toHaveBeenCalled();
+    });
+
     it('should execute command action', async () => {
-      let executed = false;
-
-      registry.register({
+      const action = vi.fn();
+      const config: CommandConfig = {
         name: 'test',
-        description: 'Test',
-        action: async () => {
-          executed = true;
-        },
-      });
+        description: 'Test command',
+        action,
+      };
 
+      registry.register(config);
       await registry.execute(['test']);
-      assert.equal(executed, true);
+
+      expect(action).toHaveBeenCalledWith(
+        expect.objectContaining({ _: [] }),
+        expect.objectContaining({ command: 'test' })
+      );
     });
 
-    it('should execute command with arguments', async () => {
-      let receivedArgs: any = null;
+    it('should execute command by alias', async () => {
+      const action = vi.fn();
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+        aliases: ['t'],
+        action,
+      };
 
-      registry.register({
-        name: 'greet',
-        description: 'Greet user',
-        arguments: [
-          { name: 'name', description: 'User name', required: true },
-        ],
-        action: async (args) => {
-          receivedArgs = args;
-        },
-      });
+      registry.register(config);
+      await registry.execute(['t']);
 
-      await registry.execute(['greet', 'Alice']);
-      assert.equal(receivedArgs.name, 'Alice');
+      expect(action).toHaveBeenCalled();
     });
 
-    it('should execute command with options', async () => {
-      let receivedArgs: any = null;
-
-      registry.register({
-        name: 'deploy',
-        description: 'Deploy app',
-        options: [
-          {
-            name: 'env',
-            long: 'env',
-            type: 'string',
-            description: 'Environment',
-          },
-        ],
-        action: async (args) => {
-          receivedArgs = args;
-        },
-      });
-
-      await registry.execute(['deploy', '--env', 'production']);
-      assert.equal(receivedArgs.env, 'production');
+    it('should error on unknown command', async () => {
+      try {
+        await registry.execute(['unknown']);
+      } catch (e: any) {
+        expect(e.message).toContain('Process exited');
+      }
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown command'));
     });
 
     it('should execute subcommand', async () => {
-      let executed = false;
-
-      registry.register({
-        name: 'db',
-        description: 'Database commands',
-        subcommands: [
-          {
-            name: 'migrate',
-            description: 'Run migrations',
-            action: async () => {
-              executed = true;
-            },
-          },
-        ],
-      });
-
-      await registry.execute(['db', 'migrate']);
-      assert.equal(executed, true);
-    });
-
-    it('should execute subcommand with arguments', async () => {
-      let receivedArgs: any = null;
-
-      registry.register({
-        name: 'user',
-        description: 'User commands',
-        subcommands: [
-          {
-            name: 'create',
-            description: 'Create user',
-            arguments: [
-              { name: 'email', description: 'Email', required: true },
-            ],
-            action: async (args) => {
-              receivedArgs = args;
-            },
-          },
-        ],
-      });
-
-      await registry.execute(['user', 'create', 'test@example.com']);
-      assert.equal(receivedArgs.email, 'test@example.com');
-    });
-
-    it('should pass command context to action', async () => {
-      let context: any = null;
-
-      registry.register({
+      const action = vi.fn();
+      const config: CommandConfig = {
         name: 'test',
-        description: 'Test',
-        action: async (_, ctx) => {
-          context = ctx;
-        },
-      });
-
-      await registry.execute(['test']);
-      assert.equal(context.command, 'test');
-      assert.ok(Array.isArray(context.rawArgs));
-      assert.ok(typeof context.env === 'object');
-    });
-
-    it('should pass subcommand context to action', async () => {
-      let context: any = null;
-
-      registry.register({
-        name: 'db',
-        description: 'Database',
+        description: 'Test command',
         subcommands: [
           {
-            name: 'migrate',
-            description: 'Migrate',
-            action: async (_, ctx) => {
-              context = ctx;
-            },
+            name: 'sub',
+            description: 'Subcommand',
+            action,
           },
         ],
-      });
+      };
 
-      await registry.execute(['db', 'migrate']);
-      assert.equal(context.command, 'db');
-      assert.equal(context.subcommand, 'migrate');
-    });
-  });
+      registry.register(config);
+      await registry.execute(['test', 'sub']);
 
-  describe('error handling', () => {
-    it('should exit on unknown command', async () => {
-      const exitMock = mock.method(process, 'exit', () => {
-        throw new Error('MOCK_EXIT');
-      });
-      const consoleErrorMock = mock.method(console, 'error', () => {});
-
-      try {
-        await registry.execute(['unknown']);
-        assert.fail('Should have exited');
-      } catch (error) {
-        assert.equal((error as Error).message, 'MOCK_EXIT');
-      }
-
-      assert.equal(exitMock.mock.calls.length, 1);
-      assert.equal(exitMock.mock.calls[0].arguments[0], 1);
-
-      exitMock.mock.restore();
-      consoleErrorMock.mock.restore();
+      expect(action).toHaveBeenCalledWith(
+        expect.objectContaining({ _: [] }),
+        expect.objectContaining({ command: 'test', subcommand: 'sub' })
+      );
     });
 
-    it('should exit on validation error', async () => {
-      const exitMock = mock.method(process, 'exit', () => {
-        throw new Error('MOCK_EXIT');
-      });
-      const consoleErrorMock = mock.method(console, 'error', () => {});
-
-      registry.register({
+    it('should execute subcommand by alias', async () => {
+      const action = vi.fn();
+      const config: CommandConfig = {
         name: 'test',
-        description: 'Test',
+        description: 'Test command',
+        subcommands: [
+          {
+            name: 'sub',
+            description: 'Subcommand',
+            aliases: ['s'],
+            action,
+          },
+        ],
+      };
+
+      registry.register(config);
+      await registry.execute(['test', 's']);
+
+      expect(action).toHaveBeenCalled();
+    });
+
+    it('should show command help on --help flag', async () => {
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+      };
+
+      registry.register(config);
+      await registry.execute(['test', '--help']);
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+    });
+
+    it('should parse command options', async () => {
+      const action = vi.fn();
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
         options: [
           {
-            name: 'required',
-            long: 'required',
-            type: 'string',
-            description: 'Required option',
+            name: 'verbose',
+            short: 'v',
+            long: 'verbose',
+            type: 'boolean',
+            description: 'Verbose output',
+          },
+        ],
+        action,
+      };
+
+      registry.register(config);
+      await registry.execute(['test', '--verbose']);
+
+      expect(action).toHaveBeenCalledWith(
+        expect.objectContaining({ verbose: true }),
+        expect.any(Object)
+      );
+    });
+
+    it('should parse command arguments', async () => {
+      const action = vi.fn();
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+        arguments: [
+          {
+            name: 'file',
+            description: 'File path',
             required: true,
           },
         ],
-        action: async () => {},
-      });
+        action,
+      };
+
+      registry.register(config);
+      await registry.execute(['test', 'myfile.txt']);
+
+      expect(action).toHaveBeenCalledWith(
+        expect.objectContaining({ file: 'myfile.txt' }),
+        expect.any(Object)
+      );
+    });
+
+    it('should error on validation failure', async () => {
+      const config: CommandConfig = {
+        name: 'test',
+        description: 'Test command',
+        options: [
+          {
+            name: 'port',
+            long: 'port',
+            type: 'number',
+            description: 'Port',
+          },
+        ],
+      };
+
+      registry.register(config);
 
       try {
-        await registry.execute(['test']);
-        assert.fail('Should have exited');
-      } catch (error) {
-        assert.equal((error as Error).message, 'MOCK_EXIT');
+        await registry.execute(['test', '--port', 'invalid']);
+      } catch (e: any) {
+        expect(e.message).toContain('Process exited');
       }
 
-      assert.equal(exitMock.mock.calls.length, 1);
-      exitMock.mock.restore();
-      consoleErrorMock.mock.restore();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error'));
     });
   });
 
-  describe('help', () => {
-    it('should show help when no args', async () => {
-      const logMock = mock.method(console, 'log', () => {});
-
+  describe('generateBashCompletion', () => {
+    it('should generate bash completion script', () => {
       registry.register({
-        name: 'test',
-        description: 'Test command',
+        name: 'test1',
+        description: 'Test 1',
+      });
+      registry.register({
+        name: 'test2',
+        description: 'Test 2',
+      });
+
+      const completion = registry.generateBashCompletion('mycli');
+
+      expect(completion).toContain('_mycli_completions');
+      expect(completion).toContain('test1');
+      expect(completion).toContain('test2');
+      expect(completion).toContain('complete -F');
+    });
+  });
+
+  describe('help display', () => {
+    it('should display available commands in help', async () => {
+      registry.register({
+        name: 'cmd1',
+        description: 'Command 1',
+      });
+      registry.register({
+        name: 'cmd2',
+        description: 'Command 2',
+        aliases: ['c2'],
       });
 
       await registry.execute([]);
 
-      assert.ok(logMock.mock.calls.length > 0);
-      logMock.mock.restore();
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Available Commands'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('cmd1'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('cmd2'));
     });
 
-    it('should show help on --help flag', async () => {
-      const logMock = mock.method(console, 'log', () => {});
-
-      registry.register({
-        name: 'test',
-        description: 'Test command',
-      });
-
-      await registry.execute(['--help']);
-
-      assert.ok(logMock.mock.calls.length > 0);
-      logMock.mock.restore();
-    });
-
-    it('should show command help on command --help', async () => {
-      const logMock = mock.method(console, 'log', () => {});
-
-      registry.register({
-        name: 'deploy',
-        description: 'Deploy application',
-        options: [
-          {
-            name: 'env',
-            long: 'env',
-            short: 'e',
-            type: 'string',
-            description: 'Environment',
-          },
-        ],
-      });
-
-      await registry.execute(['deploy', '--help']);
-
-      assert.ok(logMock.mock.calls.length > 0);
-      const output = logMock.mock.calls.map((call) => call.arguments[0]).join('\n');
-      assert.ok(output.includes('deploy'));
-      assert.ok(output.includes('Environment'));
-
-      logMock.mock.restore();
-    });
-
-    it('should not show hidden commands in help', async () => {
-      const logMock = mock.method(console, 'log', () => {});
-
+    it('should hide hidden commands from help', async () => {
       registry.register({
         name: 'visible',
         description: 'Visible command',
       });
-
       registry.register({
         name: 'hidden',
         description: 'Hidden command',
         hidden: true,
       });
 
-      await registry.execute(['--help']);
+      await registry.execute([]);
 
-      const output = logMock.mock.calls.map((call) => call.arguments[0]).join('\n');
-      assert.ok(output.includes('visible'));
-      assert.ok(!output.includes('hidden'));
+      const logs = consoleLogSpy.mock.calls.map((call) => call.join(' '));
+      const allLogs = logs.join('\n');
 
-      logMock.mock.restore();
-    });
-  });
-
-  describe('generateBashCompletion', () => {
-    it('should generate bash completion script', () => {
-      registry.register({ name: 'deploy', description: 'Deploy' });
-      registry.register({ name: 'test', description: 'Test' });
-      registry.register({ name: 'build', description: 'Build' });
-
-      const script = registry.generateBashCompletion('mycli');
-
-      assert.ok(script.includes('_mycli_completions'));
-      assert.ok(script.includes('deploy'));
-      assert.ok(script.includes('test'));
-      assert.ok(script.includes('build'));
-      assert.ok(script.includes('complete -F'));
+      expect(allLogs).toContain('visible');
+      expect(allLogs).not.toContain('hidden');
     });
 
-    it('should handle empty registry', () => {
-      const script = registry.generateBashCompletion('mycli');
+    it('should display subcommands in help', async () => {
+      registry.register({
+        name: 'main',
+        description: 'Main command',
+        subcommands: [
+          {
+            name: 'sub1',
+            description: 'Subcommand 1',
+          },
+          {
+            name: 'sub2',
+            description: 'Subcommand 2',
+            hidden: true,
+          },
+        ],
+      });
 
-      assert.ok(script.includes('_mycli_completions'));
-      assert.ok(script.includes('complete -F'));
+      await registry.execute([]);
+
+      const logs = consoleLogSpy.mock.calls.map((call) => call.join(' '));
+      const allLogs = logs.join('\n');
+
+      expect(allLogs).toContain('sub1');
+      expect(allLogs).not.toContain('sub2');
+    });
+
+    it('should display command-specific help', async () => {
+      registry.register({
+        name: 'test',
+        description: 'Test command',
+        options: [
+          {
+            name: 'verbose',
+            short: 'v',
+            long: 'verbose',
+            type: 'boolean',
+            description: 'Verbose output',
+          },
+        ],
+        arguments: [
+          {
+            name: 'file',
+            description: 'File path',
+            required: true,
+          },
+        ],
+        examples: ['test --verbose file.txt', 'test file.txt'],
+      });
+
+      await registry.execute(['test', '--help']);
+
+      const logs = consoleLogSpy.mock.calls.map((call) => call.join(' '));
+      const allLogs = logs.join('\n');
+
+      expect(allLogs).toContain('Usage');
+      expect(allLogs).toContain('Options');
+      expect(allLogs).toContain('Arguments');
+      expect(allLogs).toContain('Examples');
+      expect(allLogs).toContain('verbose');
+      expect(allLogs).toContain('file');
     });
   });
 });

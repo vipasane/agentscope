@@ -97,7 +97,7 @@ export interface HNSWConfig {
    * - 100: Balanced, ~95% recall
    * - 200: Slow search, ~98% recall
    */
-  efSearch: number;
+  efSearch?: number;
 
   /**
    * Vector dimension (required)

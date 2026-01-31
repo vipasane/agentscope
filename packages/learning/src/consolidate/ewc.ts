@@ -5,7 +5,7 @@
  * Uses importance weights to preserve critical knowledge.
  */
 
-import { Pattern, EWCWeights, ConsolidationResult, DistilledPattern } from '../types';
+import { EWCWeights, ConsolidationResult, DistilledPattern } from '../types';
 
 export interface EWCConfig {
   /** Lambda parameter for EWC loss (0-1, higher = stronger protection) */

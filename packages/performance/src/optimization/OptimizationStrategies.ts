@@ -31,12 +31,8 @@
 
 import type {
   PerformanceMetrics,
-  BottleneckReport,
-  CacheStats
+  BottleneckReport
 } from '../types';
-
-import type { HNSWStatistics } from './HNSWEngine';
-import type { QuantizationStats } from './QuantizationEngine';
 
 import { HNSWEngine } from './HNSWEngine';
 import { QuantizationEngine } from './QuantizationEngine';
@@ -602,8 +598,8 @@ export class BatchOperationStrategy implements OptimizationStrategy {
       return {
         operation,
         strategy: this.name,
-        before: metrics.duration,
-        after: metrics.duration,
+        before: metrics.duration || metrics.latency,
+        after: metrics.duration || metrics.latency,
         improvement: 0,
         success: false,
         error: error instanceof Error ? error.message : String(error)

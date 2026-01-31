@@ -1,21 +1,18 @@
 {
-  "name": "@vipasane/agentscope-cli-framework",
-  "version": "0.1.0-alpha.1",
+  "name": "@claude-flow/cli-framework",
+  "version": "1.0.0",
   "description": "Zero-dependency CLI framework for consistent command patterns and rapid CLI development",
   "license": "MIT",
-  "author": "AgentScope Contributors",
+  "author": "Claude Flow Contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vipasane/agentscope.git",
+    "url": "git+https://github.com/ruvnet/claude-flow.git",
     "directory": "packages/cli-framework"
   },
   "bugs": {
-    "url": "https://github.com/vipasane/agentscope/issues"
+    "url": "https://github.com/ruvnet/claude-flow/issues"
   },
-  "homepage": "https://github.com/vipasane/agentscope/tree/main/packages/cli-framework#readme",
-  "publishConfig": {
-    "access": "public"
-  },
+  "homepage": "https://github.com/ruvnet/claude-flow/tree/main/packages/cli-framework#readme",
   "keywords": [
     "cli",
     "framework",
@@ -24,8 +21,7 @@
     "interactive",
     "terminal",
     "console",
-    "zero-dependencies",
-    "agentscope"
+    "zero-dependencies"
   ],
   "type": "module",
   "main": "dist/index.js",
@@ -37,17 +33,19 @@
   ],
   "scripts": {
     "build": "tsc",
-    "build:tests": "tsc -p tsconfig.test.json",
     "dev": "tsc --watch",
-    "test": "npm run build && npm run build:tests && node --test dist-test/tests/**/*.test.js",
-    "test:watch": "npm run build:tests && node --test --watch dist-test/tests/**/*.test.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
-    "clean": "rm -rf dist dist-test",
+    "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
-    "typescript": "^5.9.3"
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
   },
   "engines": {
     "node": ">=18.0.0"

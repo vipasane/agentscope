@@ -176,6 +176,9 @@ export interface PerformanceMetrics {
   /** Operation latency in milliseconds (sub-millisecond precision) */
   latency: number;
 
+  /** Operation duration in milliseconds (alias for latency, for compatibility) */
+  duration?: number;
+
   /** Operations per second throughput (optional, calculated for repeated operations) */
   throughput?: number;
 
