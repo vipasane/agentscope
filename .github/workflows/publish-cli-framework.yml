@@ -1,0 +1,151 @@
+name: Publish CLI Framework Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'NPM dist-tag (alpha, beta, or latest)'
+        required: true
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - latest
+      dry_run:
+        description: 'Dry run (do not publish)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/cli-framework
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+          cache-dependency-path: './packages/cli-framework/package-lock.json'
+
+      - name: Verify package version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Package version: $VERSION"
+          if [[ ! "$VERSION" =~ ^0\.1\.0-alpha\.[0-9]+$ ]] && [[ "${{ github.event.inputs.tag }}" == "alpha" ]]; then
+            echo "::warning::Version $VERSION does not match alpha pattern (0.1.0-alpha.X)"
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build package
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "::error::Build failed - dist directory not found"
+            exit 1
+          fi
+          echo "Build successful - checking output files:"
+          ls -lh dist/
+
+      - name: Verify package contents (dry run)
+        run: |
+          npm pack --dry-run
+          echo "Package contents verified"
+
+      - name: Check for secrets
+        run: |
+          echo "Scanning for potential secrets..."
+          if grep -r "sk-" dist/ || grep -r "API_KEY" dist/ || grep -r "SECRET" dist/; then
+            echo "::error::Potential secrets found in build output!"
+            exit 1
+          fi
+          echo "No secrets detected"
+
+      - name: Publish to npm (dry run)
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "DRY RUN - Would publish with tag: ${{ github.event.inputs.tag }}"
+          npm publish --access public --tag ${{ github.event.inputs.tag }} --dry-run
+
+      - name: Publish to npm
+        if: github.event.inputs.dry_run == 'false'
+        run: npm publish --access public --tag ${{ github.event.inputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify publication
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          sleep 10
+          PACKAGE_NAME="@vipasane/agentscope-cli-framework"
+          VERSION=$(node -p "require('./package.json').version")
+
+          if npm view ${PACKAGE_NAME}@${VERSION} version; then
+            echo "::notice::Successfully published ${PACKAGE_NAME}@${VERSION}"
+          else
+            echo "::error::Publication verification failed"
+            exit 1
+          fi
+
+      - name: Create Git tag
+        if: github.event.inputs.dry_run == 'false' && github.event.inputs.tag == 'latest'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG_NAME="@vipasane/agentscope-cli-framework@${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "${TAG_NAME}" -m "Release ${TAG_NAME}"
+          git push origin "${TAG_NAME}"
+
+      - name: Create GitHub Release
+        if: github.event.inputs.dry_run == 'false' && github.event.inputs.tag == 'latest'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "@vipasane/agentscope-cli-framework@${{ steps.get_version.outputs.version }}"
+          release_name: "CLI Framework v${{ steps.get_version.outputs.version }}"
+          body_path: ./packages/cli-framework/RELEASE-NOTES-${{ steps.get_version.outputs.version }}.md
+          draft: false
+          prerelease: false
+
+      - name: Summary
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME="@vipasane/agentscope-cli-framework"
+
+          echo "## 🚀 Publication Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package**: ${PACKAGE_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: ${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag**: ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "npm install ${PACKAGE_NAME}@${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [npm Package](https://www.npmjs.com/package/${PACKAGE_NAME})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Repository](https://github.com/vipasane/agentscope)" >> $GITHUB_STEP_SUMMARY
