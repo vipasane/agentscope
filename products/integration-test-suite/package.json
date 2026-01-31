@@ -1,5 +1,5 @@
 {
-  "name": "@agentscope/integration-test-suite",
+  "name": "@vipasane/integration-test-suite",
   "version": "1.0.0",
   "description": "Cross-package integration test suite with self-learning and DDD architecture",
   "private": true,
@@ -26,10 +26,10 @@
   "author": "AgentScope Team",
   "license": "MIT",
   "dependencies": {
-    "@claude-flow/performance": "^0.1.0-alpha.1",
+    "@vipasane/agentscope-performance": "^0.1.0-alpha.1",
     "@vipasane/agentscope-learning": "^1.2.0",
     "@vipasane/agentscope-security": "^0.1.0-alpha.1",
-    "@claude-flow/cli-framework": "^1.0.0"
+    "@vipasane/agentscope-cli-framework": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

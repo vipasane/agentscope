@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/errors",
+  "name": "@vipasane/agentscope-errors",
   "version": "1.0.0",
   "description": "Comprehensive error handling utilities for Claude Flow V3 - Type-safe error management with recovery strategies",
   "license": "MIT",

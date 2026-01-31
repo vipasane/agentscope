@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/api-reference-system",
+  "name": "@vipasane/agentscope-api-reference-system",
   "version": "1.0.0",
   "description": "Automated API documentation generation system with TypeScript parsing, multi-format output, and neural learning",
   "type": "module",

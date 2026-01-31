@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/performance",
+  "name": "@vipasane/agentscope-performance",
   "version": "0.1.0-alpha.1",
   "description": "Performance optimization utilities for claude-flow - monitoring, caching, batching, profiling",
   "main": "dist/index.js",
@@ -49,10 +49,10 @@
     "@vitest/coverage-v8": "^1.2.0"
   },
   "peerDependencies": {
-    "@claude-flow/memory": "^3.0.0-alpha.1"
+    "@vipasane/agentscope-memory": "^3.0.0-alpha.1"
   },
   "peerDependenciesMeta": {
-    "@claude-flow/memory": {
+    "@vipasane/agentscope-memory": {
       "optional": true
     }
   },

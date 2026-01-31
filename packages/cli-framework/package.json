@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/cli-framework",
+  "name": "@vipasane/agentscope-cli-framework",
   "version": "1.0.0",
   "description": "Zero-dependency CLI framework for consistent command patterns and rapid CLI development",
   "license": "MIT",
