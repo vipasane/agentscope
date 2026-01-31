@@ -1,0 +1,44 @@
+{
+  "name": "@agentscope/integration-test-suite",
+  "version": "1.0.0",
+  "description": "Cross-package integration test suite with self-learning and DDD architecture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage",
+    "test:breaking-changes": "tsx src/scripts/detect-breaking-changes.ts",
+    "bench": "vitest bench",
+    "bench:integration": "vitest run tests/scenarios/**/*.bench.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist coverage test-results"
+  },
+  "keywords": [
+    "integration-testing",
+    "cross-package",
+    "ddd",
+    "self-learning",
+    "agentscope"
+  ],
+  "author": "AgentScope Team",
+  "license": "MIT",
+  "dependencies": {
+    "@claude-flow/performance": "^0.1.0-alpha.1",
+    "@vipasane/agentscope-learning": "^1.2.0",
+    "@vipasane/agentscope-security": "^0.1.0-alpha.1",
+    "@claude-flow/cli-framework": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

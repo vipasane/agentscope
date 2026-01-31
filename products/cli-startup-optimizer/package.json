@@ -1,0 +1,39 @@
+{
+  "name": "@agentscope/cli-startup-optimizer",
+  "version": "1.0.0-alpha.1",
+  "description": "CLI startup performance optimizer with lazy loading and caching",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "benchmark": "vitest run benchmarks --reporter=verbose",
+    "benchmark:cold": "node scripts/benchmark-cold.js",
+    "benchmark:warm": "node scripts/benchmark-warm.js",
+    "lint": "eslint src tests",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'"
+  },
+  "keywords": [
+    "cli",
+    "performance",
+    "lazy-loading",
+    "optimization",
+    "startup-time"
+  ],
+  "author": "AgentScope Team",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
