@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/types",
+  "name": "@vipasane/agentscope-types",
   "version": "1.0.0",
   "description": "Comprehensive TypeScript type definitions for Claude Flow V3 - Shared types for agents, memory, security, learning, and CLI",
   "license": "MIT",

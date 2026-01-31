@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/testing",
+  "name": "@vipasane/agentscope-testing",
   "version": "1.0.0",
   "description": "Comprehensive test utilities for Claude Flow V3 - Shared test helpers, mocks, fixtures, and assertions",
   "license": "MIT",

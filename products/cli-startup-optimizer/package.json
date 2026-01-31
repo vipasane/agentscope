@@ -1,5 +1,5 @@
 {
-  "name": "@agentscope/cli-startup-optimizer",
+  "name": "@vipasane/cli-startup-optimizer",
   "version": "1.0.0-alpha.1",
   "description": "CLI startup performance optimizer with lazy loading and caching",
   "type": "module",

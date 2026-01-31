@@ -1,5 +1,5 @@
 {
-  "name": "@claude-flow/memory",
+  "name": "@vipasane/agentscope-memory",
   "version": "3.0.0-alpha.1",
   "description": "Unified vector database interface with AgentDB HNSW indexing and quantized storage",
   "license": "MIT",
@@ -70,7 +70,7 @@
   },
   "peerDependencies": {},
   "peerDependenciesMeta": {
-    "@claude-flow/security": {
+    "@vipasane/agentscope-security": {
       "optional": true
     }
   }
