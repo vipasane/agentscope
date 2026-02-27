@@ -76,9 +76,9 @@ Description for code-review
 
 ## MCP Servers
 
-| Server | Status | Command | Tools Provided |
-|--------|:------:|---------|----------------|
-| github | 🟢 | \`node\` | - |
+| Server | Status | Transport | Command | Tools Provided |
+|--------|:------:|-----------|---------|----------------|
+| github | 🟢 | stdio | \`node\` | - |
 
 <details>
 <summary>🔌 Server Details</summary>

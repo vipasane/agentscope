@@ -745,9 +745,9 @@ function inferCapabilityFromAgent(agent: Agent, capability: string): boolean {
  * Generates the MCP servers section with enhanced formatting
  *
  * @example Output:
- * | Server | Status | Command | Tools Provided |
- * |--------|:------:|---------|----------------|
- * | claude-flow | green | `npx @claude-flow/cli` | swarm, memory, agents |
+ * | Server | Status | Transport | Command | Tools Provided |
+ * |--------|:------:|-----------|---------|----------------|
+ * | claude-flow | green | stdio | `npx @claude-flow/cli` | swarm, memory, agents |
  */
 export function formatMcpServersSection(
   servers: McpServer[],
@@ -760,16 +760,17 @@ export function formatMcpServersSection(
   const { compact = false, includeDetails = true } = options;
   const lines: string[] = [];
 
-  // Summary table
-  lines.push('| Server | Status | Command | Tools Provided |');
-  lines.push('|--------|:------:|---------|----------------|');
+  // Summary table with Transport column matching example format
+  lines.push('| Server | Status | Transport | Command | Tools Provided |');
+  lines.push('|--------|:------:|-----------|---------|----------------|');
 
   for (const server of servers) {
     const statusIcon = getStatusIcon(!server.disabled);
+    const transport = sanitize(server.type ?? 'stdio');
     const command = `\`${sanitize(truncate(server.command, 30))}\``;
     const tools = server.tools?.map(t => sanitize(t)).join(', ') || '-';
 
-    lines.push(`| ${sanitize(server.name)} | ${statusIcon} | ${command} | ${tools} |`);
+    lines.push(`| ${sanitize(server.name)} | ${statusIcon} | ${transport} | ${command} | ${tools} |`);
   }
 
   // Collapsible details section
@@ -1070,9 +1071,48 @@ export function generateDelegationHierarchy(agents: Agent[]): string {
 
   lines.push('```');
   lines.push('');
+
+  // Add shared workers note if any agents are delegated to by multiple parents
+  const sharedWorkers = findSharedWorkers(agents);
+  if (sharedWorkers.length > 0) {
+    const workerNames = sharedWorkers.map(w => `\`${sanitize(w.name)}\``).join(' and ');
+    const parentNames = sharedWorkers
+      .map(w => `\`${sanitize(w.name)}\` from ${w.parents.map(p => `\`${sanitize(p)}\``).join(', ')}`)
+      .join('; ');
+    lines.push(`**Shared workers:** ${workerNames} accept tasks from multiple coordinators.`);
+    lines.push('');
+  }
+
   lines.push('</details>');
 
   return lines.join('\n');
+}
+
+/**
+ * Finds agents that are delegated to by multiple parents
+ */
+function findSharedWorkers(agents: Agent[]): Array<{ name: string; parents: string[] }> {
+  const parentMap = new Map<string, string[]>();
+
+  for (const agent of agents) {
+    if (agent.delegatesTo) {
+      for (const target of agent.delegatesTo) {
+        if (!parentMap.has(target)) {
+          parentMap.set(target, []);
+        }
+        parentMap.get(target)!.push(agent.name);
+      }
+    }
+  }
+
+  const shared: Array<{ name: string; parents: string[] }> = [];
+  for (const [name, parents] of parentMap.entries()) {
+    if (parents.length > 1) {
+      shared.push({ name, parents });
+    }
+  }
+
+  return shared;
 }
 
 // ============================================================================

@@ -351,4 +351,37 @@ describe('generateDelegationHierarchy', () => {
     // Isolated agent should not appear in node definitions
     expect(hierarchy).not.toContain('isolated["isolated"]');
   });
+
+  it('should add shared workers note when workers have multiple parents', () => {
+    const planner = mockAgent({
+      name: 'planner',
+      type: 'coordinator',
+      delegatesTo: ['coder', 'reviewer']
+    });
+    const prManager = mockAgent({
+      name: 'pr-manager',
+      type: 'coordinator',
+      delegatesTo: ['coder', 'reviewer']
+    });
+    const coder = mockAgent({ name: 'coder', type: 'worker' });
+    const reviewer = mockAgent({ name: 'reviewer', type: 'reviewer' });
+
+    const hierarchy = generateDelegationHierarchy([planner, prManager, coder, reviewer]);
+    expect(hierarchy).toContain('**Shared workers:**');
+    expect(hierarchy).toContain('`coder`');
+    expect(hierarchy).toContain('`reviewer`');
+    expect(hierarchy).toContain('multiple coordinators');
+  });
+
+  it('should not add shared workers note when no workers are shared', () => {
+    const planner = mockAgent({
+      name: 'planner',
+      type: 'coordinator',
+      delegatesTo: ['coder']
+    });
+    const coder = mockAgent({ name: 'coder', type: 'worker' });
+
+    const hierarchy = generateDelegationHierarchy([planner, coder]);
+    expect(hierarchy).not.toContain('**Shared workers:**');
+  });
 });

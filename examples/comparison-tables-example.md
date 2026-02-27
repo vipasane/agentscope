@@ -137,6 +137,30 @@ SKILLS: github-code-review | sparc-methodology | pair-programming | verification
 
 ---
 
+## Hook Coverage Matrix
+
+| Event | Write/Edit | Bash | Task | Other |
+|-------|:----------:|:----:|:----:|:-----:|
+| PreToolUse | ✓ | ✓ | ✓ | |
+| PostToolUse | ✓ | ✓ | ✓ | |
+| UserPromptSubmit | | | | ✓ |
+| SessionStart | | | | ✓ |
+| Stop | | | | ✓ |
+| Notification | | | | ✓ |
+
+---
+
+## Permission Summary
+
+| | Allow | Deny | Ask | Total |
+|---|------:|-----:|----:|------:|
+| Bash patterns | 2 | 0 | 1 | 3 |
+| Read patterns | 1 | 2 | 0 | 3 |
+| Write patterns | 1 | 0 | 1 | 2 |
+| **Total** | **4** | **2** | **2** | **8** |
+
+---
+
 ## Stats Summary
 
 | Metric | Value |
@@ -150,7 +174,9 @@ SKILLS: github-code-review | sparc-methodology | pair-programming | verification
 | Tool Connections | 6 |
 | Skill Connections | 6 |
 | MCP Servers | 2 |
-| Skills | 4 |
+| Skills | 5 |
+| Hooks | 6 |
+| Permissions | 8 |
 
 ---
 

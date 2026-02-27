@@ -4,45 +4,79 @@
     {
       "name": "planner",
       "type": "coordinator",
+      "path": ".claude/agents/core/planner.md",
       "description": "Task orchestration and workflow planning",
       "delegatesTo": ["coder", "tester", "reviewer"]
     },
     {
       "name": "coder",
       "type": "worker",
+      "path": ".claude/agents/core/coder.md",
       "description": "Code implementation and refactoring",
-      "tools": ["github"]
+      "tools": ["claude-flow", "filesystem"]
     },
     {
       "name": "tester",
       "type": "worker",
+      "path": ".claude/agents/testing/tester.md",
       "description": "Test writing and execution"
     },
     {
       "name": "reviewer",
       "type": "reviewer",
+      "path": ".claude/agents/core/reviewer.md",
       "description": "Code review and quality checks"
     },
     {
       "name": "pr-manager",
       "type": "coordinator",
+      "path": ".claude/agents/github/pr-manager.md",
       "description": "Pull request lifecycle management",
-      "delegatesTo": ["coder", "reviewer"]
+      "delegatesTo": ["coder", "reviewer", "code-review-swarm"],
+      "tools": ["github"]
+    },
+    {
+      "name": "code-review-swarm",
+      "type": "worker",
+      "path": ".claude/agents/github/code-review-swarm.md",
+      "description": "Multi-agent code review",
+      "tools": ["github"]
     },
     {
       "name": "security-auditor",
       "type": "specialist",
-      "description": "Security vulnerability analysis"
+      "path": ".claude/agents/v3/security-auditor.md",
+      "description": "CVE and OWASP security scanning"
+    },
+    {
+      "name": "backend-dev",
+      "type": "worker",
+      "path": ".claude/agents/development/dev-backend-api.md",
+      "description": "API development",
+      "tools": ["claude-flow"]
     }
   ],
   "skills": [
     {
-      "name": "github-review",
-      "path": ".claude/skills/github"
+      "name": "github-code-review",
+      "path": ".claude/skills/github-code-review/SKILL.md",
+      "description": "Code review automation",
+      "triggers": ["PR created", "review requested"],
+      "enabled": true
     },
     {
       "name": "sparc-methodology",
-      "path": ".claude/skills/sparc"
+      "path": ".claude/skills/sparc-methodology/SKILL.md",
+      "description": "Structured development methodology",
+      "triggers": ["/sparc"],
+      "enabled": true
+    },
+    {
+      "name": "pair-programming",
+      "path": ".claude/skills/pair-programming/SKILL.md",
+      "description": "Collaborative coding with driver/navigator mode",
+      "triggers": ["/pair"],
+      "enabled": true
     }
   ],
   "mcpServers": [
@@ -50,23 +84,92 @@
       "name": "claude-flow",
       "type": "stdio",
       "command": "npx",
-      "args": ["@claude-flow/cli"]
+      "args": ["@claude-flow/cli", "mcp", "start"],
+      "env": {
+        "CLAUDE_FLOW_MODE": "v3",
+        "CLAUDE_FLOW_HOOKS_ENABLED": "true"
+      },
+      "tools": ["swarm_init", "agent_spawn", "memory_search", "task_orchestrate"]
     },
     {
       "name": "github",
       "type": "stdio",
-      "command": "gh",
-      "args": ["mcp"]
+      "command": "npx",
+      "args": ["@github/mcp"],
+      "tools": ["create_pull_request", "get_issue", "search_repositories"]
     }
   ],
   "hooks": [
     {
       "event": "PreToolUse",
-      "command": "echo 'Pre-tool hook'"
+      "command": "npx @claude-flow/cli hooks pre-edit --file \"$TOOL_INPUT_file_path\"",
+      "timeout": 5000,
+      "enabled": true
+    },
+    {
+      "event": "PreToolUse",
+      "command": "npx @claude-flow/cli hooks pre-command --command \"$TOOL_INPUT_command\"",
+      "timeout": 5000,
+      "enabled": true
     },
     {
       "event": "PostToolUse",
-      "command": "echo 'Post-tool hook'"
+      "command": "npx @claude-flow/cli hooks post-edit --file \"$TOOL_INPUT_file_path\" --success \"$TOOL_SUCCESS\"",
+      "timeout": 5000,
+      "enabled": true
+    },
+    {
+      "event": "PostToolUse",
+      "command": "npx @claude-flow/cli hooks post-command --command \"$TOOL_INPUT_command\" --success \"$TOOL_SUCCESS\"",
+      "timeout": 5000,
+      "enabled": true
+    },
+    {
+      "event": "SessionStart",
+      "command": "npx @claude-flow/cli daemon start --quiet",
+      "timeout": 10000,
+      "enabled": true
     }
-  ]
+  ],
+  "plugins": [
+    {
+      "name": "sparc-modes",
+      "marketplace": "anthropic",
+      "version": "1.2.0",
+      "description": "SPARC methodology modes",
+      "enabled": true,
+      "source": {
+        "type": "github",
+        "location": "anthropic/sparc-modes"
+      }
+    },
+    {
+      "name": "github-enhanced",
+      "marketplace": "community",
+      "version": "2.0.1",
+      "description": "Enhanced GitHub integration",
+      "enabled": true,
+      "source": {
+        "type": "npm",
+        "location": "@community/github-enhanced"
+      }
+    }
+  ],
+  "permissions": {
+    "defaultMode": "default",
+    "allowCount": 4,
+    "denyCount": 2,
+    "askCount": 2,
+    "rules": [
+      { "type": "allow", "pattern": "Bash(npm run:*)", "description": "Allow npm scripts" },
+      { "type": "allow", "pattern": "Bash(git *)", "description": "Allow git commands" },
+      { "type": "allow", "pattern": "Read(./src/**)", "description": "Allow reading source files" },
+      { "type": "allow", "pattern": "Write(./src/**)", "description": "Allow writing source files" },
+      { "type": "deny", "pattern": "Read(./.env)", "description": "Block reading environment secrets" },
+      { "type": "deny", "pattern": "Read(./secrets/**)", "description": "Block reading secrets directory" },
+      { "type": "ask", "pattern": "Bash(rm *)", "description": "Confirm file deletions" },
+      { "type": "ask", "pattern": "Write(./.claude/*)", "description": "Confirm config changes" }
+    ],
+    "additionalDirectories": ["./scripts", "./docs"]
+  }
 }

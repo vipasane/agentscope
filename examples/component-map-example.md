@@ -47,20 +47,25 @@ graph TB
         skill_pair["pair-programming"]
     end
 
-    %% Delegation relationships
-    planner --> coder
-    planner --> tester
-    pr_manager --> code_review_swarm
-    pr_manager --> reviewer
-    pr_manager --> coder
+    %% Delegation relationships (solid arrows)
+    planner -->|delegates| coder
+    planner -->|delegates| tester
+    planner -->|delegates| reviewer
+    pr_manager -->|delegates| code_review_swarm
+    pr_manager -->|delegates| reviewer
+    pr_manager -->|delegates| coder
 
-    %% Tool connections
-    pr_manager -.-> mcp_github
-    coder -.-> mcp_claude_flow
-    code_review_swarm -.-> mcp_github
+    %% Tool connections (dashed arrows)
+    pr_manager -.->|uses| mcp_github
+    coder -.->|uses| mcp_claude_flow
+    backend_dev -.->|uses| mcp_claude_flow
+    code_review_swarm -.->|uses| mcp_github
+    issue_tracker -.->|uses| mcp_github
+    release_manager -.->|uses| mcp_github
 
-    %% Skill connections
+    %% Skill connections (dotted arrows)
     pr_manager -.-> skill_github
+    code_review_swarm -.-> skill_github
     planner -.-> skill_sparc
     coder -.-> skill_pair
 
@@ -112,9 +117,9 @@ graph TB
 
 | Relationship Type | Count | Example |
 |-------------------|------:|---------|
-| Delegations | 5 | planner → coder |
-| Tool Usages | 3 | pr-manager → github MCP |
-| Skill Usages | 3 | planner → sparc-methodology |
+| Delegations | 6 | planner → coder |
+| Tool Usages | 6 | pr-manager → github MCP |
+| Skill Usages | 4 | planner → sparc-methodology |
 
 ---
 

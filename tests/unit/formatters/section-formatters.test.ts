@@ -329,7 +329,7 @@ describe('formatAgentsCapabilitiesMatrix', () => {
 });
 
 describe('formatMcpServersSection', () => {
-  it('should format MCP servers with status', () => {
+  it('should format MCP servers with status and transport column', () => {
     const servers: McpServer[] = [
       {
         name: 'claude-flow',
@@ -349,15 +349,16 @@ describe('formatMcpServersSection', () => {
 
     const result = formatMcpServersSection(servers);
 
-    expect(result).toContain('| Server | Status | Command | Tools Provided |');
+    expect(result).toContain('| Server | Status | Transport | Command | Tools Provided |');
     expect(result).toContain('claude-flow');
     expect(result).toContain('github');
     expect(result).toContain('\u{1F7E2}'); // green circle for enabled
     expect(result).toContain('\u{1F534}'); // red circle for disabled
     expect(result).toContain('swarm, memory, agents');
+    expect(result).toContain('stdio');
   });
 
-  it('should include collapsible details', () => {
+  it('should default transport to stdio when type not specified', () => {
     const servers: McpServer[] = [
       {
         name: 'test-server',
@@ -365,10 +366,45 @@ describe('formatMcpServersSection', () => {
       },
     ];
 
+    const result = formatMcpServersSection(servers);
+
+    expect(result).toContain('stdio');
+  });
+
+  it('should include collapsible details with environment variables', () => {
+    const servers: McpServer[] = [
+      {
+        name: 'test-server',
+        command: 'npx test',
+        env: {
+          NORMAL_VAR: 'visible',
+        },
+      },
+    ];
+
     const result = formatMcpServersSection(servers, { includeDetails: true });
 
     expect(result).toContain('<details>');
     expect(result).toContain('Server Details');
+  });
+
+  it('should mask sensitive environment variables in details', () => {
+    const servers: McpServer[] = [
+      {
+        name: 'test-server',
+        command: 'npx test',
+        env: {
+          API_KEY: 'secret-key-value',
+          NORMAL_VAR: 'visible-value',
+        },
+      },
+    ];
+
+    const result = formatMcpServersSection(servers, { includeDetails: true });
+
+    expect(result).toContain('***masked***');
+    expect(result).not.toContain('secret-key-value');
+    expect(result).toContain('visible-value');
   });
 
   it('should return empty string for empty servers array', () => {

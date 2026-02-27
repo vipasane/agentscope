@@ -86,11 +86,22 @@ graph TB
 
 ## Depth Analysis
 
-| Depth Level | Agents | Examples |
-|-------------|-------:|---------|
-| 0 (Root) | 2 | planner, pr-manager |
-| 1 (Worker) | 4 | coder, tester, reviewer, code-review-swarm |
-| Standalone | 4 | security-auditor, pii-detector, backend-dev, issue-tracker |
+| Depth Level | Agents | % of Total | Examples |
+|-------------|-------:|-----------:|---------|
+| 0 (Root) | 2 | 14% | planner, pr-manager |
+| 1 (Worker) | 4 | 29% | coder, tester, reviewer, code-review-swarm |
+| Standalone | 8 | 57% | security-auditor, pii-detector, claims-authorizer, backend-dev, ml-developer, issue-tracker, release-manager, production-validator |
+
+### Metrics
+
+| Metric | Value |
+|--------|------:|
+| Total delegation edges | 6 |
+| Shared workers | 2 |
+| Max chain depth | 1 |
+| Avg fan-out (coordinators) | 3.0 |
+| Root coordinators | 2 |
+| Standalone agents | 8 |
 
 ---
 

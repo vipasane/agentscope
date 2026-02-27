@@ -53,7 +53,6 @@
     "docs": "npm run build:docs"
   },
   "dependencies": {
-    "agentscope": "file:agentscope-0.1.0.tgz",
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
     "fast-glob": "^3.3.3",
